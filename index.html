@@ -3,390 +3,909 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INFERNUM — Some Doors Were Never Meant To Be Opened</title>
-<meta name="description" content="A dark demon summoning gacha game. Seven tiers of infernal power. Infinite multiverses to conquer. Coming soon.">
+<title>INFERNUM — Abyssal Summons</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body {
-  width: 100%; height: 100%;
-  background: #06000e;
-  color: #e2d9f3;
-  font-family: 'EB Garamond', Georgia, serif;
-  overflow-x: hidden;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06000e;--bg2:#0d0020;--purple:#c084fc;--gold:#fbbf24;--crimson:#f43f5e;
+  --text:#c8b8e8;--muted:#6a5a8a;--border:rgba(192,132,252,0.14);
 }
-
-/* FULL SCREEN VIDEO BACKGROUND */
-.video-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:Georgia,'Times New Roman',serif;
+  min-height:100vh;overflow-x:hidden;position:relative;
 }
-.video-bg video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
-  opacity: 0.65;
+/* ── BG SIGIL ── */
+#bg-sigil{
+  position:fixed;top:50%;left:50%;
+  width:min(900px,160vw);height:min(900px,160vw);
+  opacity:0.032;
+  transform:translate(-50%,-50%);
+  animation:sigilSpin 200s linear infinite;
+  pointer-events:none;z-index:0;
 }
-
-/* LAYERED OVERLAYS */
-.overlay-vignette {
-  position: fixed; inset: 0; z-index: 1;
-  background: radial-gradient(ellipse at center, transparent 30%, rgba(6,0,14,0.5) 100%);
+#bg-sigil2{
+  position:fixed;top:50%;left:50%;
+  width:min(500px,90vw);height:min(500px,90vw);
+  opacity:0.025;
+  transform:translate(-50%,-50%);
+  animation:sigilSpin 120s linear infinite reverse;
+  pointer-events:none;z-index:0;
 }
-.overlay-bottom {
-  position: fixed; bottom: 0; left: 0; right: 0; height: 70%; z-index: 1;
-  background: linear-gradient(to top, #06000e 35%, rgba(6,0,14,0.6) 65%, transparent 100%);
-  transform: translateY(100%);
-  animation: slideOverlay 1s ease 2.2s forwards;
+@keyframes sigilSpin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+/* ── FLASH ── */
+#tier-flash{
+  position:fixed;inset:0;z-index:300;pointer-events:none;
+  opacity:0;transition:opacity 0.12s ease;
 }
-@keyframes slideOverlay {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
+/* ── LAYOUT ── */
+#app{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 16px 80px}
+/* ── HEADER ── */
+header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:22px 0 18px;border-bottom:1px solid var(--border);
 }
-
-.main-content {
-  width: 100%; max-width: 640px;
-  text-align: center;
-  opacity: 0;
-  transform: translateY(60px);
-  animation: riseContent 1s ease 2.5s forwards;
+.logo{
+  font-family:'Cinzel',serif;font-weight:900;
+  font-size:clamp(1.5rem,5vw,2.2rem);letter-spacing:0.3em;
+  color:var(--purple);
+  text-shadow:0 0 24px rgba(192,132,252,0.45),0 0 60px rgba(192,132,252,0.15);
 }
-@keyframes riseContent {
-  from { opacity: 0; transform: translateY(60px); }
-  to   { opacity: 1; transform: translateY(0); }
+.logo-e{color:var(--crimson)}
+.logo-sub{
+  font-family:'Cinzel',serif;font-size:0.55rem;
+  letter-spacing:0.35em;color:var(--muted);
+  display:block;margin-top:2px;
 }
-
-/* LAYERED OVERLAYS */
-.overlay-vignette {
-  position: fixed; inset: 0; z-index: 1;
-  background: radial-gradient(ellipse at center top, transparent 20%, #06000e 80%);
+#shard-display{
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;padding:9px 16px;
+  border:1px solid var(--border);border-radius:24px;
+  background:rgba(192,132,252,0.04);
+  transition:all 0.2s;user-select:none;
+  position:relative;
 }
-.overlay-grid {
-  position: fixed; inset: 0; z-index: 1;
-  background-image:
-    repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(124,58,237,0.025) 60px),
-    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(124,58,237,0.025) 60px);
-  pointer-events: none;
+#shard-display:hover{border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.09)}
+#shard-display:active{transform:scale(0.97)}
+.shard-gem{font-size:1.15rem;color:var(--purple);filter:drop-shadow(0 0 5px rgba(192,132,252,0.9))}
+#shard-count{font-family:'Cinzel',serif;font-weight:700;font-size:1rem;color:var(--purple)}
+.shard-add-label{font-size:0.6rem;color:var(--muted);font-style:italic;margin-top:1px}
+.shard-pulse{animation:shardPop 0.3s ease}
+@keyframes shardPop{0%{transform:scale(1)}50%{transform:scale(1.18)}100%{transform:scale(1)}}
+/* ── TABS ── */
+.tabs{display:flex;gap:0;margin:22px 0 0;border-bottom:1px solid var(--border)}
+.tab-btn{
+  font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;
+  letter-spacing:0.18em;padding:11px 30px;
+  background:none;border:none;color:var(--muted);
+  cursor:pointer;position:relative;transition:color 0.25s;
 }
-
-/* CORNER BRACKETS */
-.corner { position: fixed; width: 52px; height: 52px; z-index: 10; }
-.corner.tl { top: 22px; left: 22px; border-top: 0.5px solid rgba(192,132,252,0.4); border-left: 0.5px solid rgba(192,132,252,0.4); }
-.corner.tr { top: 22px; right: 22px; border-top: 0.5px solid rgba(192,132,252,0.4); border-right: 0.5px solid rgba(192,132,252,0.4); }
-.corner.bl { bottom: 22px; left: 22px; border-bottom: 0.5px solid rgba(192,132,252,0.4); border-left: 0.5px solid rgba(192,132,252,0.4); }
-.corner.br { bottom: 22px; right: 22px; border-bottom: 0.5px solid rgba(192,132,252,0.4); border-right: 0.5px solid rgba(192,132,252,0.4); }
-
-/* PAGE CONTENT */
-.page {
-  position: relative; z-index: 5;
-  min-height: 100vh;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: flex-end;
-  padding: 0 24px 36px;
+.tab-btn::after{
+  content:'';position:absolute;bottom:-1px;left:0;right:0;
+  height:2px;background:var(--purple);
+  transform:scaleX(0);transition:transform 0.3s ease;
 }
-.main-content {
-  width: 100%; max-width: 640px;
-  text-align: center;
-  margin-top: auto;
-  padding-top: 58vh;
+.tab-btn.active{color:var(--purple)}
+.tab-btn.active::after{transform:scaleX(1)}
+.tab-btn:hover:not(.active){color:var(--text)}
+/* ── SCREENS ── */
+#summon-screen,#codex-screen{display:none;padding-top:28px}
+#summon-screen.active,#codex-screen.active{display:block}
+/* ── FEATURED CARD ── */
+.featured-section{display:flex;flex-direction:column;align-items:center;gap:0}
+.featured-eyebrow{
+  font-family:'Cinzel',serif;font-size:0.7rem;
+  letter-spacing:0.35em;color:var(--gold);
+  margin-bottom:14px;
+  text-shadow:0 0 10px rgba(251,191,36,0.4);
 }
-
-/* TOP BAR */
-.top-bar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
-  padding: 22px 32px;
-  display: flex; align-items: center; justify-content: center;
+.featured-card{
+  width:min(260px,74vw);aspect-ratio:2/3;
+  border-radius:14px;border:1.5px solid rgba(224,224,255,0.22);
+  background:linear-gradient(165deg,#0d000f 0%,#1a0038 60%,#06000e 100%);
+  position:relative;overflow:hidden;
+  box-shadow:0 0 50px rgba(224,224,255,0.07),0 0 120px rgba(192,132,252,0.06),inset 0 0 40px rgba(224,224,255,0.04);
+  display:flex;flex-direction:column;align-items:center;
+  padding:18px 16px 16px;
 }
-.top-logo {
-  font-family: 'Cinzel', serif;
-  font-size: 11px; letter-spacing: 8px;
-  color: rgba(192,132,252,0.5);
-  text-transform: uppercase;
+.featured-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 55%,rgba(6,0,14,0.85) 100%);
+  pointer-events:none;z-index:1;
 }
-
-
-.eyebrow {
-  font-family: 'Cinzel', serif;
-  font-size: 10px; letter-spacing: 6px;
-  color: #be123c; text-transform: uppercase;
-  margin-bottom: 12px;
+.rate-up-badge{
+  position:absolute;top:10px;right:10px;
+  background:var(--gold);color:#1c0a00;
+  font-family:'Cinzel',serif;font-size:0.6rem;font-weight:900;
+  letter-spacing:0.15em;padding:3px 9px;border-radius:3px;z-index:3;
 }
-
-.title {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: clamp(44px, 10vw, 86px);
-  font-weight: 700;
-  color: #e2d9f3;
-  letter-spacing: clamp(8px, 2vw, 20px);
-  text-transform: uppercase;
-  line-height: 1;
-  margin-bottom: 14px;
-  animation: fadeUp 1.2s ease 0.5s both;
+.featured-art{
+  flex:1;width:88%;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
 }
-
-.title-line {
-  width: 240px;
-  height: 0.5px; background: rgba(192,132,252,0.35);
-  margin: 0 auto 14px;
-  animation: expandLine 1.4s ease 0.7s both;
+.featured-art svg{width:100%;height:100%;max-height:190px}
+.featured-info{
+  text-align:center;z-index:2;width:100%;
+  padding-top:8px;
 }
-@keyframes expandLine { from{transform:scaleX(0)} to{transform:scaleX(1)} }
-
-.tagline {
-  font-family: 'EB Garamond', serif;
-  font-style: italic;
-  font-size: clamp(14px, 2.5vw, 18px);
-  color: #4b2d6b;
-  letter-spacing: 3px;
-  margin-bottom: 36px;
-  animation: fadeUp 1.2s ease 0.8s both;
+.featured-tier-label{
+  font-family:'Cinzel',serif;font-size:0.6rem;
+  letter-spacing:0.25em;color:#e0e0ff;
+  text-transform:uppercase;margin-bottom:4px;
+  text-shadow:0 0 10px rgba(224,224,255,0.7);
 }
-
-/* TIER STRIP */
-.tier-strip {
-  display: flex; gap: 10px; align-items: center;
-  justify-content: center;
-  margin-bottom: 36px;
-  animation: fadeUp 1.2s ease 0.9s both;
+.featured-name{
+  font-family:'Cinzel',serif;font-size:1.05rem;font-weight:700;
+  color:#e0e0ff;text-shadow:0 0 14px rgba(224,224,255,0.55);
+  font-style:italic;
 }
-.tier-gem {
-  width: 10px; height: 10px; border-radius: 50%;
-  opacity: 0.65; transition: opacity 0.2s, transform 0.2s;
-  cursor: default;
+/* ── COUNTDOWN ── */
+.countdown-wrap{margin:18px 0 4px;text-align:center}
+.countdown-label{font-size:0.68rem;color:var(--muted);letter-spacing:0.12em;margin-bottom:5px}
+#countdown{
+  font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700;
+  color:var(--gold);letter-spacing:0.12em;
+  text-shadow:0 0 12px rgba(251,191,36,0.45);
 }
-.tier-gem:hover { opacity: 1; transform: scale(1.5); }
-.tier-divider { width: 18px; height: 0.5px; background: rgba(124,58,237,0.2); }
-
-/* COUNTDOWN */
-.countdown-wrap {
-  display: flex; gap: 20px; align-items: center;
-  justify-content: center;
-  margin-bottom: 32px;
-  animation: fadeUp 1.2s ease 1s both;
+/* ── SECTION DIV ── */
+.section-div{
+  text-align:center;margin:24px 0 16px;position:relative;
 }
-.cd-unit { text-align: center; }
-.cd-num {
-  font-family: 'Cinzel', serif;
-  font-size: clamp(22px, 5vw, 32px);
-  color: #e2d9f3; line-height: 1;
-  min-width: 48px; display: block;
+.section-div::before{
+  content:'';position:absolute;top:50%;left:0;right:0;
+  height:1px;background:var(--border);
 }
-.cd-label {
-  font-size: 8px; letter-spacing: 3px;
-  color: #4b2d6b; text-transform: uppercase;
-  font-family: 'Cinzel', serif;
-  margin-top: 4px; display: block;
+.section-div span{
+  position:relative;background:var(--bg);
+  padding:0 14px;font-family:'Cinzel',serif;
+  font-size:0.65rem;color:var(--muted);letter-spacing:0.25em;
 }
-.cd-sep {
-  font-family: 'Cinzel', serif;
-  font-size: 26px; color: #2d1a4b;
-  align-self: flex-start; padding-top: 2px;
+/* ── PITY ── */
+.pity-section{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:11px}
+.pity-bar{
+  background:rgba(255,255,255,0.025);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;
 }
-
-/* EMAIL */
-.signup-wrap {
-  max-width: 400px; width: 100%;
-  margin: 0 auto 12px;
-  animation: fadeUp 1.2s ease 1.1s both;
+.pity-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.pity-name{font-size:0.72rem;color:var(--muted);letter-spacing:0.05em}
+.pity-count{font-family:'Cinzel',serif;font-size:0.8rem}
+.pity-track{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
+.pity-fill{height:100%;border-radius:3px;transition:width 0.5s cubic-bezier(.4,0,.2,1)}
+.pity-bar.epic .pity-count{color:var(--purple)}
+.pity-bar.epic .pity-fill{background:linear-gradient(90deg,#7c3aed,var(--purple))}
+.pity-bar.legendary .pity-count{color:var(--crimson)}
+.pity-bar.legendary .pity-fill{background:linear-gradient(90deg,#9f1239,var(--crimson))}
+/* ── PULL BUTTONS ── */
+.pull-buttons{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:24px 0 8px}
+.pull-btn{
+  font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;
+  letter-spacing:0.12em;padding:14px 28px;
+  border-radius:7px;cursor:pointer;
+  position:relative;overflow:hidden;
+  transition:transform 0.15s,box-shadow 0.15s;
+  min-width:165px;text-align:center;
 }
-.signup-label {
-  font-family: 'Cinzel', serif;
-  font-size: 9px; letter-spacing: 3px;
-  color: #2d1a4b; text-align: center;
-  margin-bottom: 10px; text-transform: uppercase;
+.pull-btn:active:not(:disabled){transform:scale(0.97)}
+.pull-btn-1{
+  background:linear-gradient(135deg,#18003a,#2c0060);
+  color:var(--purple);border:1px solid rgba(192,132,252,0.35);
+  box-shadow:0 0 20px rgba(192,132,252,0.08);
 }
-.signup-row { display: flex; gap: 8px; }
-.signup-input {
-  flex: 1;
-  background: rgba(6,0,14,0.8);
-  border: 0.5px solid rgba(124,58,237,0.4);
-  border-radius: 3px;
-  padding: 11px 14px;
-  font-family: 'EB Garamond', serif;
-  font-size: 15px; color: #e2d9f3;
-  outline: none; transition: border-color 0.2s;
+.pull-btn-1:hover:not(:disabled){
+  background:linear-gradient(135deg,#25005a,#420090);
+  box-shadow:0 0 28px rgba(192,132,252,0.18);
+  border-color:rgba(192,132,252,0.6);
 }
-.signup-input::placeholder { color: #2d1a4b; }
-.signup-input:focus { border-color: #c084fc; }
-.signup-btn {
-  background: #7c3aed; border: none; border-radius: 3px;
-  padding: 11px 20px;
-  font-family: 'Cinzel', serif;
-  font-size: 10px; letter-spacing: 2px; color: #fde68a;
-  cursor: pointer; white-space: nowrap;
-  transition: background 0.2s, transform 0.1s;
+.pull-btn-10{
+  background:linear-gradient(135deg,#1c0a00,#3c1800);
+  color:var(--gold);border:1px solid rgba(251,191,36,0.3);
+  box-shadow:0 0 20px rgba(251,191,36,0.06);
 }
-.signup-btn:hover { background: #6d28d9; }
-.signup-btn:active { transform: scale(0.97); }
-.signup-thanks {
-  display: none; text-align: center;
-  font-family: 'Cinzel', serif;
-  font-size: 10px; letter-spacing: 3px;
-  color: #c084fc; padding: 13px;
+.pull-btn-10:hover:not(:disabled){
+  background:linear-gradient(135deg,#2e1200,#5a2800);
+  box-shadow:0 0 28px rgba(251,191,36,0.15);
+  border-color:rgba(251,191,36,0.55);
 }
-
-/* FEATURE PILLS */
-.feat-row {
-  display: flex; gap: 8px; flex-wrap: wrap;
-  justify-content: center; margin-bottom: 28px;
-  animation: fadeUp 1.2s ease 1s both;
+.pull-btn:disabled{opacity:0.28;cursor:not-allowed}
+.btn-label{display:block}
+.btn-cost{display:block;font-size:0.68rem;font-weight:400;opacity:0.65;margin-top:2px}
+/* ── PULL OVERLAY ── */
+#pull-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(6,0,14,0.97);z-index:200;
+  flex-direction:column;align-items:center;
+  justify-content:center;padding:20px 16px;
+  overflow-y:auto;
 }
-.feat-pill {
-  background: rgba(13,0,24,0.7);
-  border: 0.5px solid rgba(124,58,237,0.2);
-  border-radius: 20px; padding: 5px 14px;
-  font-family: 'Cinzel', serif;
-  font-size: 9px; letter-spacing: 2px;
-  color: #4b2d6b;
+#pull-overlay.active{display:flex}
+.pull-container{
+  display:flex;flex-direction:column;align-items:center;
+  gap:14px;width:100%;
 }
-.feat-pill span { color: #c084fc; margin-right: 5px; }
-
-/* EMBERS */
-.ember {
-  position: fixed; border-radius: 50%;
-  pointer-events: none;
-  animation: riseEmber linear infinite; z-index: 3;
+.pull-row{display:flex;gap:8px;justify-content:center;flex-wrap:nowrap}
+/* ── FLIP CARD ── */
+.fc-wrap{perspective:1000px}
+.fc{
+  position:relative;transform-style:preserve-3d;
+  transition:transform 0.7s cubic-bezier(0.4,0,0.2,1);
+  width:100%;height:100%;
+  border-radius:9px;
 }
-@keyframes riseEmber {
-  0%   { transform: translateY(0) translateX(0); opacity: 0; }
-  8%   { opacity: 0.9; }
-  92%  { opacity: 0.2; }
-  100% { transform: translateY(-100vh) translateX(var(--drift)); opacity: 0; }
+.fc.flipped{transform:rotateY(180deg)}
+.fc-face{
+  position:absolute;inset:0;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border-radius:9px;overflow:hidden;
 }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+.fc-back{
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(155deg,#0d0020,#1a0038);
+  border:1px solid rgba(192,132,252,0.18);
 }
-
-@media (max-width: 520px) {
-  .signup-row { flex-direction: column; }
-  .feat-row { gap: 6px; }
-  .page { padding-bottom: 36px; }
+.fc-back svg{width:100%;height:100%}
+.fc-front{
+  transform:rotateY(180deg);
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:space-between;padding:8px 6px;
 }
+.fc-art{flex:1;width:80%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.fc-art svg{width:100%;height:100%}
+.fc-info{text-align:center;width:100%;padding:4px 2px 0}
+.fc-tier-name{
+  font-family:'Cinzel',serif;font-size:0.52rem;
+  letter-spacing:0.18em;text-transform:uppercase;
+  margin-bottom:3px;
+}
+.fc-name{font-style:italic;font-size:0.58rem;color:#d4c8e8;line-height:1.3}
+/* Single pull */
+.pull-single .fc-wrap{width:min(210px,62vw);aspect-ratio:2/3}
+/* Multi pull */
+.pull-multi .fc-wrap{
+  width:min(108px,calc((100vw - 56px) / 5.2));
+  aspect-ratio:2/3;
+}
+/* ── POST-PULL ── */
+.post-pull{display:none;gap:12px;margin-top:22px;flex-wrap:wrap;justify-content:center}
+.ppbtn{
+  font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;
+  letter-spacing:0.12em;padding:11px 24px;
+  border-radius:6px;border:1px solid;cursor:pointer;
+  transition:all 0.2s;
+}
+.ppbtn-p{border-color:var(--purple);background:rgba(192,132,252,0.1);color:var(--purple)}
+.ppbtn-p:hover{background:rgba(192,132,252,0.2)}
+.ppbtn-s{border-color:var(--muted);background:rgba(255,255,255,0.02);color:var(--muted)}
+.ppbtn-s:hover{border-color:var(--text);color:var(--text)}
+/* ── CODEX ── */
+.codex-hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.codex-title{font-family:'Cinzel',serif;font-size:1.05rem;font-weight:700;letter-spacing:0.22em;color:var(--purple)}
+#codex-count{font-size:0.8rem;color:var(--muted)}
+.codex-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+@media(max-width:600px){.codex-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}
+@media(max-width:360px){.codex-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.codex-card{
+  aspect-ratio:2/3;border-radius:9px;border:1px solid;
+  overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:space-between;
+  padding:7px 5px;
+  transition:transform 0.2s,box-shadow 0.2s;
+}
+.codex-card:hover{transform:translateY(-3px)}
+.codex-card.cc-unknown{background:#080014;border-color:rgba(255,255,255,0.05)}
+.cc-art{flex:1;width:80%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.cc-art svg{width:100%;height:100%;max-height:80px}
+.codex-card.cc-unknown .cc-art svg{filter:brightness(0) opacity(0.12)}
+.cc-name{font-size:0.52rem;text-align:center;color:var(--text);font-style:italic;line-height:1.3}
+.codex-card.cc-unknown .cc-name{color:#2a1a4a}
+.cc-tier{font-family:'Cinzel',serif;font-size:0.46rem;letter-spacing:0.1em;text-align:center;margin-top:2px}
+.dupe-badge{
+  position:absolute;top:4px;right:4px;
+  background:rgba(0,0,0,0.85);border:1px solid rgba(255,255,255,0.15);
+  border-radius:10px;font-size:0.5rem;
+  font-family:'Cinzel',serif;color:var(--gold);
+  padding:1px 5px;z-index:2;
+}
+/* ── MISC ── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn 0.4s ease both}
 </style>
 </head>
 <body>
 
-<div class="corner tl"></div>
-<div class="corner tr"></div>
-<div class="corner bl"></div>
-<div class="corner br"></div>
+<!-- ── BG SIGILS ── -->
+<svg id="bg-sigil" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="200" cy="200" r="195" fill="none" stroke="#c084fc" stroke-width="0.7"/>
+  <circle cx="200" cy="200" r="162" fill="none" stroke="#c084fc" stroke-width="0.45"/>
+  <circle cx="200" cy="200" r="128" fill="none" stroke="#c084fc" stroke-width="0.45"/>
+  <circle cx="200" cy="200" r="88" fill="none" stroke="#c084fc" stroke-width="0.4"/>
+  <polygon points="200,8 380,138 314,348 86,348 20,138" fill="none" stroke="#c084fc" stroke-width="0.75"/>
+  <polygon points="200,38 352,152 296,324 104,324 48,152" fill="none" stroke="#c084fc" stroke-width="0.4"/>
+  <line x1="200" y1="5" x2="200" y2="395" stroke="#c084fc" stroke-width="0.4"/>
+  <line x1="5" y1="200" x2="395" y2="200" stroke="#c084fc" stroke-width="0.4"/>
+  <line x1="34" y1="34" x2="366" y2="366" stroke="#c084fc" stroke-width="0.3"/>
+  <line x1="366" y1="34" x2="34" y2="366" stroke="#c084fc" stroke-width="0.3"/>
+  <g transform="rotate(0,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚠ</text></g>
+  <g transform="rotate(45,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚢ</text></g>
+  <g transform="rotate(90,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚦ</text></g>
+  <g transform="rotate(135,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚨ</text></g>
+  <g transform="rotate(180,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚱ</text></g>
+  <g transform="rotate(225,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚲ</text></g>
+  <g transform="rotate(270,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚷ</text></g>
+  <g transform="rotate(315,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚹ</text></g>
+  <circle cx="200" cy="200" r="22" fill="none" stroke="#c084fc" stroke-width="0.9"/>
+  <circle cx="200" cy="200" r="6" fill="none" stroke="#c084fc" stroke-width="1.2"/>
+  <circle cx="200" cy="200" r="2" fill="#c084fc" opacity="0.5"/>
+  <line x1="178" y1="200" x2="222" y2="200" stroke="#c084fc" stroke-width="0.5"/>
+  <line x1="200" y1="178" x2="200" y2="222" stroke="#c084fc" stroke-width="0.5"/>
+  <polygon points="200,108 228,128 218,160 182,160 172,128" fill="none" stroke="#c084fc" stroke-width="0.5"/>
+</svg>
+<svg id="bg-sigil2" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="150" cy="150" r="140" fill="none" stroke="#f43f5e" stroke-width="0.6"/>
+  <polygon points="150,15 272,97 228,245 72,245 28,97" fill="none" stroke="#f43f5e" stroke-width="0.5"/>
+  <circle cx="150" cy="150" r="90" fill="none" stroke="#f43f5e" stroke-width="0.4"/>
+  <line x1="20" y1="150" x2="280" y2="150" stroke="#f43f5e" stroke-width="0.35"/>
+  <line x1="150" y1="20" x2="150" y2="280" stroke="#f43f5e" stroke-width="0.35"/>
+</svg>
 
-<!-- FULL SCREEN VIDEO -->
-<div class="video-bg">
-  <video autoplay loop muted playsinline>
-    <source src="infernum_logo_clean.mp4" type="video/mp4">
-  </video>
+<!-- ── FLASH OVERLAY ── -->
+<div id="tier-flash"></div>
+
+<!-- ── PULL OVERLAY ── -->
+<div id="pull-overlay">
+  <div id="pull-container" class="pull-container"></div>
+  <div id="post-pull" class="post-pull">
+    <button class="ppbtn ppbtn-p" id="btn-again">◆ Summon Again</button>
+    <button class="ppbtn ppbtn-s" id="btn-codex-nav">View Codex</button>
+  </div>
 </div>
-<div class="overlay-vignette"></div>
-<div class="overlay-bottom"></div>
-<div class="overlay-grid"></div>
 
-<!-- TOP BAR -->
-<div class="top-bar">
-  <div class="top-logo">Infernal Rift &nbsp;·&nbsp; Season Zero</div>
-</div>
-
-<!-- MAIN CONTENT -->
-<div class="page">
-  <div class="main-content">
-
-    <div class="eyebrow">The first rift opens soon</div>
-    <h1 class="title">Infernum</h1>
-    <div class="title-line"></div>
-    <p class="tagline">"Some doors were never meant to be opened."</p>
-
-    <div class="tier-strip">
-      <div class="tier-gem" style="background:#888" title="Shade"></div>
-      <div class="tier-divider"></div>
-      <div class="tier-gem" style="background:#14b8a6" title="Imp"></div>
-      <div class="tier-divider"></div>
-      <div class="tier-gem" style="background:#60a5fa" title="Fiend"></div>
-      <div class="tier-divider"></div>
-      <div class="tier-gem" style="background:#c084fc" title="Greater Demon"></div>
-      <div class="tier-divider"></div>
-      <div class="tier-gem" style="background:#f43f5e" title="Archdemon"></div>
-      <div class="tier-divider"></div>
-      <div class="tier-gem" style="background:#fbbf24" title="Sin Lord"></div>
-      <div class="tier-divider"></div>
-      <div class="tier-gem" style="background:#e0e0ff" title="Void Primordial"></div>
+<div id="app">
+  <header>
+    <div>
+      <div class="logo">INF<span class="logo-e">E</span>RNUM</div>
+      <span class="logo-sub">ABYSSAL SUMMONS</span>
     </div>
-
-    <div class="feat-row">
-      <div class="feat-pill"><span>24</span>Demons</div>
-      <div class="feat-pill"><span>7</span>Tiers</div>
-      <div class="feat-pill"><span>8</span>Realms</div>
-      <div class="feat-pill"><span>7</span>Sin Lords</div>
-      <div class="feat-pill"><span>5</span>Ascension Forms</div>
-    </div>
-
-    <div class="countdown-wrap" id="countdown">
-      <div class="cd-unit"><span class="cd-num" id="cd-d">--</span><span class="cd-label">Days</span></div>
-      <span class="cd-sep">:</span>
-      <div class="cd-unit"><span class="cd-num" id="cd-h">--</span><span class="cd-label">Hours</span></div>
-      <span class="cd-sep">:</span>
-      <div class="cd-unit"><span class="cd-num" id="cd-m">--</span><span class="cd-label">Mins</span></div>
-      <span class="cd-sep">:</span>
-      <div class="cd-unit"><span class="cd-num" id="cd-s">--</span><span class="cd-label">Secs</span></div>
-    </div>
-
-    <div class="signup-wrap">
-      <div class="signup-label">Be notified when the first rift opens</div>
-      <div class="signup-row" id="signup-row">
-        <input class="signup-input" type="email" id="email-input" placeholder="your@email.com" autocomplete="email"/>
-        <button class="signup-btn" onclick="handleSignup()">Notify Me</button>
-      </div>
-      <div class="signup-thanks" id="signup-thanks">
-        Your name is written. The demons will find you.
+    <div id="shard-display" onclick="addDemoShards()" title="Click to add 500 demo shards">
+      <span class="shard-gem">◆</span>
+      <div>
+        <div id="shard-count">1,200</div>
+        <div class="shard-add-label">+ Add Demo Shards</div>
       </div>
     </div>
+  </header>
 
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="summon" onclick="switchTab('summon')">SUMMON</button>
+    <button class="tab-btn" data-tab="codex" onclick="switchTab('codex')">CODEX</button>
+  </nav>
+
+  <!-- ── SUMMON SCREEN ── -->
+  <div id="summon-screen" class="active">
+    <div class="featured-section">
+      <div class="featured-eyebrow">◇ LIMITED BANNER · VOID GATE ◇</div>
+      <div class="featured-card">
+        <div class="rate-up-badge">RATE UP</div>
+        <div class="featured-art" id="featured-art"></div>
+        <div class="featured-info">
+          <div class="featured-tier-label">✦ VOID PRIMORDIAL ✦</div>
+          <div class="featured-name">The Unnamed One</div>
+        </div>
+      </div>
+      <div class="countdown-wrap">
+        <div class="countdown-label">BANNER EXPIRES IN</div>
+        <div id="countdown">—</div>
+      </div>
+    </div>
+
+    <div class="section-div"><span>PITY TRACKER</span></div>
+
+    <div class="pity-section">
+      <div class="pity-bar epic">
+        <div class="pity-header">
+          <span class="pity-name">Epic Pity — Greater Demon+ guaranteed at 40</span>
+          <span class="pity-count" id="epic-count">0 / 40</span>
+        </div>
+        <div class="pity-track"><div class="pity-fill" id="epic-fill" style="width:0%"></div></div>
+      </div>
+      <div class="pity-bar legendary">
+        <div class="pity-header">
+          <span class="pity-name">Legendary Pity — Archdemon+ guaranteed at 70</span>
+          <span class="pity-count" id="leg-count">0 / 70</span>
+        </div>
+        <div class="pity-track"><div class="pity-fill" id="leg-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="pull-buttons">
+      <button class="pull-btn pull-btn-1" id="btn-pull-1" onclick="doPull(1)">
+        <span class="btn-label">Summon ×1</span>
+        <span class="btn-cost">◆ 100 Soul Shards</span>
+      </button>
+      <button class="pull-btn pull-btn-10" id="btn-pull-10" onclick="doPull(10)">
+        <span class="btn-label">Summon ×10</span>
+        <span class="btn-cost">◆ 900 Soul Shards</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── CODEX SCREEN ── -->
+  <div id="codex-screen">
+    <div class="codex-hd">
+      <div class="codex-title">CODEX INFERNUM</div>
+      <div id="codex-count">0 / 28 demons bound</div>
+    </div>
+    <div class="codex-grid" id="codex-grid"></div>
   </div>
 </div>
 
 <script>
-const LAUNCH = new Date('2025-09-01T00:00:00');
-function updateCountdown() {
-  const diff = LAUNCH - new Date();
-  if (diff <= 0) { document.getElementById('countdown').style.display='none'; return; }
-  document.getElementById('cd-d').textContent = String(Math.floor(diff/86400000)).padStart(2,'0');
-  document.getElementById('cd-h').textContent = String(Math.floor((diff%86400000)/3600000)).padStart(2,'0');
-  document.getElementById('cd-m').textContent = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
-  document.getElementById('cd-s').textContent = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
-}
-updateCountdown(); setInterval(updateCountdown, 1000);
+/* ═══════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════ */
+const TIERS=[
+  {id:'shade',         name:'Shade',          label:'Common',    color:'#888888',bg:'#111111',      idx:0},
+  {id:'imp',           name:'Imp',            label:'Uncommon',  color:'#14b8a6',bg:'#042f2e',      idx:1},
+  {id:'fiend',         name:'Fiend',          label:'Rare',      color:'#60a5fa',bg:'#0c1a40',      idx:2},
+  {id:'greater_demon', name:'Greater Demon',  label:'Epic',      color:'#c084fc',bg:'#1e0840',      idx:3},
+  {id:'archdemon',     name:'Archdemon',      label:'Legendary', color:'#f43f5e',bg:'#300010',      idx:4},
+  {id:'sin_lord',      name:'Sin Lord',       label:'Mythic',    color:'#fbbf24',bg:'#1c0a00',      idx:5},
+  {id:'void_primordial',name:'Void Primordial',label:'Abyssal',  color:'#e0e0ff',bg:'#09000f',      idx:6},
+];
+const PROBS=[0.454,0.270,0.150,0.080,0.035,0.010,0.001];
+const POOL={
+  shade:          ['Mournveil','Ashwhisper','Gravecoil','Hollowborn','Duskfang'],
+  imp:            ['Skrix','Thornprick','Vexmaw','Grimble'],
+  fiend:          ['Gorrath the Flayed','Skaryn Bonecleave','Vael the Hollow','Morkhex'],
+  greater_demon:  ["Vor'aneth","Shael'dis",'Krazmoth the Undying'],
+  archdemon:      ["Bal'zeth",'Xerathos','Malvekis the Sundered'],
+  sin_lord:       ["Vrath'ax",'Avara','Luxiel',"Gorm'than",'Envar','Vainglory','Gorgethorn'],
+  void_primordial:['The Unnamed One','Null-That-Speaks'],
+};
+// All demons sorted tier-desc for codex
+const ALL_DEMONS=[];
+for(const t of TIERS) for(const n of POOL[t.id]) ALL_DEMONS.push({name:n,tier:t});
+ALL_DEMONS.sort((a,b)=>b.tier.idx-a.tier.idx||a.name.localeCompare(b.name));
 
-function handleSignup() {
-  const email = document.getElementById('email-input').value;
-  if (!email || !email.includes('@')) { document.getElementById('email-input').style.borderColor='#be123c'; return; }
-  const saved = JSON.parse(localStorage.getItem('infernum_signups')||'[]');
-  saved.push({email, date: new Date().toISOString()});
-  localStorage.setItem('infernum_signups', JSON.stringify(saved));
-  document.getElementById('signup-row').style.display='none';
-  document.getElementById('signup-thanks').style.display='block';
-}
-document.getElementById('email-input').addEventListener('keydown', e => {
-  if (e.key==='Enter') handleSignup();
-  document.getElementById('email-input').style.borderColor='';
-});
+/* ═══════════════════════════════════════════
+   SVG ART
+═══════════════════════════════════════════ */
+const SVGS={
+shade:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+<defs><filter id="sf"><feGaussianBlur stdDeviation="2"/></filter></defs>
+<ellipse cx="40" cy="38" rx="24" ry="30" fill="#555" opacity="0.7" filter="url(#sf)"/>
+<ellipse cx="40" cy="38" rx="18" ry="23" fill="#777" opacity="0.65"/>
+<ellipse cx="33" cy="31" rx="4.5" ry="6" fill="#111" opacity="0.95"/>
+<ellipse cx="47" cy="31" rx="4.5" ry="6" fill="#111" opacity="0.95"/>
+<ellipse cx="33" cy="31" rx="1.5" ry="2" fill="#aaa" opacity="0.3"/>
+<ellipse cx="47" cy="31" rx="1.5" ry="2" fill="#aaa" opacity="0.3"/>
+<path d="M22,60 Q12,74 16,90 Q23,78 28,88 Q33,72 38,86 Q40,70 42,86 Q47,72 52,88 Q57,78 64,90 Q68,74 58,60" fill="#555" opacity="0.5" filter="url(#sf)"/>
+<ellipse cx="40" cy="38" rx="22" ry="27" fill="none" stroke="#888" stroke-width="0.5" opacity="0.25"/>
+</svg>`,
 
-function spawnEmber() {
-  const e = document.createElement('div');
-  e.className = 'ember';
-  const sz = Math.random()*2+1;
-  const cols = ['#f43f5e','#c084fc','#fbbf24','#be123c'];
-  e.style.cssText = `left:${Math.random()*100}vw;bottom:${Math.random()*15}px;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};opacity:0;--drift:${(Math.random()-.5)*100}px;animation-duration:${Math.random()*9+7}s;animation-delay:${Math.random()*3}s;`;
-  document.body.appendChild(e);
-  setTimeout(()=>e.remove(), 13000);
+imp:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+<ellipse cx="40" cy="60" rx="17" ry="21" fill="#0a7a72"/>
+<ellipse cx="40" cy="34" rx="15" ry="14" fill="#0a7a72"/>
+<path d="M27,24 L20,8 L31,17" fill="#085e58"/>
+<path d="M53,24 L60,8 L49,17" fill="#085e58"/>
+<ellipse cx="33" cy="30" rx="4" ry="5" fill="#050e0d"/>
+<ellipse cx="47" cy="30" rx="4" ry="5" fill="#050e0d"/>
+<circle cx="33" cy="30" r="1.8" fill="#14b8a6" opacity="0.9"/>
+<circle cx="47" cy="30" r="1.8" fill="#14b8a6" opacity="0.9"/>
+<path d="M33,40 Q40,47 47,40" fill="none" stroke="#085e58" stroke-width="1.5"/>
+<line x1="35" y1="41" x2="33" y2="46" stroke="#085e58" stroke-width="1.2"/>
+<line x1="40" y1="43" x2="40" y2="48" stroke="#085e58" stroke-width="1.2"/>
+<line x1="45" y1="41" x2="47" y2="46" stroke="#085e58" stroke-width="1.2"/>
+<path d="M23,57 Q11,64 13,74 L17,70 Q22,66 26,60" fill="#0a7a72"/>
+<path d="M57,57 Q69,64 67,74 L63,70 Q58,66 54,60" fill="#0a7a72"/>
+<path d="M40,79 Q56,87 58,97 Q51,91 47,95 Q43,88 40,81" fill="#085e58"/>
+<rect x="31" y="78" width="7" height="16" rx="4" fill="#085e58"/>
+<rect x="42" y="78" width="7" height="16" rx="4" fill="#085e58"/>
+</svg>`,
+
+fiend:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+<path d="M22,97 L18,65 Q15,50 22,42 L33,34 L40,30 L47,34 L58,42 Q65,50 62,65 L58,97Z" fill="#173880"/>
+<ellipse cx="40" cy="25" rx="19" ry="18" fill="#173880"/>
+<path d="M24,16 L13,2 Q20,10 26,14" fill="#0c2460"/>
+<path d="M56,16 L67,2 Q60,10 54,14" fill="#0c2460"/>
+<ellipse cx="32" cy="22" rx="5.5" ry="6" fill="#000"/>
+<ellipse cx="48" cy="22" rx="5.5" ry="6" fill="#000"/>
+<ellipse cx="32" cy="22" rx="3.5" ry="4" fill="#60a5fa" opacity="0.9"/>
+<ellipse cx="48" cy="22" rx="3.5" ry="4" fill="#60a5fa" opacity="0.9"/>
+<circle cx="32" cy="22" r="1.2" fill="#bfdbfe"/>
+<circle cx="48" cy="22" r="1.2" fill="#bfdbfe"/>
+<path d="M30,34 Q40,42 50,34" fill="none" stroke="#0c2460" stroke-width="1.2"/>
+<line x1="33" y1="35" x2="31" y2="41" stroke="#bfdbfe" stroke-width="1.5"/>
+<line x1="47" y1="35" x2="49" y2="41" stroke="#bfdbfe" stroke-width="1.5"/>
+<path d="M20,43 Q3,36 0,22 Q9,32 17,38" fill="#0c2460" opacity="0.75"/>
+<path d="M60,43 Q77,36 80,22 Q71,32 63,38" fill="#0c2460" opacity="0.75"/>
+<path d="M17,38 Q7,28 3,18" fill="none" stroke="#173880" stroke-width="0.7"/>
+<path d="M63,38 Q73,28 77,18" fill="none" stroke="#173880" stroke-width="0.7"/>
+<path d="M30,50 Q40,47 50,50 Q52,60 40,63 Q28,60 30,50Z" fill="#1e4898" opacity="0.5"/>
+</svg>`,
+
+greater_demon:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+<defs><radialGradient id="gdg" cx="50%" cy="40%" r="50%">
+<stop offset="0%" stop-color="#c084fc" stop-opacity="0.18"/>
+<stop offset="100%" stop-color="#1e0840" stop-opacity="0"/>
+</radialGradient></defs>
+<ellipse cx="40" cy="52" rx="40" ry="48" fill="url(#gdg)"/>
+<path d="M14,98 L11,62 Q8,46 20,36 L33,27 L40,23 L47,27 L60,36 Q72,46 69,62 L66,98Z" fill="#33106a"/>
+<path d="M28,44 Q40,40 52,44 Q54,56 40,60 Q26,56 28,44Z" fill="#4e1c8a" stroke="#c084fc" stroke-width="0.5" opacity="0.7"/>
+<ellipse cx="40" cy="19" rx="21" ry="19" fill="#33106a"/>
+<path d="M20,13 Q6,2 2,14 Q11,10 17,14" fill="#22084a"/>
+<path d="M60,13 Q74,2 78,14 Q69,10 63,14" fill="#22084a"/>
+<line x1="20" y1="13" x2="8" y2="6" stroke="#c084fc" stroke-width="0.5" opacity="0.4"/>
+<line x1="60" y1="13" x2="72" y2="6" stroke="#c084fc" stroke-width="0.5" opacity="0.4"/>
+<ellipse cx="31" cy="17" rx="6.5" ry="7" fill="#16062a"/>
+<ellipse cx="49" cy="17" rx="6.5" ry="7" fill="#16062a"/>
+<ellipse cx="31" cy="17" rx="4.5" ry="5" fill="#c084fc" opacity="0.95"/>
+<ellipse cx="49" cy="17" rx="4.5" ry="5" fill="#c084fc" opacity="0.95"/>
+<circle cx="31" cy="17" r="1.8" fill="#f0e0ff"/>
+<circle cx="49" cy="17" r="1.8" fill="#f0e0ff"/>
+<path d="M27,28 Q40,36 53,28" fill="none" stroke="#c084fc" stroke-width="1" opacity="0.55"/>
+<line x1="31" y1="29" x2="29" y2="36" stroke="#f0e0ff" stroke-width="1.5"/>
+<line x1="37" y1="32" x2="35" y2="39" stroke="#f0e0ff" stroke-width="1.5"/>
+<line x1="43" y1="32" x2="45" y2="39" stroke="#f0e0ff" stroke-width="1.5"/>
+<line x1="49" y1="29" x2="51" y2="36" stroke="#f0e0ff" stroke-width="1.5"/>
+<path d="M18,38 Q0,26 0,10 Q8,20 15,30" fill="#22084a"/>
+<path d="M62,38 Q80,26 80,10 Q72,20 65,30" fill="#22084a"/>
+<circle cx="40" cy="19" r="24" fill="none" stroke="#c084fc" stroke-width="0.4" opacity="0.25" stroke-dasharray="3,4"/>
+</svg>`,
+
+archdemon:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+<defs><radialGradient id="ag" cx="50%" cy="30%" r="55%">
+<stop offset="0%" stop-color="#f43f5e" stop-opacity="0.3"/>
+<stop offset="100%" stop-color="#300010" stop-opacity="0"/>
+</radialGradient></defs>
+<ellipse cx="40" cy="50" rx="40" ry="50" fill="url(#ag)"/>
+<path d="M13,98 L9,60 Q7,42 20,30 L33,20 L40,16 L47,20 L60,30 Q73,42 71,60 L67,98Z" fill="#450022"/>
+<path d="M28,38 L33,33 L40,31 L47,33 L52,38 L50,52 L40,56 L30,52Z" fill="#680038" stroke="#f43f5e" stroke-width="0.7" opacity="0.85"/>
+<circle cx="40" cy="43" r="4" fill="#f43f5e" opacity="0.3"/>
+<ellipse cx="40" cy="14" rx="20" ry="17" fill="#450022"/>
+<path d="M20,8 L15,0 L22,5" fill="#300015" stroke="#f43f5e" stroke-width="0.5"/>
+<path d="M28,5 L26,0 L32,3" fill="#f43f5e" opacity="0.8"/>
+<path d="M40,3 L38,0 L42,0 Z" fill="#f43f5e"/>
+<path d="M52,5 L54,0 L48,3" fill="#f43f5e" opacity="0.8"/>
+<path d="M60,8 L65,0 L58,5" fill="#300015" stroke="#f43f5e" stroke-width="0.5"/>
+<ellipse cx="31" cy="12" rx="6" ry="6.5" fill="#190010"/>
+<ellipse cx="49" cy="12" rx="6" ry="6.5" fill="#190010"/>
+<ellipse cx="31" cy="12" rx="4.5" ry="5" fill="#f43f5e"/>
+<ellipse cx="49" cy="12" rx="4.5" ry="5" fill="#f43f5e"/>
+<circle cx="31" cy="12" r="2" fill="#ff9aaa"/>
+<circle cx="49" cy="12" r="2" fill="#ff9aaa"/>
+<path d="M25,24 Q40,34 55,24" fill="#190010" stroke="#f43f5e" stroke-width="1"/>
+<line x1="29" y1="25" x2="27" y2="32" stroke="#ffb0b8" stroke-width="1.5"/>
+<line x1="35" y1="28" x2="33" y2="35" stroke="#ffb0b8" stroke-width="1.5"/>
+<line x1="40" y1="30" x2="40" y2="37" stroke="#ffb0b8" stroke-width="2"/>
+<line x1="45" y1="28" x2="47" y2="35" stroke="#ffb0b8" stroke-width="1.5"/>
+<line x1="51" y1="25" x2="53" y2="32" stroke="#ffb0b8" stroke-width="1.5"/>
+<path d="M18,32 Q0,20 0,4 Q7,16 14,26" fill="#300015"/>
+<path d="M62,32 Q80,20 80,4 Q73,16 66,26" fill="#300015"/>
+<path d="M14,26 Q4,16 2,6" fill="none" stroke="#600028" stroke-width="0.7"/>
+<path d="M66,26 Q76,16 78,6" fill="none" stroke="#600028" stroke-width="0.7"/>
+<circle cx="40" cy="14" r="24" fill="none" stroke="#f43f5e" stroke-width="0.4" opacity="0.2" stroke-dasharray="2,3"/>
+</svg>`,
+
+sin_lord:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+<defs><radialGradient id="slg" cx="50%" cy="30%" r="60%">
+<stop offset="0%" stop-color="#fbbf24" stop-opacity="0.35"/>
+<stop offset="100%" stop-color="#1c0a00" stop-opacity="0"/>
+</radialGradient></defs>
+<ellipse cx="40" cy="50" rx="40" ry="50" fill="url(#slg)"/>
+<path d="M8,100 L12,56 Q14,38 27,27 L37,19 L40,15 L43,19 L53,27 Q66,38 68,56 L72,100Z" fill="#2e1600"/>
+<path d="M12,62 Q40,56 68,62 Q66,74 40,72 Q14,74 12,62Z" fill="#402000" stroke="#fbbf24" stroke-width="0.5" opacity="0.5"/>
+<path d="M10,80 Q40,74 70,80 Q68,92 40,90 Q12,92 10,80Z" fill="#402000" stroke="#fbbf24" stroke-width="0.4" opacity="0.4"/>
+<circle cx="40" cy="46" r="11" fill="none" stroke="#fbbf24" stroke-width="0.7" opacity="0.7"/>
+<path d="M40,35 L42,42 L49,42 L43,47 L46,54 L40,49 L34,54 L37,47 L31,42 L38,42Z" fill="#fbbf24" opacity="0.45"/>
+<ellipse cx="40" cy="13" rx="17" ry="15" fill="#2e1600"/>
+<circle cx="40" cy="13" r="19" fill="none" stroke="#fbbf24" stroke-width="0.9" opacity="0.8"/>
+<circle cx="40" cy="13" r="22" fill="none" stroke="#fbbf24" stroke-width="0.4" opacity="0.35" stroke-dasharray="2,4"/>
+<path d="M22,8 L17,0 L24,5" fill="#2e1600" stroke="#fbbf24" stroke-width="0.7"/>
+<path d="M30,4 L28,0 L34,2" fill="#fbbf24" opacity="0.9"/>
+<circle cx="40" cy="2" r="3" fill="#fbbf24"/>
+<circle cx="40" cy="2" r="1.2" fill="#fffde0"/>
+<path d="M50,4 L52,0 L46,2" fill="#fbbf24" opacity="0.9"/>
+<path d="M58,8 L63,0 L56,5" fill="#2e1600" stroke="#fbbf24" stroke-width="0.7"/>
+<ellipse cx="33" cy="11" rx="5" ry="5.5" fill="#0a0500"/>
+<ellipse cx="47" cy="11" rx="5" ry="5.5" fill="#0a0500"/>
+<ellipse cx="33" cy="11" rx="3.5" ry="4" fill="#fbbf24"/>
+<ellipse cx="47" cy="11" rx="3.5" ry="4" fill="#fbbf24"/>
+<ellipse cx="33" cy="11" rx="1.5" ry="1.8" fill="#fffde0"/>
+<ellipse cx="47" cy="11" rx="1.5" ry="1.8" fill="#fffde0"/>
+<path d="M32,20 Q40,27 48,20" fill="none" stroke="#fbbf24" stroke-width="0.9" opacity="0.55"/>
+<path d="M23,27 Q4,22 0,8 Q8,18 18,24" fill="#2e1600" stroke="#fbbf24" stroke-width="0.4" opacity="0.4"/>
+<path d="M57,27 Q76,22 80,8 Q72,18 62,24" fill="#2e1600" stroke="#fbbf24" stroke-width="0.4" opacity="0.4"/>
+<circle cx="18" cy="52" r="3" fill="#fbbf24" opacity="0.35"/>
+<circle cx="62" cy="52" r="3" fill="#fbbf24" opacity="0.35"/>
+<path d="M23,27 Q20,40 18,52" fill="none" stroke="#fbbf24" stroke-width="0.45" opacity="0.35"/>
+<path d="M57,27 Q60,40 62,52" fill="none" stroke="#fbbf24" stroke-width="0.45" opacity="0.35"/>
+</svg>`,
+
+void_primordial:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="vpg" cx="50%" cy="42%" r="55%">
+<stop offset="0%" stop-color="#e0e0ff" stop-opacity="0.15"/>
+<stop offset="60%" stop-color="#4040c0" stop-opacity="0.07"/>
+<stop offset="100%" stop-color="#09000f" stop-opacity="0"/>
+</radialGradient>
+<filter id="vpf"><feGaussianBlur stdDeviation="0.8" result="b"/>
+<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="40" cy="50" rx="40" ry="50" fill="url(#vpg)"/>
+<polygon points="40,3 75,23 75,63 40,83 5,63 5,23" fill="none" stroke="#e0e0ff" stroke-width="0.55" opacity="0.4"/>
+<polygon points="40,10 68,27 68,60 40,77 12,60 12,27" fill="none" stroke="#b0b0ff" stroke-width="0.4" opacity="0.3" transform="rotate(12,40,43)"/>
+<polygon points="40,17 62,31 62,57 40,71 18,57 18,31" fill="none" stroke="#8888e0" stroke-width="0.3" opacity="0.25" transform="rotate(-8,40,43)"/>
+<polygon points="40,21 58,34 58,56 40,69 22,56 22,34" fill="#0a001e" stroke="#e0e0ff" stroke-width="0.75" opacity="0.95"/>
+<polygon points="40,27 54,37 54,53 40,63 26,53 26,37" fill="#140040" stroke="#c0c0ff" stroke-width="0.5" opacity="0.8"/>
+<polygon points="40,33 50,40 50,50 40,57 30,50 30,40" fill="#1e0060" stroke="#e0e0ff" stroke-width="0.9" opacity="0.9" filter="url(#vpf)"/>
+<circle cx="40" cy="45" r="7" fill="#02000a"/>
+<circle cx="40" cy="45" r="4.5" fill="#e0e0ff" opacity="0.85"/>
+<circle cx="40" cy="45" r="2" fill="white" opacity="0.95"/>
+<line x1="40" y1="69" x2="40" y2="97" stroke="#e0e0ff" stroke-width="0.7" opacity="0.35"/>
+<line x1="22" y1="56" x2="4" y2="82" stroke="#a0a0ff" stroke-width="0.55" opacity="0.3"/>
+<line x1="58" y1="56" x2="76" y2="82" stroke="#a0a0ff" stroke-width="0.55" opacity="0.3"/>
+<line x1="22" y1="34" x2="4" y2="10" stroke="#8080e0" stroke-width="0.45" opacity="0.28"/>
+<line x1="58" y1="34" x2="76" y2="10" stroke="#8080e0" stroke-width="0.45" opacity="0.28"/>
+<line x1="40" y1="21" x2="40" y2="3" stroke="#e0e0ff" stroke-width="0.7" opacity="0.35"/>
+<rect x="7" y="30" width="6" height="6" fill="none" stroke="#e0e0ff" stroke-width="0.5" opacity="0.35" transform="rotate(18,10,33)"/>
+<rect x="67" y="30" width="6" height="6" fill="none" stroke="#e0e0ff" stroke-width="0.5" opacity="0.35" transform="rotate(-18,70,33)"/>
+<polygon points="10,70 16,65 16,75" fill="none" stroke="#a0a0ff" stroke-width="0.5" opacity="0.35"/>
+<polygon points="70,70 64,65 64,75" fill="none" stroke="#a0a0ff" stroke-width="0.5" opacity="0.35"/>
+<polygon points="35,39 38,36 42,39 38,43" fill="#000" stroke="#e0e0ff" stroke-width="0.4"/>
+<polygon points="45,39 48,36 52,39 48,43" fill="#000" stroke="#e0e0ff" stroke-width="0.4"/>
+<circle cx="38" cy="40" r="1.5" fill="#e0e0ff" opacity="0.9"/>
+<circle cx="48" cy="40" r="1.5" fill="#e0e0ff" opacity="0.9"/>
+<circle cx="40" cy="45" r="11" fill="none" stroke="#8080e0" stroke-width="0.3" opacity="0.5" stroke-dasharray="1,3"/>
+</svg>`
+};
+
+const CARD_BACK=`<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+<rect width="100" height="150" fill="#0d0020" rx="7"/>
+<rect x="4" y="4" width="92" height="142" fill="none" stroke="#c084fc" stroke-width="0.6" rx="5" opacity="0.35"/>
+<rect x="8" y="8" width="84" height="134" fill="none" stroke="#c084fc" stroke-width="0.3" rx="4" opacity="0.18"/>
+<circle cx="50" cy="75" r="32" fill="none" stroke="#c084fc" stroke-width="0.55" opacity="0.45"/>
+<circle cx="50" cy="75" r="24" fill="none" stroke="#c084fc" stroke-width="0.4" opacity="0.35"/>
+<polygon points="50,46 70,62 63,86 37,86 30,62" fill="none" stroke="#c084fc" stroke-width="0.65" opacity="0.5"/>
+<polygon points="50,54 66,66 60,82 40,82 34,66" fill="none" stroke="#c084fc" stroke-width="0.3" opacity="0.28"/>
+<circle cx="50" cy="75" r="6" fill="none" stroke="#c084fc" stroke-width="0.9" opacity="0.6"/>
+<circle cx="50" cy="75" r="2" fill="#c084fc" opacity="0.35"/>
+<text x="13" y="23" font-size="11" fill="#c084fc" opacity="0.35" font-family="serif">ᚠ</text>
+<text x="77" y="23" font-size="11" fill="#c084fc" opacity="0.35" font-family="serif">ᚢ</text>
+<text x="13" y="143" font-size="11" fill="#c084fc" opacity="0.35" font-family="serif">ᚦ</text>
+<text x="77" y="143" font-size="11" fill="#c084fc" opacity="0.35" font-family="serif">ᚨ</text>
+<text x="50" y="137" text-anchor="middle" font-size="7" fill="#c084fc" opacity="0.4" letter-spacing="3" font-family="serif">INFERNUM</text>
+</svg>`;
+
+function svg(tierId){return SVGS[tierId]||SVGS.shade}
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let S={
+  shards:1200,epicPity:0,legPity:0,
+  collection:{},bannerExpiry:null,
+};
+let lastCount=1;
+
+function save(){localStorage.setItem('inf_s',JSON.stringify(S))}
+function load(){
+  try{
+    const d=localStorage.getItem('inf_s');
+    if(d) S=Object.assign(S,JSON.parse(d));
+  }catch(e){}
+  if(!S.bannerExpiry){
+    S.bannerExpiry=Date.now()+((2*24+14)*3600+33*60)*1000;
+    save();
+  }
 }
-setInterval(spawnEmber, 500);
-for(let i=0;i<10;i++) spawnEmber();
+
+/* ═══════════════════════════════════════════
+   GACHA LOGIC
+═══════════════════════════════════════════ */
+function rollTier(){
+  const r=Math.random();let c=0;
+  for(let i=0;i<PROBS.length;i++){c+=PROBS[i];if(r<=c)return i}
+  return 0;
+}
+function pullOne(){
+  S.epicPity++;S.legPity++;
+  let ti=rollTier();
+  if(S.epicPity>=40&&ti<3) ti=3;
+  if(S.legPity>=70&&ti<4) ti=4;
+  if(ti>=3) S.epicPity=0;
+  if(ti>=4) S.legPity=0;
+  const tier=TIERS[ti];
+  const pool=POOL[tier.id];
+  const name=pool[Math.floor(Math.random()*pool.length)];
+  S.collection[name]=(S.collection[name]||0)+1;
+  return{tier,name,ti};
+}
+function doPull(count){
+  const cost=count===1?100:900;
+  if(S.shards<cost) return;
+  lastCount=count;
+  S.shards-=cost;
+  const results=[];
+  for(let i=0;i<count;i++) results.push(pullOne());
+  save();updateUI();
+  showOverlay(results);
+}
+
+/* ═══════════════════════════════════════════
+   PULL OVERLAY
+═══════════════════════════════════════════ */
+function showOverlay(results){
+  const ov=document.getElementById('pull-overlay');
+  const area=document.getElementById('pull-container');
+  const pp=document.getElementById('post-pull');
+  const isSingle=results.length===1;
+  ov.style.display='flex';
+  pp.style.display='none';
+  // Build HTML
+  let html=`<div class="pull-container ${isSingle?'pull-single':'pull-multi'}">`;
+  if(isSingle){
+    html+=buildCard(results[0],0);
+  } else {
+    html+='<div class="pull-row">';
+    for(let i=0;i<5;i++) html+=buildCard(results[i],i);
+    html+='</div><div class="pull-row">';
+    for(let i=5;i<10;i++) html+=buildCard(results[i],i);
+    html+='</div>';
+  }
+  html+='</div>';
+  area.innerHTML=html;
+  // Schedule flips
+  results.forEach((r,i)=>{
+    const delay=isSingle?380:380+i*150;
+    setTimeout(()=>flip(i,r),delay);
+  });
+  // Show actions
+  const total=isSingle?1300:380+(results.length-1)*150+1100;
+  setTimeout(()=>{pp.style.display='flex'},total);
+}
+
+function buildCard(r,i){
+  const t=r.tier;
+  return`<div class="fc-wrap"><div class="fc" id="fc${i}">
+<div class="fc-face fc-back">${CARD_BACK}</div>
+<div class="fc-face fc-front" style="background:linear-gradient(158deg,${t.bg},#06000e);border:1px solid ${t.color}35;">
+<div class="fc-art">${svg(t.id)}</div>
+<div class="fc-info">
+<div class="fc-tier-name" style="color:${t.color};text-shadow:0 0 8px ${t.color}60">${t.label.toUpperCase()}</div>
+<div class="fc-name">${r.name}</div>
+</div>
+</div></div></div>`;
+}
+
+function flip(i,r){
+  const card=document.getElementById('fc'+i);
+  if(!card) return;
+  card.classList.add('flipped');
+  if(r.ti>=4){
+    setTimeout(()=>flash(r.tier.color),420);
+  }
+}
+
+function flash(col){
+  const el=document.getElementById('tier-flash');
+  el.style.background=col;
+  el.style.transition='opacity 0.12s ease';
+  el.style.opacity='0.32';
+  setTimeout(()=>{
+    el.style.transition='opacity 1.8s ease';
+    el.style.opacity='0';
+  },180);
+}
+
+function closeOverlay(){
+  document.getElementById('pull-overlay').style.display='none';
+}
+
+/* ═══════════════════════════════════════════
+   UI
+═══════════════════════════════════════════ */
+function updateUI(){
+  document.getElementById('shard-count').textContent=S.shards.toLocaleString();
+  document.getElementById('btn-pull-1').disabled=S.shards<100;
+  document.getElementById('btn-pull-10').disabled=S.shards<900;
+  document.getElementById('epic-count').textContent=`${S.epicPity} / 40`;
+  document.getElementById('leg-count').textContent=`${S.legPity} / 70`;
+  document.getElementById('epic-fill').style.width=`${Math.min(100,(S.epicPity/40)*100)}%`;
+  document.getElementById('leg-fill').style.width=`${Math.min(100,(S.legPity/70)*100)}%`;
+}
+
+function addDemoShards(){
+  S.shards+=500;save();updateUI();
+  const d=document.getElementById('shard-display');
+  d.classList.add('shard-pulse');
+  setTimeout(()=>d.classList.remove('shard-pulse'),400);
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.getElementById('summon-screen').classList.toggle('active',tab==='summon');
+  document.getElementById('codex-screen').classList.toggle('active',tab==='codex');
+  if(tab==='codex') renderCodex();
+}
+
+/* ═══════════════════════════════════════════
+   CODEX
+═══════════════════════════════════════════ */
+function renderCodex(){
+  const grid=document.getElementById('codex-grid');
+  const owned=ALL_DEMONS.filter(d=>(S.collection[d.name]||0)>0).length;
+  document.getElementById('codex-count').textContent=`${owned} / ${ALL_DEMONS.length} demons bound`;
+  let html='';
+  for(const d of ALL_DEMONS){
+    const cnt=S.collection[d.name]||0;
+    const t=d.tier;
+    if(cnt>0){
+      html+=`<div class="codex-card" style="background:linear-gradient(158deg,${t.bg},#06000e);border-color:${t.color}35;">
+        ${cnt>1?`<div class="dupe-badge">×${cnt}</div>`:''}
+        <div class="cc-art">${svg(t.id)}</div>
+        <div>
+          <div class="cc-name">${d.name}</div>
+          <div class="cc-tier" style="color:${t.color}">${t.label.toUpperCase()}</div>
+        </div>
+      </div>`;
+    } else {
+      html+=`<div class="codex-card cc-unknown">
+        <div class="cc-art">${svg(t.id)}</div>
+        <div>
+          <div class="cc-name">???</div>
+          <div class="cc-tier" style="color:#2a1a4a">???</div>
+        </div>
+      </div>`;
+    }
+  }
+  grid.innerHTML=html;
+}
+
+/* ═══════════════════════════════════════════
+   COUNTDOWN
+═══════════════════════════════════════════ */
+function tick(){
+  const rem=Math.max(0,S.bannerExpiry-Date.now());
+  if(rem<=0){document.getElementById('countdown').textContent='BANNER ENDED';return}
+  const d=Math.floor(rem/86400000);
+  const h=Math.floor((rem%86400000)/3600000);
+  const m=Math.floor((rem%3600000)/60000);
+  const s=Math.floor((rem%60000)/1000);
+  document.getElementById('countdown').textContent=
+    (d>0?d+'d ':'')+h+'h '+m+'m '+s+'s';
+}
+
+/* ═══════════════════════════════════════════
+   WIRE-UP
+═══════════════════════════════════════════ */
+document.getElementById('btn-again').onclick=()=>{
+  closeOverlay();
+  const cost=lastCount===1?100:900;
+  if(S.shards>=cost) setTimeout(()=>doPull(lastCount),80);
+};
+document.getElementById('btn-codex-nav').onclick=()=>{
+  closeOverlay();switchTab('codex');
+};
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+(function init(){
+  load();
+  document.getElementById('featured-art').innerHTML=SVGS.void_primordial;
+  updateUI();
+  renderCodex();
+  tick();setInterval(tick,1000);
+})();
 </script>
 </body>
 </html>
