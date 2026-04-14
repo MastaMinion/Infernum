@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFERNUM — Some Doors Were Never Meant To Be Opened</title>
+<meta name="description" content="A dark demon summoning gacha game. Seven tiers of infernal power. Infinite multiverses to conquer. Coming soon.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: #06000e;
+  color: #e2d9f3;
+  font-family: 'EB Garamond', Georgia, serif;
+  overflow-x: hidden;
+}
+
+/* FULL SCREEN VIDEO BACKGROUND */
+.video-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.video-bg video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  opacity: 0.55;
+}
+
+/* LAYERED OVERLAYS */
+.overlay-vignette {
+  position: fixed; inset: 0; z-index: 1;
+  background: radial-gradient(ellipse at center top, transparent 20%, #06000e 80%);
+}
+.overlay-bottom {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 60%; z-index: 1;
+  background: linear-gradient(to top, #06000e 40%, transparent 100%);
+}
+.overlay-grid {
+  position: fixed; inset: 0; z-index: 1;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(124,58,237,0.025) 60px),
+    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(124,58,237,0.025) 60px);
+  pointer-events: none;
+}
+
+/* CORNER BRACKETS */
+.corner { position: fixed; width: 52px; height: 52px; z-index: 10; }
+.corner.tl { top: 22px; left: 22px; border-top: 0.5px solid rgba(192,132,252,0.4); border-left: 0.5px solid rgba(192,132,252,0.4); }
+.corner.tr { top: 22px; right: 22px; border-top: 0.5px solid rgba(192,132,252,0.4); border-right: 0.5px solid rgba(192,132,252,0.4); }
+.corner.bl { bottom: 22px; left: 22px; border-bottom: 0.5px solid rgba(192,132,252,0.4); border-left: 0.5px solid rgba(192,132,252,0.4); }
+.corner.br { bottom: 22px; right: 22px; border-bottom: 0.5px solid rgba(192,132,252,0.4); border-right: 0.5px solid rgba(192,132,252,0.4); }
+
+/* PAGE CONTENT */
+.page {
+  position: relative; z-index: 5;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end;
+  padding: 0 24px 52px;
+}
+
+/* TOP BAR */
+.top-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+  padding: 22px 32px;
+  display: flex; align-items: center; justify-content: center;
+}
+.top-logo {
+  font-family: 'Cinzel', serif;
+  font-size: 11px; letter-spacing: 8px;
+  color: rgba(192,132,252,0.5);
+  text-transform: uppercase;
+}
+
+/* MAIN CONTENT — sits at bottom over the demon */
+.main-content {
+  width: 100%; max-width: 640px;
+  text-align: center;
+}
+
+.eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: 6px;
+  color: #be123c; text-transform: uppercase;
+  margin-bottom: 12px;
+  animation: fadeUp 1.2s ease 0.3s both;
+}
+
+.title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(44px, 10vw, 86px);
+  font-weight: 700;
+  color: #e2d9f3;
+  letter-spacing: clamp(8px, 2vw, 20px);
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 14px;
+  animation: fadeUp 1.2s ease 0.5s both;
+}
+
+.title-line {
+  width: 240px;
+  height: 0.5px; background: rgba(192,132,252,0.35);
+  margin: 0 auto 14px;
+  animation: expandLine 1.4s ease 0.7s both;
+}
+@keyframes expandLine { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+
+.tagline {
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: clamp(14px, 2.5vw, 18px);
+  color: #4b2d6b;
+  letter-spacing: 3px;
+  margin-bottom: 36px;
+  animation: fadeUp 1.2s ease 0.8s both;
+}
+
+/* TIER STRIP */
+.tier-strip {
+  display: flex; gap: 10px; align-items: center;
+  justify-content: center;
+  margin-bottom: 36px;
+  animation: fadeUp 1.2s ease 0.9s both;
+}
+.tier-gem {
+  width: 10px; height: 10px; border-radius: 50%;
+  opacity: 0.65; transition: opacity 0.2s, transform 0.2s;
+  cursor: default;
+}
+.tier-gem:hover { opacity: 1; transform: scale(1.5); }
+.tier-divider { width: 18px; height: 0.5px; background: rgba(124,58,237,0.2); }
+
+/* COUNTDOWN */
+.countdown-wrap {
+  display: flex; gap: 20px; align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+  animation: fadeUp 1.2s ease 1s both;
+}
+.cd-unit { text-align: center; }
+.cd-num {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(22px, 5vw, 32px);
+  color: #e2d9f3; line-height: 1;
+  min-width: 48px; display: block;
+}
+.cd-label {
+  font-size: 8px; letter-spacing: 3px;
+  color: #4b2d6b; text-transform: uppercase;
+  font-family: 'Cinzel', serif;
+  margin-top: 4px; display: block;
+}
+.cd-sep {
+  font-family: 'Cinzel', serif;
+  font-size: 26px; color: #2d1a4b;
+  align-self: flex-start; padding-top: 2px;
+}
+
+/* EMAIL */
+.signup-wrap {
+  max-width: 400px; width: 100%;
+  margin: 0 auto 12px;
+  animation: fadeUp 1.2s ease 1.1s both;
+}
+.signup-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 3px;
+  color: #2d1a4b; text-align: center;
+  margin-bottom: 10px; text-transform: uppercase;
+}
+.signup-row { display: flex; gap: 8px; }
+.signup-input {
+  flex: 1;
+  background: rgba(6,0,14,0.8);
+  border: 0.5px solid rgba(124,58,237,0.4);
+  border-radius: 3px;
+  padding: 11px 14px;
+  font-family: 'EB Garamond', serif;
+  font-size: 15px; color: #e2d9f3;
+  outline: none; transition: border-color 0.2s;
+}
+.signup-input::placeholder { color: #2d1a4b; }
+.signup-input:focus { border-color: #c084fc; }
+.signup-btn {
+  background: #7c3aed; border: none; border-radius: 3px;
+  padding: 11px 20px;
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: 2px; color: #fde68a;
+  cursor: pointer; white-space: nowrap;
+  transition: background 0.2s, transform 0.1s;
+}
+.signup-btn:hover { background: #6d28d9; }
+.signup-btn:active { transform: scale(0.97); }
+.signup-thanks {
+  display: none; text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: 3px;
+  color: #c084fc; padding: 13px;
+}
+
+/* FEATURE PILLS */
+.feat-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  justify-content: center; margin-bottom: 28px;
+  animation: fadeUp 1.2s ease 1s both;
+}
+.feat-pill {
+  background: rgba(13,0,24,0.7);
+  border: 0.5px solid rgba(124,58,237,0.2);
+  border-radius: 20px; padding: 5px 14px;
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 2px;
+  color: #4b2d6b;
+}
+.feat-pill span { color: #c084fc; margin-right: 5px; }
+
+/* EMBERS */
+.ember {
+  position: fixed; border-radius: 50%;
+  pointer-events: none;
+  animation: riseEmber linear infinite; z-index: 3;
+}
+@keyframes riseEmber {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  8%   { opacity: 0.9; }
+  92%  { opacity: 0.2; }
+  100% { transform: translateY(-100vh) translateX(var(--drift)); opacity: 0; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 520px) {
+  .signup-row { flex-direction: column; }
+  .feat-row { gap: 6px; }
+  .page { padding-bottom: 36px; }
+}
+</style>
+</head>
+<body>
+
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<!-- FULL SCREEN VIDEO -->
+<div class="video-bg">
+  <video autoplay loop muted playsinline>
+    <source src="infernum_logo_clean.mp4" type="video/mp4">
+  </video>
+</div>
+<div class="overlay-vignette"></div>
+<div class="overlay-bottom"></div>
+<div class="overlay-grid"></div>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="top-logo">Infernal Rift &nbsp;·&nbsp; Season Zero</div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="page">
+  <div class="main-content">
+
+    <div class="eyebrow">The first rift opens soon</div>
+    <h1 class="title">Infernum</h1>
+    <div class="title-line"></div>
+    <p class="tagline">"Some doors were never meant to be opened."</p>
+
+    <div class="tier-strip">
+      <div class="tier-gem" style="background:#888" title="Shade"></div>
+      <div class="tier-divider"></div>
+      <div class="tier-gem" style="background:#14b8a6" title="Imp"></div>
+      <div class="tier-divider"></div>
+      <div class="tier-gem" style="background:#60a5fa" title="Fiend"></div>
+      <div class="tier-divider"></div>
+      <div class="tier-gem" style="background:#c084fc" title="Greater Demon"></div>
+      <div class="tier-divider"></div>
+      <div class="tier-gem" style="background:#f43f5e" title="Archdemon"></div>
+      <div class="tier-divider"></div>
+      <div class="tier-gem" style="background:#fbbf24" title="Sin Lord"></div>
+      <div class="tier-divider"></div>
+      <div class="tier-gem" style="background:#e0e0ff" title="Void Primordial"></div>
+    </div>
+
+    <div class="feat-row">
+      <div class="feat-pill"><span>24</span>Demons</div>
+      <div class="feat-pill"><span>7</span>Tiers</div>
+      <div class="feat-pill"><span>8</span>Realms</div>
+      <div class="feat-pill"><span>7</span>Sin Lords</div>
+      <div class="feat-pill"><span>5</span>Ascension Forms</div>
+    </div>
+
+    <div class="countdown-wrap" id="countdown">
+      <div class="cd-unit"><span class="cd-num" id="cd-d">--</span><span class="cd-label">Days</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="cd-h">--</span><span class="cd-label">Hours</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="cd-m">--</span><span class="cd-label">Mins</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="cd-s">--</span><span class="cd-label">Secs</span></div>
+    </div>
+
+    <div class="signup-wrap">
+      <div class="signup-label">Be notified when the first rift opens</div>
+      <div class="signup-row" id="signup-row">
+        <input class="signup-input" type="email" id="email-input" placeholder="your@email.com" autocomplete="email"/>
+        <button class="signup-btn" onclick="handleSignup()">Notify Me</button>
+      </div>
+      <div class="signup-thanks" id="signup-thanks">
+        Your name is written. The demons will find you.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const LAUNCH = new Date('2025-09-01T00:00:00');
+function updateCountdown() {
+  const diff = LAUNCH - new Date();
+  if (diff <= 0) { document.getElementById('countdown').style.display='none'; return; }
+  document.getElementById('cd-d').textContent = String(Math.floor(diff/86400000)).padStart(2,'0');
+  document.getElementById('cd-h').textContent = String(Math.floor((diff%86400000)/3600000)).padStart(2,'0');
+  document.getElementById('cd-m').textContent = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+  document.getElementById('cd-s').textContent = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
+}
+updateCountdown(); setInterval(updateCountdown, 1000);
+
+function handleSignup() {
+  const email = document.getElementById('email-input').value;
+  if (!email || !email.includes('@')) { document.getElementById('email-input').style.borderColor='#be123c'; return; }
+  const saved = JSON.parse(localStorage.getItem('infernum_signups')||'[]');
+  saved.push({email, date: new Date().toISOString()});
+  localStorage.setItem('infernum_signups', JSON.stringify(saved));
+  document.getElementById('signup-row').style.display='none';
+  document.getElementById('signup-thanks').style.display='block';
+}
+document.getElementById('email-input').addEventListener('keydown', e => {
+  if (e.key==='Enter') handleSignup();
+  document.getElementById('email-input').style.borderColor='';
+});
+
+function spawnEmber() {
+  const e = document.createElement('div');
+  e.className = 'ember';
+  const sz = Math.random()*2+1;
+  const cols = ['#f43f5e','#c084fc','#fbbf24','#be123c'];
+  e.style.cssText = `left:${Math.random()*100}vw;bottom:${Math.random()*15}px;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};opacity:0;--drift:${(Math.random()-.5)*100}px;animation-duration:${Math.random()*9+7}s;animation-delay:${Math.random()*3}s;`;
+  document.body.appendChild(e);
+  setTimeout(()=>e.remove(), 13000);
+}
+setInterval(spawnEmber, 500);
+for(let i=0;i<10;i++) spawnEmber();
+</script>
+</body>
+</html>
