@@ -6,7 +6,294 @@
 <title>INFERNUM — Abyssal Summons</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap" rel="stylesheet">
-<script src="demon-card.js"></script>
+<script>
+/**
+ * DemonCard — reusable card component for Infernum gacha game.
+ *
+ * Usage:
+ *   const card = new DemonCard(demon, { width: 180 });
+ *   document.body.appendChild(card.el);
+ *
+ * Public API:
+ *   card.el              — the root DOM element
+ *   card.demon           — the demon object (read-only reference)
+ *   card.destroy()       — cleans up video + listeners (call before removing from DOM)
+ */
+(function (global) {
+  'use strict';
+
+  // Tier index → border filename slug (1-indexed array, position 0 unused)
+  var TIER_SLUGS = [null, 'shade', 'imp', 'fiend', 'greater', 'archdemon', 'sinlord', 'void'];
+
+  // Card art aspect ratio: height = width * (504/360)
+  var ASPECT = 504 / 360;
+
+  // Text scaling anchors: at 180px → name 9, tier 7; at 360px → name 13, tier 9.
+  // Linear: name = 9 + (w - 180) * (13 - 9) / (360 - 180) = 9 + (w - 180) / 45
+  //         tier = 7 + (w - 180) * (9 - 7)  / (360 - 180) = 7 + (w - 180) / 90
+  function scaleName(w) { return 9 + (w - 180) / 45; }
+  function scaleTier(w) { return 7 + (w - 180) / 90; }
+
+  function DemonCard(demon, options) {
+    if (!(this instanceof DemonCard)) return new DemonCard(demon, options);
+    if (!demon) throw new Error('DemonCard: demon is required');
+
+    options = options || {};
+
+    this.demon = demon;
+    this.opts = {
+      width:     options.width     != null ? options.width     : 180,
+      showName:  options.showName  !== false,
+      showTier:  options.showTier  !== false,
+      showCount: options.showCount !== false,
+      animate:   options.animate   !== false,
+      clickable: options.clickable === true,
+      onClick:   typeof options.onClick === 'function' ? options.onClick : null
+    };
+
+    this._onClick = null; // bound handler, stored for cleanup
+    this._onVideoError = null;
+    this.el = this._build();
+  }
+
+  DemonCard.prototype._build = function () {
+    var d = this.demon;
+    var o = this.opts;
+    var w = o.width;
+    var h = Math.round(w * ASPECT);
+    var color = d.color || '#ffffff';
+    var slug = TIER_SLUGS[d.tier] || 'shade';
+
+    // --- Root ---
+    var root = document.createElement('div');
+    root.className = 'demon-card';
+    root.setAttribute('data-demon-id', d.id || '');
+    root.setAttribute('data-tier', String(d.tier));
+    applyStyles(root, {
+      width: w + 'px',
+      height: h + 'px',
+      position: 'relative',
+      borderRadius: '6px',
+      overflow: 'hidden',
+      cursor: o.clickable ? 'pointer' : 'default',
+      // hint browser that this is a composited layer — helps video perf on grids
+      transform: 'translateZ(0)'
+    });
+
+    // --- Art layer: video ---
+    var video = document.createElement('video');
+    video.src = 'assets/demons/' + d.id + '_card.mp4';
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.setAttribute('playsinline', '');       // iOS Safari
+    video.setAttribute('webkit-playsinline', ''); // older iOS
+    video.setAttribute('disablepictureinpicture', '');
+    if (o.animate) {
+      video.autoplay = true;
+    }
+    applyStyles(video, {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+      display: 'block'
+    });
+
+    // Kick off playback (autoplay attribute isn't always enough on mobile)
+    if (o.animate) {
+      var playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(function () { /* swallow — autoplay blocked is OK */ });
+      }
+    } else {
+      // If not animating, pause at first frame
+      video.autoplay = false;
+      video.pause();
+    }
+
+    // Fallback on video error: replace with colored rectangle + initial
+    var self = this;
+    this._onVideoError = function () {
+      if (video.parentNode) {
+        video.parentNode.replaceChild(self._buildFallback(w, h, color, d.name), video);
+      }
+    };
+    video.addEventListener('error', this._onVideoError);
+    this._video = video;
+    root.appendChild(video);
+
+    // --- Border overlay ---
+    var border = document.createElement('img');
+    border.src = 'assets/borders/infernum_border_' + slug + '.svg';
+    border.alt = '';
+    applyStyles(border, {
+      position: 'absolute',
+      top: '0', left: '0', right: '0', bottom: '0',
+      width: '100%',
+      height: '100%',
+      pointerEvents: 'none'
+    });
+    // If border fails to load, just hide it silently — don't break the card
+    border.addEventListener('error', function () { border.style.display = 'none'; });
+    root.appendChild(border);
+
+    // --- Count badge (top left) ---
+    if (o.showCount && d.count && d.count > 1) {
+      var badge = document.createElement('div');
+      badge.className = 'card-count-badge';
+      badge.textContent = '×' + d.count;
+      applyStyles(badge, {
+        position: 'absolute',
+        top: '4px',
+        left: '4px',
+        background: 'rgba(6,0,14,.85)',
+        border: '0.5px solid ' + color,
+        borderRadius: '4px',
+        padding: '2px 5px',
+        fontFamily: 'sans-serif',
+        fontSize: '8px',
+        color: color,
+        letterSpacing: '1px',
+        lineHeight: '1',
+        pointerEvents: 'none'
+      });
+      root.appendChild(badge);
+    }
+
+    // --- Bottom info bar ---
+    if (o.showName || o.showTier) {
+      var bar = document.createElement('div');
+      applyStyles(bar, {
+        position: 'absolute',
+        bottom: '0',
+        left: '0',
+        right: '0',
+        background: 'linear-gradient(to top, rgba(6,0,14,.9) 0%, transparent 100%)',
+        padding: '12px 6px 5px',
+        textAlign: 'center',
+        pointerEvents: 'none'
+      });
+
+      if (o.showName && d.name) {
+        var nameEl = document.createElement('div');
+        nameEl.textContent = d.name;
+        applyStyles(nameEl, {
+          fontFamily: "'Cinzel', Georgia, serif",
+          fontSize: scaleName(w).toFixed(2) + 'px',
+          color: color,
+          letterSpacing: '1px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
+        });
+        bar.appendChild(nameEl);
+      }
+
+      if (o.showTier && d.tierName) {
+        var tierEl = document.createElement('div');
+        tierEl.textContent = d.tierName;
+        applyStyles(tierEl, {
+          fontFamily: 'sans-serif',
+          fontSize: scaleTier(w).toFixed(2) + 'px',
+          color: color,
+          opacity: '0.7',
+          letterSpacing: '2px',
+          textTransform: 'uppercase'
+        });
+        bar.appendChild(tierEl);
+      }
+
+      root.appendChild(bar);
+    }
+
+    // --- Click handling ---
+    if (o.clickable && o.onClick) {
+      this._onClick = function (e) { o.onClick(self.demon, e); };
+      root.addEventListener('click', this._onClick);
+    }
+
+    return root;
+  };
+
+  // Build the fallback placeholder when the video fails to load.
+  DemonCard.prototype._buildFallback = function (w, h, color, name) {
+    var wrap = document.createElement('div');
+    applyStyles(wrap, {
+      width: '100%',
+      height: '100%',
+      position: 'relative',
+      background: '#0a0410', // near-black so the 15% color tint reads
+      display: 'block'
+    });
+
+    var tint = document.createElement('div');
+    applyStyles(tint, {
+      position: 'absolute',
+      top: '0', left: '0', right: '0', bottom: '0',
+      background: color,
+      opacity: '0.15'
+    });
+    wrap.appendChild(tint);
+
+    var initial = document.createElement('div');
+    initial.textContent = (name && name.charAt(0).toUpperCase()) || '?';
+    applyStyles(initial, {
+      position: 'absolute',
+      top: '0', left: '0', right: '0', bottom: '0',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: "'Cinzel', Georgia, serif",
+      // scale initial to card size — roughly 40% of width looks right
+      fontSize: Math.round(w * 0.4) + 'px',
+      color: color,
+      opacity: '0.6',
+      lineHeight: '1',
+      userSelect: 'none'
+    });
+    wrap.appendChild(initial);
+
+    return wrap;
+  };
+
+  // Remove listeners and release the video element. Call before detaching from DOM.
+  DemonCard.prototype.destroy = function () {
+    if (this._onClick && this.el) {
+      this.el.removeEventListener('click', this._onClick);
+      this._onClick = null;
+    }
+    if (this._video) {
+      if (this._onVideoError) {
+        this._video.removeEventListener('error', this._onVideoError);
+        this._onVideoError = null;
+      }
+      try {
+        this._video.pause();
+        this._video.removeAttribute('src');
+        this._video.load(); // forces browser to release the file handle
+      } catch (e) { /* ignore */ }
+      this._video = null;
+    }
+    if (this.el && this.el.parentNode) {
+      this.el.parentNode.removeChild(this.el);
+    }
+  };
+
+  // --- tiny helper: apply a style object to an element ---
+  function applyStyles(el, styles) {
+    for (var k in styles) {
+      if (Object.prototype.hasOwnProperty.call(styles, k)) {
+        el.style[k] = styles[k];
+      }
+    }
+  }
+
+  // --- export ---
+  global.DemonCard = DemonCard;
+
+})(typeof window !== 'undefined' ? window : this);
+</script>
+
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -815,7 +1102,7 @@ function buildCardEl(r,i,isSingle,videoPool){
   // Front face — video + border + info
   const front=document.createElement('div');
   front.className='fc-face fc-front';
-  front.style.cssText='transform:rotateY(180deg);padding:0;display:block;position:relative;background:'+t.bg+';';
+  front.style.cssText='transform:rotateY(180deg);padding:0;background:'+t.bg+';';
 
   // Video layer
   const video=document.createElement('video');
