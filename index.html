@@ -122,26 +122,28 @@
     this._video = video;
     root.appendChild(video);
 
-    // --- Border overlay ---
-    var border = document.createElement('img');
-    border.src = 'assets/borders/infernum_border_' + slug + '.png';
-    border.alt = '';
-    applyStyles(border, {
+    // --- CSS border — tier-colored glow frame, no image needed ---
+    applyStyles(root, {
+      outline: '2px solid ' + color,
+      boxShadow: [
+        'inset 0 0 0 1px ' + color + '90',
+        'inset 0 0 20px ' + color + '18',
+        '0 0 0 1px ' + color + '40',
+        '0 0 18px ' + color + '60',
+        '0 0 40px ' + color + '20',
+      ].join(','),
+    });
+    // Inner accent line
+    var innerRing = document.createElement('div');
+    applyStyles(innerRing, {
       position: 'absolute',
-      top: '0', left: '0', right: '0', bottom: '0',
-      width: '100%',
-      height: '100%',
-      objectFit: 'fill',
-      pointerEvents: 'none'
+      top: '5px', left: '5px', right: '5px', bottom: '5px',
+      border: '1px solid ' + color + '50',
+      borderRadius: '4px',
+      pointerEvents: 'none',
+      zIndex: '2',
     });
-    // If border fails to load, show a colored outline instead
-    border.addEventListener('error', function () {
-      console.warn('[Infernum] Border not found:', border.src);
-      root.style.outline = '2px solid ' + color;
-      root.style.boxShadow = 'inset 0 0 0 1px ' + color + '60, 0 0 14px ' + color + '40';
-      border.style.display = 'none';
-    });
-    root.appendChild(border);
+    root.appendChild(innerRing);
 
     // --- Count badge (top left) ---
     if (o.showCount && d.count && d.count > 1) {
@@ -510,24 +512,67 @@ header{
 /* ── PULL OVERLAY ── */
 #pull-overlay{
   display:none;position:fixed;inset:0;
-  background:rgba(6,0,14,0.97);z-index:200;
-  flex-direction:column;align-items:center;
-  justify-content:center;padding:20px 16px;
-  overflow-y:auto;
+  z-index:200;overflow:hidden;
+  flex-direction:column;align-items:center;justify-content:flex-end;
+  padding-bottom:60px;
 }
 #pull-overlay.active{display:flex}
+/* Summon scene background */
+#pull-overlay::before{
+  content:'';position:absolute;inset:0;
+  background:url('assets/ui/summon_scene.jpg') center 30%/cover no-repeat;
+  z-index:0;
+}
+/* Dark vignette at bottom so cards/buttons are readable */
+#pull-overlay::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(6,0,14,.85) 0%,rgba(6,0,14,.15) 55%,transparent 100%);
+  z-index:1;pointer-events:none;
+}
+/* Circle glow pulse on open */
+#circle-glow{
+  position:absolute;bottom:22%;left:50%;transform:translateX(-50%);
+  width:min(340px,80vw);height:min(340px,80vw);
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(192,132,252,.55) 0%,rgba(124,58,237,.25) 45%,transparent 70%);
+  z-index:2;pointer-events:none;
+  animation:circleBreath 2.4s ease-in-out infinite;
+}
+@keyframes circleBreath{
+  0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}
+  50%{opacity:1;transform:translateX(-50%) scale(1.08)}
+}
+
+/* Card stage — absolutely positioned so cards can fly freely */
+#card-stage{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+}
+.stage-card{
+  position:absolute;
+  pointer-events:none;
+  transform-origin:center bottom;
+  transform:translate(-50%,-50%) scale(0) rotate(0deg);
+  transition:none;
+  will-change:transform,opacity;
+}
+.stage-card.risen{
+  pointer-events:auto;
+}
+
+/* Post pull */
+#post-pull{z-index:4;position:relative}
 .pull-container{
   display:flex;flex-direction:column;align-items:center;
-  gap:14px;width:100%;
+  gap:14px;width:100%;position:relative;z-index:3;
 }
 .pull-row{display:flex;gap:8px;justify-content:center;flex-wrap:nowrap}
+
 /* ── FLIP CARD ── */
 .fc-wrap{perspective:1000px}
 .fc{
   position:relative;transform-style:preserve-3d;
   transition:transform 0.7s cubic-bezier(0.4,0,0.2,1);
-  width:100%;height:100%;
-  border-radius:9px;
+  width:100%;height:100%;border-radius:9px;
 }
 .fc.flipped{transform:rotateY(180deg)}
 .fc-face{
@@ -551,13 +596,11 @@ header{
 .fc-info{text-align:center;width:100%;padding:4px 2px 0}
 .fc-tier-name{
   font-family:'Cinzel',serif;font-size:0.52rem;
-  letter-spacing:0.18em;text-transform:uppercase;
-  margin-bottom:3px;
+  letter-spacing:0.18em;text-transform:uppercase;margin-bottom:3px;
 }
 .fc-name{font-style:italic;font-size:0.58rem;color:#d4c8e8;line-height:1.3}
-/* Single pull */
+/* Card sizes */
 .pull-single .fc-wrap{width:min(210px,62vw);aspect-ratio:2/3}
-/* Multi pull */
 .pull-multi .fc-wrap{
   width:min(108px,calc((100vw - 56px) / 5.2));
   aspect-ratio:2/3;
@@ -716,6 +759,8 @@ header{
 
 <!-- ── PULL OVERLAY ── -->
 <div id="pull-overlay">
+  <div id="circle-glow"></div>
+  <div id="card-stage"></div>
   <div id="pull-container" class="pull-container"></div>
   <div id="post-pull" class="post-pull">
     <button class="ppbtn ppbtn-p" id="btn-again">◆ Summon Again</button>
@@ -1327,107 +1372,151 @@ function renderScrollInfo(){
 }
 
 /* ═══════════════════════════════════════════
-   PULL OVERLAY
+   PULL OVERLAY — RISE FROM CIRCLE
 ═══════════════════════════════════════════ */
 function showOverlay(results){
   const ov=document.getElementById('pull-overlay');
-  const area=document.getElementById('pull-container');
+  const stage=document.getElementById('card-stage');
   const pp=document.getElementById('post-pull');
   const isSingle=results.length===1;
+
   ov.style.display='flex';
   pp.style.display='none';
 
-  // Clean up any previous videos
-  if(area._videos) area._videos.forEach(v=>{try{v.pause();v.removeAttribute('src');v.load();}catch(e){}});
-  area._videos=[];
-  area.innerHTML='';
+  // Clean up old videos
+  if(stage._videos) stage._videos.forEach(v=>{try{v.pause();v.removeAttribute('src');v.load();}catch(e){}});
+  stage._videos=[];
+  stage.innerHTML='';
 
-  const cont=document.createElement('div');
-  cont.className=`pull-container ${isSingle?'pull-single':'pull-multi'}`;
+  // Card dimensions
+  const CW = isSingle ? Math.min(210, window.innerWidth*0.62) : Math.min(108, (window.innerWidth-56)/5.2);
+  const CH = CW * (3/2);
 
-  if(isSingle){
-    cont.appendChild(buildCardEl(results[0],0,true,area._videos));
-  } else {
-    const r1=document.createElement('div');r1.className='pull-row';
-    const r2=document.createElement('div');r2.className='pull-row';
-    for(let i=0;i<5;i++) r1.appendChild(buildCardEl(results[i],i,false,area._videos));
-    for(let i=5;i<10;i++) r2.appendChild(buildCardEl(results[i],i,false,area._videos));
-    cont.appendChild(r1);cont.appendChild(r2);
+  // Origin point — the summoning circle: center-x, ~73% down screen
+  const OX = window.innerWidth / 2;
+  const OY = window.innerHeight * 0.73;
+
+  // Fan destination positions
+  function getDestinations(count){
+    if(count===1){
+      return [{x:OX, y:OY - window.innerHeight*0.32, rot:0}];
+    }
+    // Two rows of 5
+    const positions=[];
+    const rowW = window.innerWidth;
+    for(let row=0;row<2;row++){
+      for(let col=0;col<5;col++){
+        const idx=row*5+col;
+        const xSpacing=(rowW-40)/(5);
+        const x=20+xSpacing*col+xSpacing/2;
+        const y=row===0
+          ? OY - window.innerHeight*0.42 - CH*0.1
+          : OY - window.innerHeight*0.18;
+        // Slight fan rotation based on position
+        const rot=(col-2)*3;
+        positions.push({x,y,rot});
+      }
+    }
+    return positions;
   }
-  area.appendChild(cont);
 
+  const destinations=getDestinations(results.length);
+
+  // Build card elements and animate them rising
   results.forEach((r,i)=>{
-    const delay=isSingle?380:380+i*150;
-    setTimeout(()=>flip(i,r),delay);
+    const wrap=buildCardEl(r,i,isSingle,stage._videos);
+    wrap.style.cssText=`
+      position:absolute;
+      width:${CW}px;height:${CH}px;
+      left:${OX}px;top:${OY}px;
+      transform:translate(-50%,-50%) scale(0) rotate(0deg);
+      opacity:0;
+      transition:none;
+      pointer-events:none;
+      z-index:${10+i};
+    `;
+    stage.appendChild(wrap);
+
+    // Animate after stagger delay
+    const delay=isSingle?300:300+i*120;
+    setTimeout(()=>{
+      const dest=destinations[i];
+      // Rise animation — cubic bezier for dramatic float up
+      wrap.style.transition=`transform 0.8s cubic-bezier(0.22,1,0.36,1), opacity 0.4s ease-out, left 0.8s cubic-bezier(0.22,1,0.36,1), top 0.8s cubic-bezier(0.22,1,0.36,1)`;
+      wrap.style.left=`${dest.x}px`;
+      wrap.style.top=`${dest.y}px`;
+      wrap.style.transform=`translate(-50%,-50%) scale(1) rotate(${dest.rot}deg)`;
+      wrap.style.opacity='1';
+      wrap.classList.add('risen');
+      wrap.style.pointerEvents='auto';
+
+      // Flip after rise completes
+      const flipDelay=isSingle?750:650;
+      setTimeout(()=>flip(i,r),flipDelay);
+    },delay);
   });
-  const total=isSingle?1300:380+(results.length-1)*150+1100;
+
+  // Show post-pull buttons after all animations complete
+  const total=isSingle?300+750+800:300+(results.length-1)*120+650+800;
   setTimeout(()=>{pp.style.display='flex'},total);
 }
 
 function buildCardEl(r,i,isSingle,videoPool){
   const t=r.tier;
   const demonId=DEMON_IDS[r.name]||r.name.toLowerCase().replace(/['\s]/g,'_').replace(/[^a-z0-9_]/g,'');
-  const borderSlug=TIER_BORDER_SLUGS[t.idx]||'shade';
 
+  // Outer wrapper fills whatever size showOverlay sets
   const fcWrap=document.createElement('div');
   fcWrap.className='fc-wrap';
+  fcWrap.style.cssText='width:100%;height:100%;';
 
   const fc=document.createElement('div');
   fc.className='fc';fc.id='fc'+i;
 
-  // Back face — real card back image
+  // Back face
   const back=document.createElement('div');
   back.className='fc-face fc-back';
   const backImg=document.createElement('img');
   backImg.src='assets/ui/card_back.png';
   backImg.alt='';
   backImg.style.cssText='width:100%;height:100%;object-fit:cover;display:block;border-radius:9px;';
-  // Fallback to SVG if image missing
   backImg.addEventListener('error',()=>{back.innerHTML=CARD_BACK;});
   back.appendChild(backImg);
 
-  // Front face — video + border + info
+  // Front face
   const front=document.createElement('div');
   front.className='fc-face fc-front';
-  front.style.cssText='transform:rotateY(180deg);padding:0;background:'+t.bg+';';
+  front.style.cssText=`transform:rotateY(180deg);padding:0;background:${t.bg};`;
 
-  // Video layer
+  // Video
   const video=document.createElement('video');
   video.src='assets/demons/'+demonId+'_card.mp4';
   video.autoplay=true;video.loop=true;video.muted=true;video.playsInline=true;
   video.setAttribute('playsinline','');video.setAttribute('webkit-playsinline','');
   video.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;';
   video.play().catch(()=>{});
-  // Fallback: tinted bg if video missing
-  video.addEventListener('error',()=>{
-    front.style.background=`linear-gradient(158deg,${t.bg},#06000e)`;
-    front.innerHTML=''; // clear, keep info
-    front.appendChild(infoBar);
-  });
   if(videoPool) videoPool.push(video);
 
-  // Border overlay
-  const border=document.createElement('img');
-  border.src='assets/borders/infernum_border_'+borderSlug+'.png';
-  border.alt='';
-  border.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;z-index:2;';
-  border.addEventListener('error',()=>{
-    console.warn('[Infernum] Border not found:',border.src);
-    // CSS fallback border so tier is always visible
+  // Border image overlay
+  const borderSlug=TIER_BORDER_SLUGS[t.idx]||'shade';
+  const borderImg=document.createElement('img');
+  borderImg.src='assets/borders/infernum_border_'+borderSlug+'.png';
+  borderImg.alt='';
+  borderImg.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;z-index:2;';
+  borderImg.addEventListener('error',()=>{
     front.style.outline=`2px solid ${t.color}`;
-    front.style.boxShadow=`inset 0 0 0 1px ${t.color}60, 0 0 14px ${t.color}40`;
-    border.style.display='none';
+    front.style.boxShadow=`inset 0 0 0 1px ${t.color}90,0 0 18px ${t.color}60`;
+    borderImg.style.display='none';
   });
 
   // Info bar
   const infoBar=document.createElement('div');
-  infoBar.style.cssText='position:absolute;bottom:0;left:0;right:0;z-index:3;background:linear-gradient(to top,rgba(6,0,14,.9) 40%,transparent);padding:18px 6px 6px;text-align:center;pointer-events:none;';
-  infoBar.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.18em;color:${t.color};text-shadow:0 0 8px ${t.color}60;margin-bottom:3px;text-transform:uppercase;">${t.label.toUpperCase()}</div><div style="font-style:italic;font-size:0.58rem;color:#d4c8e8;line-height:1.3;">${r.name}</div>`;
+  infoBar.style.cssText='position:absolute;bottom:0;left:0;right:0;z-index:3;background:linear-gradient(to top,rgba(6,0,14,.92) 40%,transparent);padding:18px 6px 6px;text-align:center;pointer-events:none;';
+  infoBar.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.18em;color:${t.color};text-shadow:0 0 8px ${t.color}80;margin-bottom:3px;text-transform:uppercase;">${t.label.toUpperCase()}</div><div style="font-style:italic;font-size:0.58rem;color:#d4c8e8;line-height:1.3;">${r.name}</div>`;
 
   front.appendChild(video);
-  front.appendChild(border);
+  front.appendChild(borderImg);
   front.appendChild(infoBar);
-
   fc.appendChild(back);fc.appendChild(front);
   fcWrap.appendChild(fc);
   return fcWrap;
@@ -1455,13 +1544,13 @@ function flash(col){
 
 function closeOverlay(){
   const ov=document.getElementById('pull-overlay');
-  const area=document.getElementById('pull-container');
+  const stage=document.getElementById('card-stage');
   ov.style.display='none';
-  // Release video resources
-  if(area._videos){
-    area._videos.forEach(v=>{try{v.pause();v.removeAttribute('src');v.load();}catch(e){}});
-    area._videos=[];
+  if(stage._videos){
+    stage._videos.forEach(v=>{try{v.pause();v.removeAttribute('src');v.load();}catch(e){}});
+    stage._videos=[];
   }
+  stage.innerHTML='';
 }
 
 /* ═══════════════════════════════════════════
