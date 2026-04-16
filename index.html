@@ -1094,10 +1094,16 @@ function buildCardEl(r,i,isSingle,videoPool){
   const fc=document.createElement('div');
   fc.className='fc';fc.id='fc'+i;
 
-  // Back face — keep existing SVG card back
+  // Back face — real card back image
   const back=document.createElement('div');
   back.className='fc-face fc-back';
-  back.innerHTML=CARD_BACK;
+  const backImg=document.createElement('img');
+  backImg.src='assets/ui/card_back.png';
+  backImg.alt='';
+  backImg.style.cssText='width:100%;height:100%;object-fit:cover;display:block;border-radius:9px;';
+  // Fallback to SVG if image missing
+  backImg.addEventListener('error',()=>{back.innerHTML=CARD_BACK;});
+  back.appendChild(backImg);
 
   // Front face — video + border + info
   const front=document.createElement('div');
