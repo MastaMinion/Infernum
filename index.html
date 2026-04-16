@@ -602,9 +602,70 @@ header{
   font-family:'Cinzel',serif;color:var(--gold);
   padding:1px 5px;z-index:2;
 }
+/* ── SUMMON SCREEN BG ── */
+#summon-screen{
+  position:relative;
+}
+#summon-screen::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
+  opacity:0.22;pointer-events:none;
+}
+#summon-screen > *{position:relative;z-index:1;}
+
+/* ── SCROLL SELECTOR ── */
+.scroll-selector-wrap{margin:24px 0 0}
+.scroll-selector-label{
+  font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.3em;
+  color:var(--muted);text-align:center;margin-bottom:12px;text-transform:uppercase;
+}
+.scroll-shelf{
+  display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;
+  justify-content:center;flex-wrap:wrap;
+}
+.scroll-shelf::-webkit-scrollbar{height:3px}
+.scroll-shelf::-webkit-scrollbar-track{background:transparent}
+.scroll-shelf::-webkit-scrollbar-thumb{background:rgba(192,132,252,.3);border-radius:2px}
+.scroll-item{
+  flex-shrink:0;width:72px;
+  background:rgba(10,2,25,.8);border:1px solid var(--border);
+  border-radius:8px;padding:9px 6px 7px;
+  text-align:center;cursor:pointer;transition:all .2s;
+  position:relative;
+}
+.scroll-item:hover:not(.locked){border-color:rgba(192,132,252,.4);background:rgba(20,4,50,.8)}
+.scroll-item.active{background:rgba(20,4,50,.9)}
+.scroll-item.locked{opacity:.38;cursor:not-allowed}
+.scroll-icon{font-size:1.4rem;margin-bottom:5px;display:block}
+.scroll-name{font-family:'Cinzel',serif;font-size:0.44rem;letter-spacing:.08em;
+  line-height:1.3;color:var(--text);margin-bottom:4px;}
+.scroll-cap{
+  font-family:'Cinzel',serif;font-size:0.38rem;letter-spacing:.12em;
+  padding:1px 4px;border-radius:3px;display:inline-block;
+}
+.scroll-lock-icon{
+  position:absolute;top:4px;right:4px;
+  font-size:.55rem;opacity:.6;
+}
 /* ── MISC ── */
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .fade-in{animation:fadeIn 0.4s ease both}
+
+/* ── SCROLL INFO BAR ── */
+.scroll-info{
+  max-width:480px;margin:10px auto 0;
+  background:rgba(10,2,25,.7);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;
+  display:flex;align-items:flex-start;gap:12px;
+}
+.si-rates{flex:1}
+.si-name{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.12em;margin-bottom:4px}
+.si-desc{font-size:.65rem;color:var(--muted);font-style:italic;margin-bottom:7px;line-height:1.4}
+.si-rate-row{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.si-rate-bar{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.si-rate-fill{height:100%;border-radius:2px}
+.si-rate-label{font-size:.55rem;color:var(--muted);width:90px;font-family:sans-serif}
+.si-rate-val{font-size:.55rem;width:32px;text-align:right;font-family:sans-serif}
 </style>
 </head>
 <body>
@@ -694,6 +755,13 @@ header{
       </div>
     </div>
 
+    <div class="section-div"><span>CHOOSE SCROLL</span></div>
+
+    <div class="scroll-selector-wrap">
+      <div class="scroll-shelf" id="scroll-shelf"></div>
+      <div class="scroll-info" id="scroll-info"></div>
+    </div>
+
     <div class="section-div"><span>PITY TRACKER</span></div>
 
     <div class="pity-section">
@@ -779,6 +847,115 @@ const DEMON_IDS={
 
 // Maps tier idx → border filename slug
 const TIER_BORDER_SLUGS=['shade','imp','fiend','greater','archdemon','sinlord','void'];
+
+/* ═══════════════════════════════════════════
+   SCROLL DEFINITIONS
+═══════════════════════════════════════════ */
+const SCROLLS=[
+  {
+    id:'whisper',name:'Whisper Scroll',icon:'📜',
+    color:'#888780',capLabel:'UNCOMMON',capColor:'#14b8a6',
+    cost:'Free · Daily login',locked:false,
+    desc:'Given freely. The ink is made from the tears of Shades.',
+    probs:[0.75,0.25,0,0,0,0,0],
+    pity:{epic:0,leg:0},
+    rates:[
+      {label:'Shade',pct:75,color:'#888780'},
+      {label:'Imp',pct:25,color:'#14b8a6'},
+    ]
+  },
+  {
+    id:'twilight',name:'Twilight Scroll',icon:'🌒',
+    color:'#60a5fa',capLabel:'RARE',capColor:'#60a5fa',
+    cost:'300 ◆',locked:false,
+    desc:'Standard issue. Reliable. Boring — until it isn\'t.',
+    probs:[0.45,0.30,0.25,0,0,0,0],
+    pity:{epic:0,leg:0},
+    rates:[
+      {label:'Shade',pct:45,color:'#888780'},
+      {label:'Imp',pct:30,color:'#14b8a6'},
+      {label:'Fiend',pct:25,color:'#60a5fa'},
+    ]
+  },
+  {
+    id:'infernal',name:'Infernal Scroll',icon:'🔥',
+    color:'#c084fc',capLabel:'EPIC',capColor:'#c084fc',
+    cost:'800 ◆',locked:false,
+    desc:'Forged from contracts of Greater Demons who agreed to be summoned.',
+    probs:[0,0.30,0.45,0.25,0,0,0],
+    pity:{epic:40,leg:0},
+    rates:[
+      {label:'Imp',pct:30,color:'#14b8a6'},
+      {label:'Fiend',pct:45,color:'#60a5fa'},
+      {label:'Greater Demon',pct:25,color:'#c084fc'},
+    ]
+  },
+  {
+    id:'bloodpact',name:'Blood Pact Scroll',icon:'🩸',
+    color:'#f43f5e',capLabel:'LEGENDARY',capColor:'#f43f5e',
+    cost:'2,400 ◆',locked:false,
+    desc:'The contract binds. An Archdemon summoned this way is furious.',
+    probs:[0,0,0.20,0.55,0.25,0,0],
+    pity:{epic:0,leg:70},
+    rates:[
+      {label:'Fiend',pct:20,color:'#60a5fa'},
+      {label:'Greater Demon',pct:55,color:'#c084fc'},
+      {label:'Archdemon',pct:25,color:'#f43f5e'},
+    ]
+  },
+  {
+    id:'sincodex',name:'Sin Codex Scroll',icon:'⭐',
+    color:'#fbbf24',capLabel:'MYTHIC',capColor:'#fbbf24',
+    cost:'Sin Essence only',locked:true,lockHint:'Conquer a Sin Realm to unlock',
+    desc:'One of seven. Cannot be purchased. Earned by conquering a Sin Realm.',
+    probs:[0,0,0,0.25,0.50,0.25,0],
+    pity:{epic:0,leg:0,mythic:90},
+    rates:[
+      {label:'Greater Demon',pct:25,color:'#c084fc'},
+      {label:'Archdemon',pct:50,color:'#f43f5e'},
+      {label:'Sin Lord',pct:25,color:'#fbbf24'},
+    ]
+  },
+  {
+    id:'realmrift',name:'Realm Rift Scroll',icon:'🌀',
+    color:'#2dd4bf',capLabel:'REALM NATIVE',capColor:'#2dd4bf',
+    cost:'Realm Essence',locked:true,lockHint:'Conquer a realm and station a demon',
+    desc:'Torn from a conquered world. Only summons realm-native demons.',
+    probs:[0,0,0.45,0.35,0.20,0,0],
+    pity:{epic:0,leg:0},
+    rates:[
+      {label:'Native Common',pct:45,color:'#888780'},
+      {label:'Native Rare',pct:35,color:'#60a5fa'},
+      {label:'Native Epic+',pct:20,color:'#f43f5e'},
+    ]
+  },
+  {
+    id:'voidtear',name:'Void Tear Scroll',icon:'◈',
+    color:'#e0e0ff',capLabel:'ABYSSAL',capColor:'#e0e0ff',
+    cost:'Void Echoes only',locked:true,lockHint:'Defeat a Void Primordial to earn',
+    desc:'It screams when you hold it. Nobody knows who made it.',
+    probs:[0,0,0,0,0.20,0.50,0.30],
+    pity:{epic:0,leg:0,abyssal:200},
+    rates:[
+      {label:'Archdemon',pct:20,color:'#f43f5e'},
+      {label:'Sin Lord',pct:50,color:'#fbbf24'},
+      {label:'Void Primordial',pct:30,color:'#e0e0ff'},
+    ]
+  },
+  {
+    id:'event',name:'Rift Event Scroll',icon:'⚡',
+    color:'#fb923c',capLabel:'EVENT',capColor:'#fb923c',
+    cost:'Event currency',locked:true,lockHint:'Available during active Rift events',
+    desc:'Limited. Urgent. Already almost gone. Miss the event, miss the demon.',
+    probs:[0,0,0.30,0.30,0.20,0.15,0.05],
+    pity:{epic:40,leg:0},
+    rates:[
+      {label:'Event Common',pct:30,color:'#888780'},
+      {label:'Event Rare/Epic',pct:50,color:'#c084fc'},
+      {label:'Event Exclusive',pct:20,color:'#fb923c'},
+    ]
+  },
+];
 
 /* ═══════════════════════════════════════════
    SVG ART
@@ -996,8 +1173,12 @@ function svg(tierId){return SVGS[tierId]||SVGS.shade}
    STATE
 ═══════════════════════════════════════════ */
 let S={
-  shards:1200,epicPity:0,legPity:0,
-  collection:{},bannerExpiry:null,
+  shards:1200,
+  epicPity:0,legPity:0,
+  scrollPity:{},   // per-scroll pity counters keyed by scroll id
+  collection:{},
+  bannerExpiry:null,
+  activeScroll:'infernal',
 };
 let lastCount=1;
 
@@ -1016,33 +1197,127 @@ function load(){
 /* ═══════════════════════════════════════════
    GACHA LOGIC
 ═══════════════════════════════════════════ */
-function rollTier(){
-  const r=Math.random();let c=0;
-  for(let i=0;i<PROBS.length;i++){c+=PROBS[i];if(r<=c)return i}
-  return 0;
+function getActiveScroll(){
+  return SCROLLS.find(s=>s.id===S.activeScroll)||SCROLLS[2];
 }
+
+function rollTierForScroll(scroll){
+  const p=S.scrollPity[scroll.id]||{pulls:0};
+  p.pulls=(p.pulls||0)+1;
+
+  // Pity overrides
+  if(scroll.pity.epic&&p.pulls>=scroll.pity.epic){
+    const ti=scroll.probs.findIndex((v,i)=>i>=3&&v>0);
+    if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}
+  }
+  if(scroll.pity.leg&&p.pulls>=scroll.pity.leg){
+    const ti=scroll.probs.findIndex((v,i)=>i>=4&&v>0);
+    if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}
+  }
+  if(scroll.pity.mythic&&p.pulls>=scroll.pity.mythic){
+    const ti=scroll.probs.findIndex((v,i)=>i>=5&&v>0);
+    if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}
+  }
+  if(scroll.pity.abyssal&&p.pulls>=scroll.pity.abyssal){
+    p.pulls=0;S.scrollPity[scroll.id]=p;return 6;
+  }
+
+  // Normal roll
+  const r=Math.random();let c=0;
+  for(let i=0;i<scroll.probs.length;i++){
+    c+=scroll.probs[i];
+    if(r<=c&&scroll.probs[i]>0){
+      // Track highest tier for pity reset
+      if(i>=3)p.pulls=0;
+      S.scrollPity[scroll.id]=p;
+      return i;
+    }
+  }
+  S.scrollPity[scroll.id]=p;
+  return scroll.probs.findIndex(v=>v>0);
+}
+
 function pullOne(){
+  const scroll=getActiveScroll();
+  const ti=rollTierForScroll(scroll);
+  // Legacy pity tracking for UI bars
   S.epicPity++;S.legPity++;
-  let ti=rollTier();
-  if(S.epicPity>=40&&ti<3) ti=3;
-  if(S.legPity>=70&&ti<4) ti=4;
-  if(ti>=3) S.epicPity=0;
-  if(ti>=4) S.legPity=0;
+  if(ti>=3)S.epicPity=0;
+  if(ti>=4)S.legPity=0;
   const tier=TIERS[ti];
   const pool=POOL[tier.id];
   const name=pool[Math.floor(Math.random()*pool.length)];
   S.collection[name]=(S.collection[name]||0)+1;
   return{tier,name,ti};
 }
+
+function getCost(count){
+  const scroll=getActiveScroll();
+  const base={whisper:0,twilight:300,infernal:800,bloodpact:2400}[scroll.id];
+  if(base===undefined) return null; // locked/earned scrolls — no shard cost
+  return count===1?base:Math.floor(base*count*0.9);
+}
 function doPull(count){
-  const cost=count===1?100:900;
-  if(S.shards<cost) return;
+  const scroll=getActiveScroll();
+  if(scroll.locked) return;
+  const cost=getCost(count);
+  if(cost===null) return; // earned scroll, handle separately later
+  if(cost>0&&S.shards<cost) return;
   lastCount=count;
-  S.shards-=cost;
+  if(cost>0) S.shards-=cost;
   const results=[];
   for(let i=0;i<count;i++) results.push(pullOne());
   save();updateUI();
   showOverlay(results);
+}
+
+/* ═══════════════════════════════════════════
+   SCROLL UI
+═══════════════════════════════════════════ */
+function renderScrollShelf(){
+  const shelf=document.getElementById('scroll-shelf');
+  if(!shelf) return;
+  shelf.innerHTML='';
+  SCROLLS.forEach(sc=>{
+    const isActive=sc.id===S.activeScroll;
+    const item=document.createElement('div');
+    item.className='scroll-item'+(sc.locked?' locked':'')+(isActive?' active':'');
+    item.style.borderColor=isActive?sc.color:'';
+    item.style.boxShadow=isActive?`0 0 12px ${sc.color}40`:'';
+    item.title=sc.locked?(sc.lockHint||'Locked'):'';
+    item.innerHTML=`
+      <span class="scroll-icon">${sc.icon}</span>
+      <div class="scroll-name">${sc.name}</div>
+      <div class="scroll-cap" style="color:${sc.capColor};background:${sc.capColor}18;border:0.5px solid ${sc.capColor}40">${sc.capLabel}</div>
+      <div class="scroll-cost">${sc.cost}</div>
+      ${sc.locked?'<span class="scroll-lock-icon">🔒</span>':''}
+    `;
+    if(!sc.locked){
+      item.onclick=()=>{S.activeScroll=sc.id;save();renderScrollShelf();renderScrollInfo();updateUI();};
+    }
+    shelf.appendChild(item);
+  });
+}
+
+function renderScrollInfo(){
+  const info=document.getElementById('scroll-info');
+  if(!info) return;
+  const sc=getActiveScroll();
+  const maxPct=Math.max(...sc.rates.map(r=>r.pct));
+  info.style.borderColor=sc.color+'40';
+  info.innerHTML=`
+    <div class="si-rates">
+      <div class="si-name" style="color:${sc.color}">${sc.name}</div>
+      <div class="si-desc">${sc.desc}</div>
+      ${sc.rates.map(r=>`
+        <div class="si-rate-row">
+          <div class="si-rate-label" style="color:${r.color}">${r.label}</div>
+          <div class="si-rate-bar"><div class="si-rate-fill" style="width:${Math.round(r.pct/maxPct*100)}%;background:${r.color}"></div></div>
+          <div class="si-rate-val" style="color:${r.color}">${r.pct}%</div>
+        </div>`).join('')}
+      ${sc.locked?`<div style="margin-top:8px;font-size:.6rem;color:#f43f5e;font-style:italic;font-family:Georgia,serif">${sc.lockHint}</div>`:''}
+    </div>
+  `;
 }
 
 /* ═══════════════════════════════════════════
@@ -1181,13 +1456,32 @@ function closeOverlay(){
    UI
 ═══════════════════════════════════════════ */
 function updateUI(){
+  const scroll=getActiveScroll();
+  const cost1=getCost(1);
+  const cost10=getCost(10);
   document.getElementById('shard-count').textContent=S.shards.toLocaleString();
-  document.getElementById('btn-pull-1').disabled=S.shards<100;
-  document.getElementById('btn-pull-10').disabled=S.shards<900;
-  document.getElementById('epic-count').textContent=`${S.epicPity} / 40`;
-  document.getElementById('leg-count').textContent=`${S.legPity} / 70`;
-  document.getElementById('epic-fill').style.width=`${Math.min(100,(S.epicPity/40)*100)}%`;
-  document.getElementById('leg-fill').style.width=`${Math.min(100,(S.legPity/70)*100)}%`;
+  const btn1=document.getElementById('btn-pull-1');
+  const btn10=document.getElementById('btn-pull-10');
+  btn1.disabled=scroll.locked||(cost1>0&&S.shards<cost1);
+  btn10.disabled=scroll.locked||(cost10>0&&S.shards<cost10);
+  // Update button costs
+  const cost1Label=btn1.querySelector('.btn-cost');
+  const cost10Label=btn10.querySelector('.btn-cost');
+  if(cost1Label) cost1Label.textContent=cost1===0?'Free':cost1===null?'Earned Only':`◆ ${cost1.toLocaleString()}`;
+  if(cost10Label) cost10Label.textContent=cost10===0?'Free ×10':cost10===null?'Earned Only':`◆ ${cost10?.toLocaleString()}`;
+  // Pity bars — show active scroll's pity if applicable
+  const p=S.scrollPity[scroll.id]||{pulls:0};
+  const epicThresh=scroll.pity.epic||40;
+  const legThresh=scroll.pity.leg||70;
+  document.getElementById('epic-count').textContent=`${S.epicPity} / ${epicThresh}`;
+  document.getElementById('leg-count').textContent=`${S.legPity} / ${legThresh}`;
+  document.getElementById('epic-fill').style.width=`${Math.min(100,(S.epicPity/epicThresh)*100)}%`;
+  document.getElementById('leg-fill').style.width=`${Math.min(100,(S.legPity/legThresh)*100)}%`;
+  // Hide pity bars that don't apply to this scroll
+  const epicBar=document.querySelector('.pity-bar.epic');
+  const legBar=document.querySelector('.pity-bar.legendary');
+  if(epicBar) epicBar.style.opacity=scroll.pity.epic?'1':'0.25';
+  if(legBar) legBar.style.opacity=scroll.pity.leg?'1':'0.25';
 }
 
 function addDemoShards(){
@@ -1309,6 +1603,8 @@ document.getElementById('btn-codex-nav').onclick=()=>{
   featArt.style.cssText='flex:1;width:88%;overflow:hidden;border-radius:10px;';
   featArt.appendChild(featVideo);
   updateUI();
+  renderScrollShelf();
+  renderScrollInfo();
   renderCodex();
   tick();setInterval(tick,1000);
 })();
