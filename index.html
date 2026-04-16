@@ -133,8 +133,13 @@
       height: '100%',
       pointerEvents: 'none'
     });
-    // If border fails to load, just hide it silently — don't break the card
-    border.addEventListener('error', function () { border.style.display = 'none'; });
+    // If border fails to load, show a colored outline instead
+    border.addEventListener('error', function () {
+      console.warn('[Infernum] Border not found:', border.src);
+      root.style.outline = '2px solid ' + color;
+      root.style.boxShadow = 'inset 0 0 0 1px ' + color + '60, 0 0 14px ' + color + '40';
+      border.style.display = 'none';
+    });
     root.appendChild(border);
 
     // --- Count badge (top left) ---
@@ -1402,10 +1407,16 @@ function buildCardEl(r,i,isSingle,videoPool){
 
   // Border overlay
   const border=document.createElement('img');
-  border.src='assets/borders/infernum_border_'+borderSlug+'.svg';
+  border.src='assets/borders/infernum_border_'+borderSlug+'.png';
   border.alt='';
   border.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;';
-  border.addEventListener('error',()=>{border.style.display='none';});
+  border.addEventListener('error',()=>{
+    console.warn('[Infernum] Border not found:',border.src);
+    // CSS fallback border so tier is always visible
+    front.style.outline=`2px solid ${t.color}`;
+    front.style.boxShadow=`inset 0 0 0 1px ${t.color}60, 0 0 14px ${t.color}40`;
+    border.style.display='none';
+  });
 
   // Info bar
   const infoBar=document.createElement('div');
