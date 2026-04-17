@@ -124,16 +124,16 @@ body{font-family:var(--body);color:var(--text);position:relative}
   text-shadow:0 0 12px rgba(251,191,36,.5);
 }
 .feat-art{
-  width:min(200px,55vw);aspect-ratio:2/3;border-radius:8px;
+  width:min(220px,60vw);aspect-ratio:2/3;border-radius:8px;
   overflow:hidden;position:relative;margin-bottom:12px;
+  background:linear-gradient(158deg,#09000f,#1a0840,#06000e);
 }
-.feat-art video,.feat-art img{width:100%;height:100%;object-fit:cover}
 .feat-art-overlay{
   position:absolute;inset:0;
-  background:linear-gradient(to top,rgba(6,0,14,.9) 0%,transparent 50%);
-  pointer-events:none;
+  background:linear-gradient(to top,rgba(6,0,14,.75) 0%,transparent 50%);
+  pointer-events:none;z-index:3;
 }
-.feat-border{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none}
+.feat-border{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;z-index:4}
 .feat-name{font-family:var(--deco);font-size:.9rem;color:#e0e0ff;letter-spacing:.1em;margin-bottom:2px;text-align:center}
 .feat-tier{font-family:var(--serif);font-size:.55rem;letter-spacing:.3em;color:#e0e0ff;opacity:.7;margin-bottom:12px;text-align:center}
 .feat-countdown-label{font-size:.55rem;color:var(--muted);letter-spacing:.12em;margin-bottom:4px;font-family:var(--serif)}
@@ -538,11 +538,20 @@ body{font-family:var(--body);color:var(--text);position:relative}
         <div class="featured-banner">
           <div class="feat-eyebrow">✦ VOID GATE · RATE UP ✦</div>
           <div class="feat-art" id="feat-art-container">
-            <video autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block"
-              onerror="this.style.display='none'">
+            <video id="feat-video" autoplay loop muted playsinline
+              style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;">
               <source src="assets/demons/the_unnamed_one_card.mp4" type="video/mp4">
             </video>
-            <img src="assets/borders/infernum_border_void.png" class="feat-border" alt="" onerror="this.style.display='none'">
+            <!-- Fallback gradient if video missing -->
+            <div id="feat-fallback" style="position:absolute;inset:0;background:linear-gradient(158deg,#09000f,#1a0840,#06000e);display:flex;align-items:center;justify-content:center;">
+              <div style="text-align:center;opacity:.4">
+                <div style="font-size:3rem;margin-bottom:8px">◈</div>
+                <div style="font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.3em;color:#e0e0ff">VOID PRIMORDIAL</div>
+              </div>
+            </div>
+            <img src="assets/borders/infernum_border_void.png" class="feat-border" alt=""
+              style="position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;z-index:2;"
+              onerror="this.style.display='none'">
             <div class="feat-art-overlay"></div>
           </div>
           <div class="feat-name">The Unnamed One</div>
@@ -842,7 +851,7 @@ const SCROLLS=[
   {id:'whisper',name:'Whisper Scroll',icon:'📜',color:'#888780',capLabel:'UNCOMMON',capColor:'#14b8a6',cost:'Free',locked:false,desc:'Given freely.',probs:[0.75,0.25,0,0,0,0,0],pity:{},rates:[{label:'Shade',pct:75,color:'#888780'},{label:'Imp',pct:25,color:'#14b8a6'}]},
   {id:'twilight',name:'Twilight Scroll',icon:'🌒',color:'#60a5fa',capLabel:'RARE',capColor:'#60a5fa',cost:'300 ◆',locked:false,desc:'Standard issue.',probs:[0.45,0.30,0.25,0,0,0,0],pity:{},rates:[{label:'Shade',pct:45,color:'#888780'},{label:'Imp',pct:30,color:'#14b8a6'},{label:'Fiend',pct:25,color:'#60a5fa'}]},
   {id:'infernal',name:'Infernal Scroll',icon:'🔥',color:'#c084fc',capLabel:'EPIC',capColor:'#c084fc',cost:'800 ◆',locked:false,desc:'Greater Demon contracts.',probs:[0,0.30,0.45,0.25,0,0,0],pity:{epic:40},rates:[{label:'Imp',pct:30,color:'#14b8a6'},{label:'Fiend',pct:45,color:'#60a5fa'},{label:'Greater Demon',pct:25,color:'#c084fc'}]},
-  {id:'bloodpact',name:'Blood Pact',icon:'🩸',color:'#f43f5e',capLabel:'LEGENDARY',capColor:'#f43f5e',cost:'2,400 ◆',locked:false,desc:'An Archdemon will be furious.',probs:[0,0,0.20,0.55,0.25,0,0],pity:{leg:70},rates:[{label:'Fiend',pct:20,color:'#60a5fa'},{label:'Greater Demon',pct:55,color:'#c084fc'},{label:'Archdemon',pct:25,color:'#f43f5e'}]},
+  {id:'bloodpact',name:'Blood Pact',icon:'🩸',iconImg:'assets/ui/scroll_bloodpact.jpg',color:'#f43f5e',capLabel:'LEGENDARY',capColor:'#f43f5e',cost:'2,400 ◆',locked:false,desc:'An Archdemon will be furious.',probs:[0,0,0.20,0.55,0.25,0,0],pity:{leg:70},rates:[{label:'Fiend',pct:20,color:'#60a5fa'},{label:'Greater Demon',pct:55,color:'#c084fc'},{label:'Archdemon',pct:25,color:'#f43f5e'}]},
   {id:'sincodex',name:'Sin Codex',icon:'⭐',color:'#fbbf24',capLabel:'MYTHIC',capColor:'#fbbf24',cost:'Sin Essence',locked:true,lockHint:'Conquer a Sin Realm',desc:'Cannot be purchased.',probs:[0,0,0,0.25,0.50,0.25,0],pity:{mythic:90},rates:[{label:'Greater Demon',pct:25,color:'#c084fc'},{label:'Archdemon',pct:50,color:'#f43f5e'},{label:'Sin Lord',pct:25,color:'#fbbf24'}]},
   {id:'realmrift',name:'Realm Rift',icon:'🌀',color:'#2dd4bf',capLabel:'REALM',capColor:'#2dd4bf',cost:'Realm Essence',locked:true,lockHint:'Conquer a realm first',desc:'Realm-native demons only.',probs:[0,0,0.45,0.35,0.20,0,0],pity:{},rates:[{label:'Native Common',pct:45,color:'#888780'},{label:'Native Rare',pct:35,color:'#60a5fa'},{label:'Native Epic+',pct:20,color:'#f43f5e'}]},
   {id:'voidtear',name:'Void Tear',icon:'◈',color:'#e0e0ff',capLabel:'ABYSSAL',capColor:'#e0e0ff',cost:'Void Echoes',locked:true,lockHint:'Defeat a Void Primordial',desc:'It screams when held.',probs:[0,0,0,0,0.20,0.50,0.30],pity:{abyssal:200},rates:[{label:'Archdemon',pct:20,color:'#f43f5e'},{label:'Sin Lord',pct:50,color:'#fbbf24'},{label:'Void Primordial',pct:30,color:'#e0e0ff'}]},
@@ -1176,7 +1185,10 @@ function renderScrollShelf(){
     item.style.borderColor=isActive?sc.color:'';
     item.style.boxShadow=isActive?`0 0 10px ${sc.color}40`:'';
     item.title=sc.locked?(sc.lockHint||'Locked'):'';
-    item.innerHTML=`<span class="scroll-icon">${sc.icon}</span><div class="scroll-name">${sc.name}</div><div class="scroll-cap" style="color:${sc.capColor};background:${sc.capColor}18;border:0.5px solid ${sc.capColor}40">${sc.capLabel}</div><div class="scroll-cost">${sc.cost}</div>${sc.locked?'<span class="scroll-lock-icon">🔒</span>':''}`;
+    const iconHtml = sc.iconImg
+      ? `<img src="${sc.iconImg}" alt="${sc.name}" style="width:36px;height:36px;object-fit:cover;border-radius:5px;display:block;margin:0 auto 4px;border:0.5px solid ${sc.color}40;" onerror="this.outerHTML='<span class=\\'scroll-icon\\'>${sc.icon}</span>'">`
+      : `<span class="scroll-icon">${sc.icon}</span>`;
+    item.innerHTML=`${iconHtml}<div class="scroll-name">${sc.name}</div><div class="scroll-cap" style="color:${sc.capColor};background:${sc.capColor}18;border:0.5px solid ${sc.capColor}40">${sc.capLabel}</div><div class="scroll-cost">${sc.cost}</div>${sc.locked?'<span class="scroll-lock-icon">🔒</span>':''}`;
     if(!sc.locked)item.onclick=()=>{S.activeScroll=sc.id;save();renderScrollShelf();renderScrollInfo();updateUI();};
     shelf.appendChild(item);
   });
@@ -1250,6 +1262,13 @@ function tick(){
   load();
   document.getElementById('btn-again').onclick=()=>{closeOverlay();const cost=lastCount===1?getCost(1):getCost(10);if(S.shards>=(cost||0))setTimeout(()=>doPull(lastCount),80);};
   document.getElementById('btn-close-pull').onclick=()=>closeOverlay();
+  // Featured card video — hide fallback when video loads
+  const featVideo=document.getElementById('feat-video');
+  const featFallback=document.getElementById('feat-fallback');
+  if(featVideo&&featFallback){
+    featVideo.addEventListener('loadeddata',()=>{featFallback.style.display='none';});
+    featVideo.addEventListener('error',()=>{featVideo.style.display='none';});
+  }
   renderScrollShelf();renderScrollInfo();
   renderRealms();renderGarrison();
   updateUI();
