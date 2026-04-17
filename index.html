@@ -3,521 +3,441 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INFERNUM — Abyssal Summons</title>
+<title>INFERNUM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap" rel="stylesheet">
-<script>
-/**
- * DemonCard — reusable card component for Infernum gacha game.
- *
- * Usage:
- *   const card = new DemonCard(demon, { width: 180 });
- *   document.body.appendChild(card.el);
- *
- * Public API:
- *   card.el              — the root DOM element
- *   card.demon           — the demon object (read-only reference)
- *   card.destroy()       — cleans up video + listeners (call before removing from DOM)
- */
-(function (global) {
-  'use strict';
-
-  // Tier index → border filename slug (1-indexed array, position 0 unused)
-  var TIER_SLUGS = [null, 'shade', 'imp', 'fiend', 'greater', 'archdemon', 'sinlord', 'void'];
-
-  // Card art aspect ratio: height = width * (504/360)
-  var ASPECT = 504 / 360;
-
-  // Text scaling anchors: at 180px → name 9, tier 7; at 360px → name 13, tier 9.
-  // Linear: name = 9 + (w - 180) * (13 - 9) / (360 - 180) = 9 + (w - 180) / 45
-  //         tier = 7 + (w - 180) * (9 - 7)  / (360 - 180) = 7 + (w - 180) / 90
-  function scaleName(w) { return 9 + (w - 180) / 45; }
-  function scaleTier(w) { return 7 + (w - 180) / 90; }
-
-  function DemonCard(demon, options) {
-    if (!(this instanceof DemonCard)) return new DemonCard(demon, options);
-    if (!demon) throw new Error('DemonCard: demon is required');
-
-    options = options || {};
-
-    this.demon = demon;
-    this.opts = {
-      width:     options.width     != null ? options.width     : 180,
-      showName:  options.showName  !== false,
-      showTier:  options.showTier  !== false,
-      showCount: options.showCount !== false,
-      animate:   options.animate   !== false,
-      clickable: options.clickable === true,
-      onClick:   typeof options.onClick === 'function' ? options.onClick : null
-    };
-
-    this._onClick = null; // bound handler, stored for cleanup
-    this._onVideoError = null;
-    this.el = this._build();
-  }
-
-  DemonCard.prototype._build = function () {
-    var d = this.demon;
-    var o = this.opts;
-    var w = o.width;
-    var h = Math.round(w * ASPECT);
-    var color = d.color || '#ffffff';
-    var slug = TIER_SLUGS[d.tier] || 'shade';
-
-    // --- Root ---
-    var root = document.createElement('div');
-    root.className = 'demon-card';
-    root.setAttribute('data-demon-id', d.id || '');
-    root.setAttribute('data-tier', String(d.tier));
-    applyStyles(root, {
-      width: w + 'px',
-      height: h + 'px',
-      position: 'relative',
-      borderRadius: '6px',
-      overflow: 'hidden',
-      cursor: o.clickable ? 'pointer' : 'default',
-      // hint browser that this is a composited layer — helps video perf on grids
-      transform: 'translateZ(0)'
-    });
-
-    // --- Art layer: video ---
-    var video = document.createElement('video');
-    video.src = 'assets/demons/' + d.id + '_card.mp4';
-    video.muted = true;
-    video.loop = true;
-    video.playsInline = true;
-    video.setAttribute('playsinline', '');       // iOS Safari
-    video.setAttribute('webkit-playsinline', ''); // older iOS
-    video.setAttribute('disablepictureinpicture', '');
-    if (o.animate) {
-      video.autoplay = true;
-    }
-    applyStyles(video, {
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover',
-      display: 'block'
-    });
-
-    // Kick off playback (autoplay attribute isn't always enough on mobile)
-    if (o.animate) {
-      var playPromise = video.play();
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(function () { /* swallow — autoplay blocked is OK */ });
-      }
-    } else {
-      // If not animating, pause at first frame
-      video.autoplay = false;
-      video.pause();
-    }
-
-    // Fallback on video error: replace with colored rectangle + initial
-    var self = this;
-    this._onVideoError = function () {
-      if (video.parentNode) {
-        video.parentNode.replaceChild(self._buildFallback(w, h, color, d.name), video);
-      }
-    };
-    video.addEventListener('error', this._onVideoError);
-    this._video = video;
-    root.appendChild(video);
-
-    // --- Border image overlay ---
-    var tierBorderSlugs = ['shade','imp','fiend','greater','archdemon','sinlord','void'];
-    var borderSlug = tierBorderSlugs[(d.tier - 1)] || 'shade';
-    var border = document.createElement('img');
-    border.src = 'assets/borders/infernum_border_' + borderSlug + '.png';
-    border.alt = '';
-    applyStyles(border, {
-      position: 'absolute',
-      top: '0', left: '0', right: '0', bottom: '0',
-      width: '100%',
-      height: '100%',
-      objectFit: 'fill',
-      pointerEvents: 'none',
-      zIndex: '2',
-    });
-    border.addEventListener('error', function () {
-      // CSS fallback if image missing
-      root.style.outline = '2px solid ' + color;
-      root.style.boxShadow = 'inset 0 0 0 1px ' + color + '90, 0 0 18px ' + color + '60';
-      border.style.display = 'none';
-    });
-    root.appendChild(border);
-
-    // --- Count badge (top left) ---
-    if (o.showCount && d.count && d.count > 1) {
-      var badge = document.createElement('div');
-      badge.className = 'card-count-badge';
-      badge.textContent = '×' + d.count;
-      applyStyles(badge, {
-        position: 'absolute',
-        top: '4px',
-        left: '4px',
-        background: 'rgba(6,0,14,.85)',
-        border: '0.5px solid ' + color,
-        borderRadius: '4px',
-        padding: '2px 5px',
-        fontFamily: 'sans-serif',
-        fontSize: '8px',
-        color: color,
-        letterSpacing: '1px',
-        lineHeight: '1',
-        pointerEvents: 'none'
-      });
-      root.appendChild(badge);
-    }
-
-    // --- Bottom info bar ---
-    if (o.showName || o.showTier) {
-      var bar = document.createElement('div');
-      applyStyles(bar, {
-        position: 'absolute',
-        bottom: '0',
-        left: '0',
-        right: '0',
-        background: 'linear-gradient(to top, rgba(6,0,14,.9) 0%, transparent 100%)',
-        padding: '12px 6px 5px',
-        textAlign: 'center',
-        pointerEvents: 'none'
-      });
-
-      if (o.showName && d.name) {
-        var nameEl = document.createElement('div');
-        nameEl.textContent = d.name;
-        applyStyles(nameEl, {
-          fontFamily: "'Cinzel', Georgia, serif",
-          fontSize: scaleName(w).toFixed(2) + 'px',
-          color: color,
-          letterSpacing: '1px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis'
-        });
-        bar.appendChild(nameEl);
-      }
-
-      if (o.showTier && d.tierName) {
-        var tierEl = document.createElement('div');
-        tierEl.textContent = d.tierName;
-        applyStyles(tierEl, {
-          fontFamily: 'sans-serif',
-          fontSize: scaleTier(w).toFixed(2) + 'px',
-          color: color,
-          opacity: '0.7',
-          letterSpacing: '2px',
-          textTransform: 'uppercase'
-        });
-        bar.appendChild(tierEl);
-      }
-
-      root.appendChild(bar);
-    }
-
-    // --- Click handling ---
-    if (o.clickable && o.onClick) {
-      this._onClick = function (e) { o.onClick(self.demon, e); };
-      root.addEventListener('click', this._onClick);
-    }
-
-    return root;
-  };
-
-  // Build the fallback placeholder when the video fails to load.
-  DemonCard.prototype._buildFallback = function (w, h, color, name) {
-    var wrap = document.createElement('div');
-    applyStyles(wrap, {
-      width: '100%',
-      height: '100%',
-      position: 'relative',
-      background: '#0a0410', // near-black so the 15% color tint reads
-      display: 'block'
-    });
-
-    var tint = document.createElement('div');
-    applyStyles(tint, {
-      position: 'absolute',
-      top: '0', left: '0', right: '0', bottom: '0',
-      background: color,
-      opacity: '0.15'
-    });
-    wrap.appendChild(tint);
-
-    var initial = document.createElement('div');
-    initial.textContent = (name && name.charAt(0).toUpperCase()) || '?';
-    applyStyles(initial, {
-      position: 'absolute',
-      top: '0', left: '0', right: '0', bottom: '0',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: "'Cinzel', Georgia, serif",
-      // scale initial to card size — roughly 40% of width looks right
-      fontSize: Math.round(w * 0.4) + 'px',
-      color: color,
-      opacity: '0.6',
-      lineHeight: '1',
-      userSelect: 'none'
-    });
-    wrap.appendChild(initial);
-
-    return wrap;
-  };
-
-  // Remove listeners and release the video element. Call before detaching from DOM.
-  DemonCard.prototype.destroy = function () {
-    if (this._onClick && this.el) {
-      this.el.removeEventListener('click', this._onClick);
-      this._onClick = null;
-    }
-    if (this._video) {
-      if (this._onVideoError) {
-        this._video.removeEventListener('error', this._onVideoError);
-        this._onVideoError = null;
-      }
-      try {
-        this._video.pause();
-        this._video.removeAttribute('src');
-        this._video.load(); // forces browser to release the file handle
-      } catch (e) { /* ignore */ }
-      this._video = null;
-    }
-    if (this.el && this.el.parentNode) {
-      this.el.parentNode.removeChild(this.el);
-    }
-  };
-
-  // --- tiny helper: apply a style object to an element ---
-  function applyStyles(el, styles) {
-    for (var k in styles) {
-      if (Object.prototype.hasOwnProperty.call(styles, k)) {
-        el.style[k] = styles[k];
-      }
-    }
-  }
-
-  // --- export ---
-  global.DemonCard = DemonCard;
-
-})(typeof window !== 'undefined' ? window : this);
-</script>
-
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#06000e;--bg2:#0d0020;--purple:#c084fc;--gold:#fbbf24;--crimson:#f43f5e;
-  --text:#c8b8e8;--muted:#6a5a8a;--border:rgba(192,132,252,0.14);
+  --bg:#06000e;--panel:rgba(6,0,14,.88);
+  --purple:#c084fc;--purple2:#7c3aed;--gold:#fbbf24;--gold2:#b45309;
+  --crimson:#f43f5e;--text:#e2d9f3;--muted:#4b2d6b;--border:rgba(124,58,237,.18);
+  --serif:'Cinzel',Georgia,serif;--deco:'Cinzel Decorative',serif;--body:'EB Garamond',Georgia,serif;
 }
-html{scroll-behavior:smooth}
-body{
-  background:var(--bg);color:var(--text);
-  font-family:Georgia,'Times New Roman',serif;
-  min-height:100vh;overflow-x:hidden;position:relative;
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:var(--body);color:var(--text);position:relative}
+
+/* ── GLOBAL BG ── */
+#global-bg{
+  position:fixed;inset:0;z-index:0;
+  background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
+  opacity:.18;pointer-events:none;
 }
-/* ── BG SIGIL ── */
-#bg-sigil{
-  position:fixed;top:50%;left:50%;
-  width:min(900px,160vw);height:min(900px,160vw);
-  opacity:0.032;
-  transform:translate(-50%,-50%);
-  animation:sigilSpin 200s linear infinite;
-  pointer-events:none;z-index:0;
+#global-bg-vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 30%,rgba(6,0,14,.85) 100%);
 }
-#bg-sigil2{
-  position:fixed;top:50%;left:50%;
-  width:min(500px,90vw);height:min(500px,90vw);
-  opacity:0.025;
-  transform:translate(-50%,-50%);
-  animation:sigilSpin 120s linear infinite reverse;
-  pointer-events:none;z-index:0;
-}
-@keyframes sigilSpin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
-/* ── FLASH ── */
-#tier-flash{
-  position:fixed;inset:0;z-index:300;pointer-events:none;
-  opacity:0;transition:opacity 0.12s ease;
-}
+
 /* ── LAYOUT ── */
-#app{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 16px 80px}
-/* ── HEADER ── */
-header{
+#shell{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── TOP BAR ── */
+#topbar{
+  flex-shrink:0;
   display:flex;justify-content:space-between;align-items:center;
-  padding:22px 0 18px;border-bottom:1px solid var(--border);
+  padding:10px 16px 8px;
+  background:linear-gradient(to bottom,rgba(6,0,14,.95),transparent);
+  border-bottom:0.5px solid var(--border);
 }
-.logo{
-  font-family:'Cinzel',serif;font-weight:900;
-  font-size:clamp(1.5rem,5vw,2.2rem);letter-spacing:0.3em;
+.logo-mark{
+  font-family:var(--deco);font-size:1.3rem;letter-spacing:.12em;
   color:var(--purple);
-  text-shadow:0 0 24px rgba(192,132,252,0.45),0 0 60px rgba(192,132,252,0.15);
+  text-shadow:0 0 20px rgba(192,132,252,.5);
 }
-.logo-e{color:var(--crimson)}
-.logo-sub{
-  font-family:'Cinzel',serif;font-size:0.55rem;
-  letter-spacing:0.35em;color:var(--muted);
-  display:block;margin-top:2px;
-}
+.logo-mark span{color:var(--crimson)}
+.logo-sub{font-size:.5rem;letter-spacing:.35em;color:var(--muted);font-family:var(--serif);display:block;margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
 #shard-display{
-  display:flex;align-items:center;gap:10px;
-  cursor:pointer;padding:9px 16px;
-  border:1px solid var(--border);border-radius:24px;
-  background:rgba(192,132,252,0.04);
-  transition:all 0.2s;user-select:none;
-  position:relative;
+  display:flex;align-items:center;gap:7px;
+  background:rgba(124,58,237,.1);border:0.5px solid var(--border);
+  border-radius:20px;padding:6px 13px;cursor:pointer;transition:all .2s;
 }
-#shard-display:hover{border-color:rgba(192,132,252,0.4);background:rgba(192,132,252,0.09)}
-#shard-display:active{transform:scale(0.97)}
-.shard-gem{font-size:1.15rem;color:var(--purple);filter:drop-shadow(0 0 5px rgba(192,132,252,0.9))}
-#shard-count{font-family:'Cinzel',serif;font-weight:700;font-size:1rem;color:var(--purple)}
-.shard-add-label{font-size:0.6rem;color:var(--muted);font-style:italic;margin-top:1px}
-.shard-pulse{animation:shardPop 0.3s ease}
-@keyframes shardPop{0%{transform:scale(1)}50%{transform:scale(1.18)}100%{transform:scale(1)}}
-/* ── TABS ── */
-.tabs{display:flex;gap:0;margin:22px 0 0;border-bottom:1px solid var(--border)}
-.tab-btn{
-  font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;
-  letter-spacing:0.18em;padding:11px 30px;
-  background:none;border:none;color:var(--muted);
-  cursor:pointer;position:relative;transition:color 0.25s;
+#shard-display:hover{background:rgba(124,58,237,.2);border-color:rgba(192,132,252,.4)}
+.shard-gem{color:var(--purple);font-size:1rem}
+#shard-count{font-family:var(--serif);font-weight:600;font-size:.9rem;color:var(--purple)}
+.shard-add{font-size:.5rem;color:var(--muted);display:block;text-align:center;margin-top:1px}
+#player-level{
+  font-family:var(--serif);font-size:.7rem;letter-spacing:.1em;
+  color:var(--gold);background:rgba(251,191,36,.08);
+  border:0.5px solid rgba(251,191,36,.3);border-radius:12px;padding:5px 10px;
 }
-.tab-btn::after{
-  content:'';position:absolute;bottom:-1px;left:0;right:0;
-  height:2px;background:var(--purple);
-  transform:scaleX(0);transition:transform 0.3s ease;
+
+/* ── CONTENT AREA ── */
+#content{flex:1;overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none}
+.screen.active{display:block}
+
+/* ── BOTTOM NAV ── */
+#bottomnav{
+  flex-shrink:0;
+  display:flex;border-top:0.5px solid var(--border);
+  background:rgba(6,0,14,.96);
 }
-.tab-btn.active{color:var(--purple)}
-.tab-btn.active::after{transform:scaleX(1)}
-.tab-btn:hover:not(.active){color:var(--text)}
-/* ── SCREENS ── */
-#summon-screen,#codex-screen{display:none;padding-top:28px}
-#summon-screen.active,#codex-screen.active{display:block}
-/* ── FEATURED CARD ── */
-.featured-section{display:flex;flex-direction:column;align-items:center;gap:0}
-.featured-eyebrow{
-  font-family:'Cinzel',serif;font-size:0.7rem;
-  letter-spacing:0.35em;color:var(--gold);
-  margin-bottom:14px;
-  text-shadow:0 0 10px rgba(251,191,36,0.4);
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;padding:8px 4px 10px;
+  background:none;border:none;cursor:pointer;
+  transition:all .2s;position:relative;
 }
-.featured-card{
-  width:min(260px,74vw);aspect-ratio:2/3;
-  border-radius:14px;border:1.5px solid rgba(224,224,255,0.22);
-  background:linear-gradient(165deg,#0d000f 0%,#1a0038 60%,#06000e 100%);
-  position:relative;overflow:hidden;
-  box-shadow:0 0 50px rgba(224,224,255,0.07),0 0 120px rgba(192,132,252,0.06),inset 0 0 40px rgba(224,224,255,0.04);
-  display:flex;flex-direction:column;align-items:center;
-  padding:18px 16px 16px;
+.nav-btn::after{
+  content:'';position:absolute;top:0;left:20%;right:20%;
+  height:1.5px;background:var(--purple);
+  transform:scaleX(0);transition:transform .2s;border-radius:1px;
 }
-.featured-card::before{
+.nav-btn.active::after{transform:scaleX(1)}
+.nav-icon{font-size:1.2rem;transition:transform .2s}
+.nav-btn.active .nav-icon{transform:scale(1.15)}
+.nav-label{
+  font-family:var(--serif);font-size:.45rem;letter-spacing:.18em;
+  color:var(--muted);transition:color .2s;text-transform:uppercase;
+}
+.nav-btn.active .nav-label{color:var(--purple)}
+
+/* ══════════════════════════════════════
+   HUB SCREEN
+══════════════════════════════════════ */
+#screen-hub{
+  background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
+  background-attachment:fixed;
+}
+#screen-hub::before{
   content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent 55%,rgba(6,0,14,0.85) 100%);
-  pointer-events:none;z-index:1;
+  background:linear-gradient(to bottom,rgba(6,0,14,.6) 0%,rgba(6,0,14,.3) 40%,rgba(6,0,14,.8) 100%);
+  pointer-events:none;z-index:0;
 }
-.rate-up-badge{
-  position:absolute;top:10px;right:10px;
-  background:var(--gold);color:#1c0a00;
-  font-family:'Cinzel',serif;font-size:0.6rem;font-weight:900;
-  letter-spacing:0.15em;padding:3px 9px;border-radius:3px;z-index:3;
+#screen-hub > *{position:relative;z-index:1}
+
+.hub-inner{padding:20px 16px 30px;display:flex;flex-direction:column;align-items:center;gap:20px}
+
+/* Featured banner */
+.featured-banner{
+  width:100%;max-width:420px;
+  background:rgba(6,0,14,.7);border:0.5px solid rgba(224,224,255,.2);
+  border-radius:12px;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;
+  padding:16px;
+  backdrop-filter:blur(4px);
 }
-.featured-art{
-  flex:1;width:88%;
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;
+.feat-eyebrow{
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.35em;
+  color:var(--gold);margin-bottom:12px;
+  text-shadow:0 0 12px rgba(251,191,36,.5);
 }
-.featured-art svg{width:100%;height:100%;max-height:190px}
-.featured-info{
-  text-align:center;z-index:2;width:100%;
-  padding-top:8px;
+.feat-art{
+  width:min(200px,55vw);aspect-ratio:2/3;border-radius:8px;
+  overflow:hidden;position:relative;margin-bottom:12px;
 }
-.featured-tier-label{
-  font-family:'Cinzel',serif;font-size:0.6rem;
-  letter-spacing:0.25em;color:#e0e0ff;
-  text-transform:uppercase;margin-bottom:4px;
-  text-shadow:0 0 10px rgba(224,224,255,0.7);
+.feat-art video,.feat-art img{width:100%;height:100%;object-fit:cover}
+.feat-art-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(6,0,14,.9) 0%,transparent 50%);
+  pointer-events:none;
 }
-.featured-name{
-  font-family:'Cinzel',serif;font-size:1.05rem;font-weight:700;
-  color:#e0e0ff;text-shadow:0 0 14px rgba(224,224,255,0.55);
-  font-style:italic;
+.feat-border{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none}
+.feat-name{font-family:var(--deco);font-size:.9rem;color:#e0e0ff;letter-spacing:.1em;margin-bottom:2px;text-align:center}
+.feat-tier{font-family:var(--serif);font-size:.55rem;letter-spacing:.3em;color:#e0e0ff;opacity:.7;margin-bottom:12px;text-align:center}
+.feat-countdown-label{font-size:.55rem;color:var(--muted);letter-spacing:.12em;margin-bottom:4px;font-family:var(--serif)}
+#hub-countdown{font-family:var(--serif);font-size:1rem;font-weight:600;color:var(--gold);letter-spacing:.1em}
+.feat-pull-btns{display:flex;gap:10px;margin-top:14px;width:100%}
+.feat-btn{
+  flex:1;font-family:var(--serif);font-size:.75rem;font-weight:600;
+  letter-spacing:.1em;padding:11px 8px;border-radius:7px;cursor:pointer;
+  transition:all .15s;border:0.5px solid;text-align:center;
 }
-/* ── COUNTDOWN ── */
-.countdown-wrap{margin:18px 0 4px;text-align:center}
-.countdown-label{font-size:0.68rem;color:var(--muted);letter-spacing:0.12em;margin-bottom:5px}
-#countdown{
-  font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700;
-  color:var(--gold);letter-spacing:0.12em;
-  text-shadow:0 0 12px rgba(251,191,36,0.45);
+.feat-btn-1{background:rgba(124,58,237,.2);border-color:rgba(192,132,252,.4);color:var(--purple)}
+.feat-btn-1:hover{background:rgba(124,58,237,.4);border-color:var(--purple)}
+.feat-btn-10{background:rgba(180,83,9,.2);border-color:rgba(251,191,36,.4);color:var(--gold)}
+.feat-btn-10:hover{background:rgba(180,83,9,.4);border-color:var(--gold)}
+.feat-btn:disabled{opacity:.3;cursor:not-allowed}
+
+/* Quick stats row */
+.hub-stats{display:flex;gap:8px;width:100%;max-width:420px}
+.hstat{
+  flex:1;background:rgba(6,0,14,.75);border:0.5px solid var(--border);
+  border-radius:8px;padding:10px 8px;text-align:center;backdrop-filter:blur(4px);
+  cursor:pointer;transition:all .2s;
 }
-/* ── SECTION DIV ── */
+.hstat:hover{border-color:rgba(192,132,252,.4);background:rgba(124,58,237,.1)}
+.hstat-val{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--purple)}
+.hstat-label{font-size:.5rem;letter-spacing:.2em;color:var(--muted);margin-top:2px;font-family:var(--serif);text-transform:uppercase}
+
+/* Hub nav tiles */
+.hub-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:420px}
+.hub-tile{
+  background:rgba(6,0,14,.75);border:0.5px solid var(--border);
+  border-radius:10px;padding:16px 12px;cursor:pointer;
+  transition:all .2s;display:flex;flex-direction:column;gap:6px;
+  backdrop-filter:blur(4px);
+}
+.hub-tile:hover{border-color:rgba(192,132,252,.45);background:rgba(124,58,237,.12);transform:translateY(-2px)}
+.hub-tile:active{transform:scale(.97)}
+.tile-icon{font-size:1.6rem}
+.tile-name{font-family:var(--serif);font-size:.7rem;letter-spacing:.15em;color:var(--text)}
+.tile-desc{font-size:.6rem;color:var(--muted);font-style:italic;line-height:1.4}
+.tile-badge{
+  display:inline-block;font-size:.45rem;letter-spacing:.1em;
+  padding:2px 7px;border-radius:10px;font-family:var(--serif);margin-top:2px;
+}
+
+/* Garrison income ticker */
+.garrison-ticker{
+  width:100%;max-width:420px;
+  background:rgba(6,0,14,.75);border:0.5px solid rgba(74,222,128,.2);
+  border-radius:8px;padding:10px 14px;
+  display:flex;align-items:center;gap:12px;backdrop-filter:blur(4px);
+}
+.gt-icon{font-size:1.2rem}
+.gt-body{flex:1}
+.gt-label{font-size:.5rem;letter-spacing:.25em;color:#1a6030;font-family:var(--serif);text-transform:uppercase;margin-bottom:2px}
+.gt-income{font-family:var(--serif);font-size:.9rem;color:#4ade80}
+.gt-rate{font-size:.55rem;color:#1a6030;font-style:italic}
+.gt-collect{
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.1em;
+  padding:6px 12px;border-radius:20px;cursor:pointer;
+  background:rgba(74,222,128,.12);border:0.5px solid rgba(74,222,128,.35);
+  color:#4ade80;transition:all .2s;
+}
+.gt-collect:hover{background:rgba(74,222,128,.25)}
+
+/* ══════════════════════════════════════
+   SUMMON SCREEN
+══════════════════════════════════════ */
+#screen-summon{background:var(--bg)}
+#screen-summon::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
+  opacity:.18;pointer-events:none;
+}
+#screen-summon > *{position:relative;z-index:1}
+.summon-inner{padding:16px 16px 30px;max-width:520px;margin:0 auto}
+
+/* ══════════════════════════════════════
+   CODEX SCREEN
+══════════════════════════════════════ */
+#screen-codex::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:url('assets/ui/codex_bg.jpg') center center/cover no-repeat;
+  opacity:.16;pointer-events:none;
+}
+#screen-codex > *{position:relative;z-index:1}
+.codex-inner{padding:16px 16px 30px}
+.codex-hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.codex-title{font-family:var(--deco);font-size:.9rem;letter-spacing:.15em;color:var(--purple)}
+#codex-count{font-size:.7rem;color:var(--muted);font-family:var(--serif)}
+.codex-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media(min-width:480px){.codex-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(min-width:700px){.codex-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.codex-cell{aspect-ratio:2/3;border-radius:8px;overflow:hidden;position:relative;cursor:pointer;transition:transform .2s}
+.codex-cell:hover{transform:translateY(-3px)}
+.codex-cell.unknown{background:#080014;border:0.5px solid rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.cc-unknown-art{opacity:.1;font-size:2rem}
+.cc-unknown-name{font-size:.45rem;color:#2a1a4a;font-family:var(--serif)}
+
+/* ══════════════════════════════════════
+   REALMS SCREEN
+══════════════════════════════════════ */
+#screen-realms > *{position:relative;z-index:1}
+.realms-inner{padding:16px 16px 30px}
+.section-title{font-family:var(--deco);font-size:.85rem;letter-spacing:.2em;color:var(--purple);margin-bottom:14px}
+.realms-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:600px){.realms-grid{grid-template-columns:repeat(3,1fr)}}
+.realm-card{
+  background:rgba(6,0,14,.8);border:0.5px solid var(--border);
+  border-radius:10px;padding:14px 12px;cursor:pointer;
+  transition:all .2s;
+}
+.realm-card:hover{border-color:rgba(192,132,252,.4);transform:translateY(-2px)}
+.realm-card.locked{opacity:.45;cursor:not-allowed}
+.realm-icon{font-size:1.8rem;margin-bottom:6px}
+.realm-name{font-family:var(--serif);font-size:.7rem;letter-spacing:.1em;color:var(--text);margin-bottom:3px}
+.realm-progress{font-size:.55rem;color:var(--muted);font-style:italic;margin-bottom:8px}
+.realm-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.realm-bar-fill{height:100%;border-radius:2px;background:var(--purple);transition:width .5s}
+.realm-status{
+  display:inline-block;font-size:.45rem;letter-spacing:.1em;
+  padding:2px 8px;border-radius:10px;margin-top:6px;font-family:var(--serif);
+}
+
+/* ══════════════════════════════════════
+   GARRISON SCREEN
+══════════════════════════════════════ */
+#screen-garrison > *{position:relative;z-index:1}
+.garrison-inner{padding:16px 16px 30px}
+.garrison-summary{
+  background:rgba(6,0,14,.8);border:0.5px solid rgba(74,222,128,.2);
+  border-radius:10px;padding:14px 16px;margin-bottom:16px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+}
+.gsumm-label{font-size:.55rem;letter-spacing:.25em;color:#1a6030;font-family:var(--serif);text-transform:uppercase;margin-bottom:4px}
+.gsumm-val{font-family:var(--deco);font-size:1.4rem;color:#4ade80}
+.gsumm-rate{font-size:.6rem;color:#1a6030;font-style:italic}
+.collect-all{
+  font-family:var(--serif);font-size:.7rem;letter-spacing:.12em;
+  padding:10px 20px;border-radius:20px;cursor:pointer;
+  background:rgba(74,222,128,.15);border:0.5px solid rgba(74,222,128,.4);
+  color:#4ade80;transition:all .2s;
+}
+.collect-all:hover{background:rgba(74,222,128,.3)}
+.garrison-slots{display:flex;flex-direction:column;gap:8px}
+.gslot{
+  background:rgba(6,0,14,.8);border:0.5px solid var(--border);
+  border-radius:8px;padding:10px 14px;
+  display:flex;align-items:center;gap:12px;
+}
+.gslot-art{width:44px;height:62px;border-radius:4px;overflow:hidden;flex-shrink:0;background:#0d0018;position:relative}
+.gslot-art video,.gslot-art img{width:100%;height:100%;object-fit:cover}
+.gslot-art-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;opacity:.3}
+.gslot-info{flex:1}
+.gslot-stage{font-size:.55rem;letter-spacing:.2em;color:var(--muted);font-family:var(--serif);text-transform:uppercase;margin-bottom:2px}
+.gslot-demon{font-family:var(--serif);font-size:.75rem;color:var(--text)}
+.gslot-income{font-size:.6rem;color:#4ade80;margin-top:2px;font-style:italic}
+.gslot-collect{
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.08em;
+  padding:6px 12px;border-radius:15px;cursor:pointer;
+  background:rgba(74,222,128,.1);border:0.5px solid rgba(74,222,128,.3);
+  color:#4ade80;transition:all .2s;flex-shrink:0;
+}
+.gslot-collect:hover{background:rgba(74,222,128,.25)}
+.gslot-empty-msg{color:var(--muted);font-size:.65rem;font-style:italic}
+
+/* ══════════════════════════════════════
+   RIFT WALKER SCREEN
+══════════════════════════════════════ */
+#screen-riftwalk > *{position:relative;z-index:1}
+.rw-inner{padding:16px 16px 30px;max-width:520px;margin:0 auto}
+.rw-hero{
+  width:100%;background:rgba(6,0,14,.8);border:0.5px solid rgba(124,58,237,.35);
+  border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;
+}
+.rw-silhouette{font-size:4rem;opacity:.7;display:block;margin-bottom:8px}
+.rw-name{font-family:var(--deco);font-size:.9rem;letter-spacing:.15em;color:var(--purple);margin-bottom:3px}
+.rw-title{font-size:.6rem;color:var(--muted);font-style:italic;letter-spacing:.1em;font-family:var(--serif)}
+.rw-section{margin-bottom:14px}
+.rw-section-title{
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.3em;color:var(--muted);
+  text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;
+  border-bottom:0.5px solid var(--border);
+}
+.rw-gear-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rw-gear-slot{
+  background:rgba(6,0,14,.7);border:0.5px solid var(--border);
+  border-radius:7px;padding:10px 10px;
+}
+.rw-gear-name{font-family:var(--serif);font-size:.65rem;color:var(--text);margin-bottom:4px}
+.rw-gear-runes{display:flex;gap:4px;flex-wrap:wrap}
+.rune-dot{width:10px;height:10px;border-radius:50%;background:var(--purple);opacity:.8}
+.rune-dot.empty{background:transparent;border:0.5px solid var(--border)}
+.rw-talent-tree{display:flex;gap:8px}
+.talent-branch{
+  flex:1;background:rgba(6,0,14,.7);border:0.5px solid var(--border);
+  border-radius:7px;padding:10px 8px;text-align:center;cursor:pointer;
+  transition:all .2s;
+}
+.talent-branch:hover{border-color:rgba(192,132,252,.4);background:rgba(124,58,237,.1)}
+.talent-branch.active{border-color:var(--purple);background:rgba(124,58,237,.15)}
+.tb-icon{font-size:1.2rem;display:block;margin-bottom:4px}
+.tb-name{font-family:var(--serif);font-size:.6rem;color:var(--text);display:block;margin-bottom:2px}
+.tb-desc{font-size:.5rem;color:var(--muted);line-height:1.4}
+.rw-stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.rw-stat{
+  background:rgba(6,0,14,.7);border:0.5px solid var(--border);
+  border-radius:6px;padding:8px;text-align:center;
+}
+.rw-stat-val{font-family:var(--serif);font-size:.85rem;color:var(--purple)}
+.rw-stat-label{font-size:.45rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-top:2px}
+.coming-soon-badge{
+  display:inline-block;font-size:.55rem;letter-spacing:.15em;
+  padding:10px 18px;border-radius:6px;font-family:var(--serif);
+  background:rgba(124,58,237,.1);border:0.5px solid var(--border);
+  color:var(--muted);width:100%;text-align:center;margin-top:8px;
+}
+
+/* ══════════════════════════════════════
+   SHARED COMPONENTS
+══════════════════════════════════════ */
 .section-div{
-  text-align:center;margin:24px 0 16px;position:relative;
+  text-align:center;margin:18px 0 12px;position:relative;
 }
-.section-div::before{
-  content:'';position:absolute;top:50%;left:0;right:0;
-  height:1px;background:var(--border);
-}
+.section-div::before{content:'';position:absolute;top:50%;left:0;right:0;height:0.5px;background:var(--border)}
 .section-div span{
   position:relative;background:var(--bg);
-  padding:0 14px;font-family:'Cinzel',serif;
-  font-size:0.65rem;color:var(--muted);letter-spacing:0.25em;
+  padding:0 12px;font-family:var(--serif);font-size:.6rem;color:var(--muted);letter-spacing:.25em;
 }
-/* ── PITY ── */
-.pity-section{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:11px}
-.pity-bar{
-  background:rgba(255,255,255,0.025);border:1px solid var(--border);
-  border-radius:8px;padding:10px 14px;
+
+/* Scroll selector */
+.scroll-selector-wrap{margin:0 0 16px}
+.scroll-shelf{display:flex;gap:7px;overflow-x:auto;padding-bottom:5px}
+.scroll-shelf::-webkit-scrollbar{height:2px}
+.scroll-shelf::-webkit-scrollbar-thumb{background:rgba(192,132,252,.3);border-radius:2px}
+.scroll-item{
+  flex-shrink:0;width:68px;background:rgba(10,2,25,.8);
+  border:0.5px solid var(--border);border-radius:8px;
+  padding:8px 5px 6px;text-align:center;cursor:pointer;transition:all .2s;position:relative;
 }
-.pity-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-.pity-name{font-size:0.72rem;color:var(--muted);letter-spacing:0.05em}
-.pity-count{font-family:'Cinzel',serif;font-size:0.8rem}
-.pity-track{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
-.pity-fill{height:100%;border-radius:3px;transition:width 0.5s cubic-bezier(.4,0,.2,1)}
+.scroll-item:hover:not(.locked){border-color:rgba(192,132,252,.4)}
+.scroll-item.active{background:rgba(20,4,50,.9)}
+.scroll-item.locked{opacity:.35;cursor:not-allowed}
+.scroll-icon{font-size:1.3rem;margin-bottom:4px;display:block}
+.scroll-name{font-family:var(--serif);font-size:.42rem;letter-spacing:.06em;line-height:1.3;color:var(--text);margin-bottom:3px}
+.scroll-cap{font-family:var(--serif);font-size:.36rem;letter-spacing:.1em;padding:1px 4px;border-radius:3px;display:inline-block}
+.scroll-cost{font-size:.36rem;color:var(--muted);margin-top:2px;font-family:var(--body);font-style:italic}
+.scroll-lock-icon{position:absolute;top:3px;right:3px;font-size:.5rem;opacity:.5}
+.scroll-info{
+  background:rgba(10,2,25,.7);border:0.5px solid var(--border);
+  border-radius:8px;padding:9px 12px;margin-top:8px;
+}
+.si-name{font-family:var(--serif);font-size:.7rem;letter-spacing:.1em;margin-bottom:3px}
+.si-desc{font-size:.6rem;color:var(--muted);font-style:italic;margin-bottom:7px;line-height:1.4}
+.si-rate-row{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.si-rate-bar{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.si-rate-fill{height:100%;border-radius:2px}
+.si-rate-label{font-size:.52rem;color:var(--muted);width:88px;font-family:sans-serif}
+.si-rate-val{font-size:.52rem;width:30px;text-align:right;font-family:sans-serif}
+
+/* Pity bars */
+.pity-section{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.pity-bar{background:rgba(255,255,255,.025);border:0.5px solid var(--border);border-radius:7px;padding:9px 13px}
+.pity-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.pity-name{font-size:.65rem;color:var(--muted);letter-spacing:.04em;font-family:var(--serif)}
+.pity-count{font-family:var(--serif);font-size:.75rem}
+.pity-track{height:4px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.pity-fill{height:100%;border-radius:3px;transition:width .5s}
 .pity-bar.epic .pity-count{color:var(--purple)}
-.pity-bar.epic .pity-fill{background:linear-gradient(90deg,#7c3aed,var(--purple))}
+.pity-bar.epic .pity-fill{background:linear-gradient(90deg,#4c1d95,var(--purple))}
 .pity-bar.legendary .pity-count{color:var(--crimson)}
 .pity-bar.legendary .pity-fill{background:linear-gradient(90deg,#9f1239,var(--crimson))}
-/* ── PULL BUTTONS ── */
-.pull-buttons{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:24px 0 8px}
+
+/* Pull buttons */
+.pull-buttons{display:flex;gap:12px;justify-content:center;margin:16px 0}
 .pull-btn{
-  font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;
-  letter-spacing:0.12em;padding:14px 28px;
-  border-radius:7px;cursor:pointer;
-  position:relative;overflow:hidden;
-  transition:transform 0.15s,box-shadow 0.15s;
-  min-width:165px;text-align:center;
+  font-family:var(--serif);font-size:.8rem;font-weight:600;
+  letter-spacing:.1em;padding:13px 24px;border-radius:7px;cursor:pointer;
+  transition:all .15s;min-width:150px;text-align:center;
 }
-.pull-btn:active:not(:disabled){transform:scale(0.97)}
+.pull-btn:active:not(:disabled){transform:scale(.97)}
 .pull-btn-1{
   background:linear-gradient(135deg,#18003a,#2c0060);
-  color:var(--purple);border:1px solid rgba(192,132,252,0.35);
-  box-shadow:0 0 20px rgba(192,132,252,0.08);
+  color:var(--purple);border:0.5px solid rgba(192,132,252,.35);
 }
-.pull-btn-1:hover:not(:disabled){
-  background:linear-gradient(135deg,#25005a,#420090);
-  box-shadow:0 0 28px rgba(192,132,252,0.18);
-  border-color:rgba(192,132,252,0.6);
-}
+.pull-btn-1:hover:not(:disabled){border-color:rgba(192,132,252,.6);background:linear-gradient(135deg,#25005a,#420090)}
 .pull-btn-10{
   background:linear-gradient(135deg,#1c0a00,#3c1800);
-  color:var(--gold);border:1px solid rgba(251,191,36,0.3);
-  box-shadow:0 0 20px rgba(251,191,36,0.06);
+  color:var(--gold);border:0.5px solid rgba(251,191,36,.3);
 }
-.pull-btn-10:hover:not(:disabled){
-  background:linear-gradient(135deg,#2e1200,#5a2800);
-  box-shadow:0 0 28px rgba(251,191,36,0.15);
-  border-color:rgba(251,191,36,0.55);
-}
-.pull-btn:disabled{opacity:0.28;cursor:not-allowed}
+.pull-btn-10:hover:not(:disabled){border-color:rgba(251,191,36,.55);background:linear-gradient(135deg,#2e1200,#5a2800)}
+.pull-btn:disabled{opacity:.28;cursor:not-allowed}
 .btn-label{display:block}
-.btn-cost{display:block;font-size:0.68rem;font-weight:400;opacity:0.65;margin-top:2px}
-/* ── PULL OVERLAY ── */
+.btn-cost{display:block;font-size:.62rem;font-weight:400;opacity:.6;margin-top:2px}
+
+/* ══════════════════════════════════════
+   PULL OVERLAY
+══════════════════════════════════════ */
 #pull-overlay{
-  display:none;position:fixed;inset:0;
-  z-index:200;overflow:hidden;
+  display:none;position:fixed;inset:0;z-index:300;overflow:hidden;
   flex-direction:column;align-items:center;justify-content:flex-end;
   padding-bottom:60px;
 }
 #pull-overlay.active{display:flex}
-/* Summon scene background — portrait for mobile, landscape for desktop */
 #pull-overlay::before{
   content:'';position:absolute;inset:0;
   background:#06000e url('assets/ui/summon_scene.jpg') center 60%/cover no-repeat;
@@ -529,362 +449,366 @@ header{
     background-position:center 65%;
   }
 }
-/* Dark vignette at bottom so cards/buttons are readable */
 #pull-overlay::after{
   content:'';position:absolute;inset:0;
-  background:linear-gradient(to top,rgba(6,0,14,.85) 0%,rgba(6,0,14,.15) 55%,transparent 100%);
+  background:linear-gradient(to top,rgba(6,0,14,.85) 0%,rgba(6,0,14,.1) 55%,transparent 100%);
   z-index:1;pointer-events:none;
 }
-/* Circle glow pulse on open */
 #circle-glow{
   position:absolute;bottom:20%;left:50%;transform:translateX(-50%);
-  width:min(340px,80vw);height:min(340px,80vw);
-  border-radius:50%;
+  width:min(340px,80vw);height:min(340px,80vw);border-radius:50%;
   background:radial-gradient(circle,rgba(192,132,252,.55) 0%,rgba(124,58,237,.25) 45%,transparent 70%);
   z-index:2;pointer-events:none;
   animation:circleBreath 2.4s ease-in-out infinite;
 }
-/* Desktop — circle is lower in the landscape image */
-@media(min-aspect-ratio:3/4){
-  #circle-glow{bottom:22%;width:min(420px,50vw);height:min(420px,50vw);}
-}
-@keyframes circleBreath{
-  0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}
-  50%{opacity:1;transform:translateX(-50%) scale(1.08)}
-}
-
-/* Card stage — absolutely positioned so cards can fly freely */
-#card-stage{
-  position:absolute;inset:0;z-index:3;pointer-events:none;
-}
-.stage-card{
-  position:absolute;
-  pointer-events:none;
-  transform-origin:center bottom;
-  transform:translate(-50%,-50%) scale(0) rotate(0deg);
-  transition:none;
-  will-change:transform,opacity;
-}
-.stage-card.risen{
-  pointer-events:auto;
-}
-
-/* Post pull */
+@media(min-aspect-ratio:3/4){#circle-glow{bottom:22%;width:min(420px,50vw);height:min(420px,50vw)}}
+@keyframes circleBreath{0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.08)}}
+#card-stage{position:absolute;inset:0;z-index:3;pointer-events:none}
+.stage-card{position:absolute;pointer-events:none;transform-origin:center bottom;transform:translate(-50%,-50%) scale(0);opacity:0;will-change:transform,opacity}
+.stage-card.risen{pointer-events:auto}
 #post-pull{z-index:4;position:relative}
-.pull-container{
-  display:flex;flex-direction:column;align-items:center;
-  gap:14px;width:100%;position:relative;z-index:3;
-}
-.pull-row{display:flex;gap:8px;justify-content:center;flex-wrap:nowrap}
-
-/* ── FLIP CARD ── */
-.fc-wrap{perspective:1000px}
-.fc{
-  position:relative;transform-style:preserve-3d;
-  transition:transform 0.7s cubic-bezier(0.4,0,0.2,1);
-  width:100%;height:100%;border-radius:9px;
-}
-.fc.flipped{transform:rotateY(180deg)}
-.fc-face{
-  position:absolute;inset:0;
-  backface-visibility:hidden;-webkit-backface-visibility:hidden;
-  border-radius:9px;overflow:hidden;
-}
-.fc-back{
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(155deg,#0d0020,#1a0038);
-  border:1px solid rgba(192,132,252,0.18);
-}
-.fc-back svg{width:100%;height:100%}
-.fc-front{
-  transform:rotateY(180deg);
-  display:flex;flex-direction:column;align-items:center;
-  justify-content:space-between;padding:8px 6px;
-}
-.fc-art{flex:1;width:80%;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.fc-art svg{width:100%;height:100%}
-.fc-info{text-align:center;width:100%;padding:4px 2px 0}
-.fc-tier-name{
-  font-family:'Cinzel',serif;font-size:0.52rem;
-  letter-spacing:0.18em;text-transform:uppercase;margin-bottom:3px;
-}
-.fc-name{font-style:italic;font-size:0.58rem;color:#d4c8e8;line-height:1.3}
-/* Card sizes */
-.pull-single .fc-wrap{width:min(210px,62vw);aspect-ratio:2/3}
-.pull-multi .fc-wrap{
-  width:min(108px,calc((100vw - 56px) / 5.2));
-  aspect-ratio:2/3;
-}
-/* ── POST-PULL ── */
-.post-pull{display:none;gap:12px;margin-top:22px;flex-wrap:wrap;justify-content:center}
-.ppbtn{
-  font-family:'Cinzel',serif;font-size:0.8rem;font-weight:700;
-  letter-spacing:0.12em;padding:11px 24px;
-  border-radius:6px;border:1px solid;cursor:pointer;
-  transition:all 0.2s;
-}
-.ppbtn-p{border-color:var(--purple);background:rgba(192,132,252,0.1);color:var(--purple)}
-.ppbtn-p:hover{background:rgba(192,132,252,0.2)}
-.ppbtn-s{border-color:var(--muted);background:rgba(255,255,255,0.02);color:var(--muted)}
+.post-pull{display:none;gap:12px;margin-top:20px;flex-wrap:wrap;justify-content:center}
+.ppbtn{font-family:var(--serif);font-size:.8rem;font-weight:600;letter-spacing:.1em;padding:10px 22px;border-radius:6px;border:0.5px solid;cursor:pointer;transition:all .2s}
+.ppbtn-p{border-color:var(--purple);background:rgba(192,132,252,.1);color:var(--purple)}
+.ppbtn-p:hover{background:rgba(192,132,252,.2)}
+.ppbtn-s{border-color:var(--muted);background:rgba(255,255,255,.02);color:var(--muted)}
 .ppbtn-s:hover{border-color:var(--text);color:var(--text)}
-/* ── CODEX ── */
-.codex-hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px}
-.codex-title{font-family:'Cinzel',serif;font-size:1.05rem;font-weight:700;letter-spacing:0.22em;color:var(--purple)}
-#codex-count{font-size:0.8rem;color:var(--muted)}
-.codex-grid{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:10px;
-}
-@media(max-width:600px){.codex-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}
-@media(max-width:360px){.codex-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.codex-card{
-  aspect-ratio:2/3;border-radius:9px;border:1px solid;
-  overflow:hidden;position:relative;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:space-between;
-  padding:7px 5px;
-  transition:transform 0.2s,box-shadow 0.2s;
-}
-.codex-card:hover{transform:translateY(-3px)}
-.codex-card.cc-unknown{background:#080014;border-color:rgba(255,255,255,0.05)}
-.cc-art{flex:1;width:80%;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.cc-art svg{width:100%;height:100%;max-height:80px}
-.codex-card.cc-unknown .cc-art svg{filter:brightness(0) opacity(0.12)}
-.cc-name{font-size:0.52rem;text-align:center;color:var(--text);font-style:italic;line-height:1.3}
-.codex-card.cc-unknown .cc-name{color:#2a1a4a}
-.cc-tier{font-family:'Cinzel',serif;font-size:0.46rem;letter-spacing:0.1em;text-align:center;margin-top:2px}
-.dupe-badge{
-  position:absolute;top:4px;right:4px;
-  background:rgba(0,0,0,0.85);border:1px solid rgba(255,255,255,0.15);
-  border-radius:10px;font-size:0.5rem;
-  font-family:'Cinzel',serif;color:var(--gold);
-  padding:1px 5px;z-index:2;
-}
-/* ── SUMMON SCREEN BG ── */
-#summon-screen{
-  position:relative;
-}
-#summon-screen::before{
-  content:'';position:fixed;inset:0;z-index:0;
-  background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
-  opacity:0.22;pointer-events:none;
-}
-#summon-screen > *{position:relative;z-index:1;}
 
-/* ── SCROLL SELECTOR ── */
-.scroll-selector-wrap{margin:24px 0 0}
-.scroll-selector-label{
-  font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.3em;
-  color:var(--muted);text-align:center;margin-bottom:12px;text-transform:uppercase;
-}
-.scroll-shelf{
-  display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;
-  justify-content:center;flex-wrap:wrap;
-}
-.scroll-shelf::-webkit-scrollbar{height:3px}
-.scroll-shelf::-webkit-scrollbar-track{background:transparent}
-.scroll-shelf::-webkit-scrollbar-thumb{background:rgba(192,132,252,.3);border-radius:2px}
-.scroll-item{
-  flex-shrink:0;width:72px;
-  background:rgba(10,2,25,.8);border:1px solid var(--border);
-  border-radius:8px;padding:9px 6px 7px;
-  text-align:center;cursor:pointer;transition:all .2s;
-  position:relative;
-}
-.scroll-item:hover:not(.locked){border-color:rgba(192,132,252,.4);background:rgba(20,4,50,.8)}
-.scroll-item.active{background:rgba(20,4,50,.9)}
-.scroll-item.locked{opacity:.38;cursor:not-allowed}
-.scroll-icon{font-size:1.4rem;margin-bottom:5px;display:block}
-.scroll-name{font-family:'Cinzel',serif;font-size:0.44rem;letter-spacing:.08em;
-  line-height:1.3;color:var(--text);margin-bottom:4px;}
-.scroll-cap{
-  font-family:'Cinzel',serif;font-size:0.38rem;letter-spacing:.12em;
-  padding:1px 4px;border-radius:3px;display:inline-block;
-}
-.scroll-lock-icon{
-  position:absolute;top:4px;right:4px;
-  font-size:.55rem;opacity:.6;
-}
-/* ── CODEX BG ── */
-#codex-screen{
-  position:relative;
-}
-#codex-screen::before{
-  content:'';position:fixed;inset:0;z-index:0;
-  background:url('assets/ui/codex_bg.jpg') center center/cover no-repeat;
-  opacity:0.18;pointer-events:none;
-}
-/* ── MISC ── */
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.fade-in{animation:fadeIn 0.4s ease both}
+/* Flip card */
+.fc-wrap{perspective:1000px}
+.fc{position:relative;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.4,0,.2,1);width:100%;height:100%;border-radius:9px}
+.fc.flipped{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:9px;overflow:hidden}
+.fc-back{display:flex;align-items:center;justify-content:center;background:linear-gradient(155deg,#0d0020,#1a0038);border:0.5px solid rgba(192,132,252,.2)}
+.fc-back svg{width:100%;height:100%}
+.fc-front{transform:rotateY(180deg);padding:0}
 
-/* ── SCROLL INFO BAR ── */
-.scroll-info{
-  max-width:480px;margin:10px auto 0;
-  background:rgba(10,2,25,.7);border:1px solid var(--border);
-  border-radius:8px;padding:10px 14px;
-  display:flex;align-items:flex-start;gap:12px;
-}
-.si-rates{flex:1}
-.si-name{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.12em;margin-bottom:4px}
-.si-desc{font-size:.65rem;color:var(--muted);font-style:italic;margin-bottom:7px;line-height:1.4}
-.si-rate-row{display:flex;align-items:center;gap:7px;margin-bottom:3px}
-.si-rate-bar{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
-.si-rate-fill{height:100%;border-radius:2px}
-.si-rate-label{font-size:.55rem;color:var(--muted);width:90px;font-family:sans-serif}
-.si-rate-val{font-size:.55rem;width:32px;text-align:right;font-family:sans-serif}
+/* Flash */
+#tier-flash{position:fixed;inset:0;z-index:400;pointer-events:none;opacity:0;transition:opacity .12s}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+.fade-in{animation:fadeIn .4s ease both}
 </style>
 </head>
 <body>
 
-<!-- ── BG SIGILS ── -->
-<svg id="bg-sigil" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="200" cy="200" r="195" fill="none" stroke="#c084fc" stroke-width="0.7"/>
-  <circle cx="200" cy="200" r="162" fill="none" stroke="#c084fc" stroke-width="0.45"/>
-  <circle cx="200" cy="200" r="128" fill="none" stroke="#c084fc" stroke-width="0.45"/>
-  <circle cx="200" cy="200" r="88" fill="none" stroke="#c084fc" stroke-width="0.4"/>
-  <polygon points="200,8 380,138 314,348 86,348 20,138" fill="none" stroke="#c084fc" stroke-width="0.75"/>
-  <polygon points="200,38 352,152 296,324 104,324 48,152" fill="none" stroke="#c084fc" stroke-width="0.4"/>
-  <line x1="200" y1="5" x2="200" y2="395" stroke="#c084fc" stroke-width="0.4"/>
-  <line x1="5" y1="200" x2="395" y2="200" stroke="#c084fc" stroke-width="0.4"/>
-  <line x1="34" y1="34" x2="366" y2="366" stroke="#c084fc" stroke-width="0.3"/>
-  <line x1="366" y1="34" x2="34" y2="366" stroke="#c084fc" stroke-width="0.3"/>
-  <g transform="rotate(0,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚠ</text></g>
-  <g transform="rotate(45,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚢ</text></g>
-  <g transform="rotate(90,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚦ</text></g>
-  <g transform="rotate(135,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚨ</text></g>
-  <g transform="rotate(180,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚱ</text></g>
-  <g transform="rotate(225,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚲ</text></g>
-  <g transform="rotate(270,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚷ</text></g>
-  <g transform="rotate(315,200,200)"><text x="196" y="4" font-size="9" fill="#c084fc" font-family="serif">ᚹ</text></g>
-  <circle cx="200" cy="200" r="22" fill="none" stroke="#c084fc" stroke-width="0.9"/>
-  <circle cx="200" cy="200" r="6" fill="none" stroke="#c084fc" stroke-width="1.2"/>
-  <circle cx="200" cy="200" r="2" fill="#c084fc" opacity="0.5"/>
-  <line x1="178" y1="200" x2="222" y2="200" stroke="#c084fc" stroke-width="0.5"/>
-  <line x1="200" y1="178" x2="200" y2="222" stroke="#c084fc" stroke-width="0.5"/>
-  <polygon points="200,108 228,128 218,160 182,160 172,128" fill="none" stroke="#c084fc" stroke-width="0.5"/>
-</svg>
-<svg id="bg-sigil2" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="150" cy="150" r="140" fill="none" stroke="#f43f5e" stroke-width="0.6"/>
-  <polygon points="150,15 272,97 228,245 72,245 28,97" fill="none" stroke="#f43f5e" stroke-width="0.5"/>
-  <circle cx="150" cy="150" r="90" fill="none" stroke="#f43f5e" stroke-width="0.4"/>
-  <line x1="20" y1="150" x2="280" y2="150" stroke="#f43f5e" stroke-width="0.35"/>
-  <line x1="150" y1="20" x2="150" y2="280" stroke="#f43f5e" stroke-width="0.35"/>
-</svg>
-
-<!-- ── FLASH OVERLAY ── -->
+<div id="global-bg"></div>
+<div id="global-bg-vignette"></div>
 <div id="tier-flash"></div>
 
 <!-- ── PULL OVERLAY ── -->
 <div id="pull-overlay">
   <div id="circle-glow"></div>
   <div id="card-stage"></div>
-  <div id="pull-container" class="pull-container"></div>
+  <div id="pull-container"></div>
   <div id="post-pull" class="post-pull">
     <button class="ppbtn ppbtn-p" id="btn-again">◆ Summon Again</button>
-    <button class="ppbtn ppbtn-s" id="btn-codex-nav">View Codex</button>
+    <button class="ppbtn ppbtn-s" id="btn-close-pull">Close</button>
   </div>
 </div>
 
-<div id="app">
-  <header>
+<!-- ── SHELL ── -->
+<div id="shell">
+  <!-- TOP BAR -->
+  <div id="topbar">
     <div>
-      <div class="logo">INF<span class="logo-e">E</span>RNUM</div>
-      <span class="logo-sub">ABYSSAL SUMMONS</span>
+      <div class="logo-mark">INF<span>E</span>RNUM</div>
+      <span class="logo-sub">ABYSSAL SANCTUM</span>
     </div>
-    <div id="shard-display" onclick="addDemoShards()" title="Click to add 500 demo shards">
-      <span class="shard-gem">◆</span>
-      <div>
-        <div id="shard-count">1,200</div>
-        <div class="shard-add-label">+ Add Demo Shards</div>
-      </div>
-    </div>
-  </header>
-
-  <nav class="tabs">
-    <button class="tab-btn active" data-tab="summon" onclick="switchTab('summon')">SUMMON</button>
-    <button class="tab-btn" data-tab="codex" onclick="switchTab('codex')">CODEX</button>
-  </nav>
-
-  <!-- ── SUMMON SCREEN ── -->
-  <div id="summon-screen" class="active">
-    <div class="featured-section">
-      <div class="featured-eyebrow">◇ LIMITED BANNER · VOID GATE ◇</div>
-      <div class="featured-card">
-        <div class="rate-up-badge">RATE UP</div>
-        <div class="featured-art" id="featured-art"></div>
-        <div class="featured-info">
-          <div class="featured-tier-label">✦ VOID PRIMORDIAL ✦</div>
-          <div class="featured-name">The Unnamed One</div>
+    <div class="topbar-right">
+      <div id="shard-display" onclick="addDemoShards()">
+        <span class="shard-gem">◆</span>
+        <div>
+          <div id="shard-count">1,200</div>
+          <span class="shard-add">+ Add Demo</span>
         </div>
       </div>
-      <div class="countdown-wrap">
-        <div class="countdown-label">BANNER EXPIRES IN</div>
-        <div id="countdown">—</div>
-      </div>
-    </div>
-
-    <div class="section-div"><span>CHOOSE SCROLL</span></div>
-
-    <div class="scroll-selector-wrap">
-      <div class="scroll-shelf" id="scroll-shelf"></div>
-      <div class="scroll-info" id="scroll-info"></div>
-    </div>
-
-    <div class="section-div"><span>PITY TRACKER</span></div>
-
-    <div class="pity-section">
-      <div class="pity-bar epic">
-        <div class="pity-header">
-          <span class="pity-name">Epic Pity — Greater Demon+ guaranteed at 40</span>
-          <span class="pity-count" id="epic-count">0 / 40</span>
-        </div>
-        <div class="pity-track"><div class="pity-fill" id="epic-fill" style="width:0%"></div></div>
-      </div>
-      <div class="pity-bar legendary">
-        <div class="pity-header">
-          <span class="pity-name">Legendary Pity — Archdemon+ guaranteed at 70</span>
-          <span class="pity-count" id="leg-count">0 / 70</span>
-        </div>
-        <div class="pity-track"><div class="pity-fill" id="leg-fill" style="width:0%"></div></div>
-      </div>
-    </div>
-
-    <div class="pull-buttons">
-      <button class="pull-btn pull-btn-1" id="btn-pull-1" onclick="doPull(1)">
-        <span class="btn-label">Summon ×1</span>
-        <span class="btn-cost">◆ 100 Soul Shards</span>
-      </button>
-      <button class="pull-btn pull-btn-10" id="btn-pull-10" onclick="doPull(10)">
-        <span class="btn-label">Summon ×10</span>
-        <span class="btn-cost">◆ 900 Soul Shards</span>
-      </button>
+      <div id="player-level">LVL 1</div>
     </div>
   </div>
 
-  <!-- ── CODEX SCREEN ── -->
-  <div id="codex-screen">
-    <div class="codex-hd">
-      <div class="codex-title">CODEX INFERNUM</div>
-      <div id="codex-count">0 / 28 demons bound</div>
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- HUB -->
+    <div id="screen-hub" class="screen active">
+      <div class="hub-inner">
+        <!-- Featured banner -->
+        <div class="featured-banner">
+          <div class="feat-eyebrow">✦ VOID GATE · RATE UP ✦</div>
+          <div class="feat-art" id="feat-art-container">
+            <video autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block"
+              onerror="this.style.display='none'">
+              <source src="assets/demons/the_unnamed_one_card.mp4" type="video/mp4">
+            </video>
+            <img src="assets/borders/infernum_border_void.png" class="feat-border" alt="" onerror="this.style.display='none'">
+            <div class="feat-art-overlay"></div>
+          </div>
+          <div class="feat-name">The Unnamed One</div>
+          <div class="feat-tier">✦ VOID PRIMORDIAL ✦</div>
+          <div class="feat-countdown-label">BANNER EXPIRES IN</div>
+          <div id="hub-countdown">—</div>
+          <div class="feat-pull-btns">
+            <button class="feat-btn feat-btn-1" id="hub-pull-1" onclick="doPull(1)">
+              Summon ×1<br><small style="font-size:.6rem;opacity:.6">◆ 800</small>
+            </button>
+            <button class="feat-btn feat-btn-10" id="hub-pull-10" onclick="doPull(10)">
+              Summon ×10<br><small style="font-size:.6rem;opacity:.6">◆ 7,200</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="hub-stats">
+          <div class="hstat" onclick="switchScreen('codex')">
+            <div class="hstat-val" id="stat-bound">0</div>
+            <div class="hstat-label">Bound</div>
+          </div>
+          <div class="hstat" onclick="switchScreen('realms')">
+            <div class="hstat-val" id="stat-stages">0</div>
+            <div class="hstat-label">Conquered</div>
+          </div>
+          <div class="hstat" onclick="switchScreen('garrison')">
+            <div class="hstat-val" id="stat-garrison">0</div>
+            <div class="hstat-label">Garrisoned</div>
+          </div>
+        </div>
+
+        <!-- Garrison ticker -->
+        <div class="garrison-ticker">
+          <div class="gt-icon">⚑</div>
+          <div class="gt-body">
+            <div class="gt-label">Garrison Income</div>
+            <div class="gt-income" id="hub-income">◆ 0</div>
+            <div class="gt-rate" id="hub-rate">No garrisons active</div>
+          </div>
+          <button class="gt-collect" onclick="collectAll()">Collect</button>
+        </div>
+
+        <!-- Nav tiles -->
+        <div class="hub-tiles">
+          <div class="hub-tile" onclick="switchScreen('summon')">
+            <div class="tile-icon">📜</div>
+            <div class="tile-name">Summons</div>
+            <div class="tile-desc">8 scroll types · Infernal pity system</div>
+            <span class="tile-badge" style="background:rgba(192,132,252,.12);color:var(--purple);border:0.5px solid rgba(192,132,252,.3)">ACTIVE BANNER</span>
+          </div>
+          <div class="hub-tile" onclick="switchScreen('realms')">
+            <div class="tile-icon">⚔</div>
+            <div class="tile-name">Realms</div>
+            <div class="tile-desc">8 realms · 13 stages each · Conquest</div>
+            <span class="tile-badge" style="background:rgba(239,68,68,.1);color:#f43f5e;border:0.5px solid rgba(239,68,68,.25)">0 / 8 REALMS</span>
+          </div>
+          <div class="hub-tile" onclick="switchScreen('codex')">
+            <div class="tile-icon">📖</div>
+            <div class="tile-name">Codex</div>
+            <div class="tile-desc">Your bound demon collection</div>
+            <span class="tile-badge" id="codex-badge" style="background:rgba(96,165,250,.1);color:#60a5fa;border:0.5px solid rgba(96,165,250,.25)">0 / 28</span>
+          </div>
+          <div class="hub-tile" onclick="switchScreen('riftwalk')">
+            <div class="tile-icon">🌀</div>
+            <div class="tile-name">Rift Walker</div>
+            <div class="tile-desc">Gear · Runes · Talent tree</div>
+            <span class="tile-badge" style="background:rgba(251,191,36,.1);color:var(--gold);border:0.5px solid rgba(251,191,36,.25)">LVL 1</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="codex-grid" id="codex-grid"></div>
+
+    <!-- SUMMON -->
+    <div id="screen-summon" class="screen">
+      <div class="summon-inner">
+        <div class="section-div"><span>CHOOSE SCROLL</span></div>
+        <div class="scroll-selector-wrap">
+          <div class="scroll-shelf" id="scroll-shelf"></div>
+          <div class="scroll-info" id="scroll-info"></div>
+        </div>
+        <div class="section-div"><span>PITY TRACKER</span></div>
+        <div class="pity-section">
+          <div class="pity-bar epic">
+            <div class="pity-header">
+              <span class="pity-name">Epic Pity — Greater Demon+ at 40</span>
+              <span class="pity-count" id="epic-count">0 / 40</span>
+            </div>
+            <div class="pity-track"><div class="pity-fill" id="epic-fill" style="width:0%"></div></div>
+          </div>
+          <div class="pity-bar legendary">
+            <div class="pity-header">
+              <span class="pity-name">Legendary Pity — Archdemon+ at 70</span>
+              <span class="pity-count" id="leg-count">0 / 70</span>
+            </div>
+            <div class="pity-track"><div class="pity-fill" id="leg-fill" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="pull-buttons">
+          <button class="pull-btn pull-btn-1" id="btn-pull-1" onclick="doPull(1)">
+            <span class="btn-label">Summon ×1</span>
+            <span class="btn-cost" id="cost-1-label">◆ 800</span>
+          </button>
+          <button class="pull-btn pull-btn-10" id="btn-pull-10" onclick="doPull(10)">
+            <span class="btn-label">Summon ×10</span>
+            <span class="btn-cost" id="cost-10-label">◆ 7,200</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CODEX -->
+    <div id="screen-codex" class="screen">
+      <div class="codex-inner">
+        <div class="codex-hd">
+          <div class="codex-title">CODEX INFERNUM</div>
+          <div id="codex-count">0 / 28 demons bound</div>
+        </div>
+        <div class="codex-grid" id="codex-grid"></div>
+      </div>
+    </div>
+
+    <!-- REALMS -->
+    <div id="screen-realms" class="screen">
+      <div class="realms-inner">
+        <div class="section-title">Realm Conquest</div>
+        <div class="realms-grid" id="realms-grid"></div>
+      </div>
+    </div>
+
+    <!-- GARRISON -->
+    <div id="screen-garrison" class="screen">
+      <div class="garrison-inner">
+        <div class="garrison-summary">
+          <div>
+            <div class="gsumm-label">Accumulated Income</div>
+            <div class="gsumm-val" id="garrison-total">◆ 0</div>
+            <div class="gsumm-rate" id="garrison-rate-label">0 ◆/hr from 0 garrisons</div>
+          </div>
+          <button class="collect-all" onclick="collectAll()">Collect All</button>
+        </div>
+        <div class="garrison-slots" id="garrison-slots"></div>
+      </div>
+    </div>
+
+    <!-- RIFT WALKER -->
+    <div id="screen-riftwalk" class="screen">
+      <div class="rw-inner">
+        <div class="rw-hero">
+          <span class="rw-silhouette">🌀</span>
+          <div class="rw-name">Rift Walker</div>
+          <div class="rw-title">The wound between worlds</div>
+        </div>
+        <div class="rw-section">
+          <div class="rw-section-title">Stats</div>
+          <div class="rw-stats-grid">
+            ${[['ATK','4,200'],['DEF','3,100'],['PWR','3,800'],['HP','28,000'],['SPD','12'],['CRIT','15%']].map(([l,v])=>`<div class="rw-stat"><div class="rw-stat-val">${v}</div><div class="rw-stat-label">${l}</div></div>`).join('')}
+          </div>
+        </div>
+        <div class="rw-section">
+          <div class="rw-section-title">Gear Slots</div>
+          <div class="rw-gear-grid" id="rw-gear"></div>
+        </div>
+        <div class="rw-section">
+          <div class="rw-section-title">Talent Tree</div>
+          <div class="rw-talent-tree">
+            ${[['🔗','Binder','Bonds cost less · demons act sooner'],['🛡','Warden','Rune power +25%'],['✦','Void-Touched','IE gen +15%']].map(([ic,nm,ds],i)=>`<div class="talent-branch${i===0?' active':''}"><span class="tb-icon">${ic}</span><span class="tb-name">${nm}</span><span class="tb-desc">${ds}</span></div>`).join('')}
+          </div>
+        </div>
+        <div class="coming-soon-badge">⚔ Full gear & rune system — coming with battle system</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV -->
+  <div id="bottomnav">
+    <button class="nav-btn active" data-screen="hub" onclick="switchScreen('hub',this)">
+      <span class="nav-icon">🏛</span><span class="nav-label">Sanctum</span>
+    </button>
+    <button class="nav-btn" data-screen="summon" onclick="switchScreen('summon',this)">
+      <span class="nav-icon">📜</span><span class="nav-label">Summon</span>
+    </button>
+    <button class="nav-btn" data-screen="realms" onclick="switchScreen('realms',this)">
+      <span class="nav-icon">⚔</span><span class="nav-label">Realms</span>
+    </button>
+    <button class="nav-btn" data-screen="codex" onclick="switchScreen('codex',this)">
+      <span class="nav-icon">📖</span><span class="nav-label">Codex</span>
+    </button>
+    <button class="nav-btn" data-screen="garrison" onclick="switchScreen('garrison',this)">
+      <span class="nav-icon">⚑</span><span class="nav-label">Garrison</span>
+    </button>
+    <button class="nav-btn" data-screen="riftwalk" onclick="switchScreen('riftwalk',this)">
+      <span class="nav-icon">🌀</span><span class="nav-label">Rift Walker</span>
+    </button>
   </div>
-</div>
+</div><!-- /shell -->
 
 <script>
-/* ═══════════════════════════════════════════
-   DATA
-═══════════════════════════════════════════ */
+// ═══════════════════════════════════════════
+// DEMON CARD CLASS (inline)
+// ═══════════════════════════════════════════
+</script>
+<script>
+(function(global){'use strict';
+var TIER_SLUGS=[null,'shade','imp','fiend','greater','archdemon','sinlord','void'];
+var ASPECT=504/360;
+function scaleName(w){return 9+(w-180)/45}
+function scaleTier(w){return 7+(w-180)/90}
+function DemonCard(demon,options){
+  if(!(this instanceof DemonCard))return new DemonCard(demon,options);
+  if(!demon)throw new Error('DemonCard: demon required');
+  options=options||{};
+  this.demon=demon;
+  this.opts={width:options.width!=null?options.width:180,showName:options.showName!==false,showTier:options.showTier!==false,showCount:options.showCount!==false,animate:options.animate!==false,clickable:options.clickable===true,onClick:typeof options.onClick==='function'?options.onClick:null};
+  this._onClick=null;this._onVideoError=null;this.el=this._build();
+}
+DemonCard.prototype._build=function(){
+  var d=this.demon,o=this.opts,w=o.width,h=Math.round(w*ASPECT),color=d.color||'#fff';
+  var slug=TIER_SLUGS[d.tier]||'shade';
+  var root=document.createElement('div');root.className='demon-card';
+  root.setAttribute('data-demon-id',d.id||'');root.setAttribute('data-tier',String(d.tier));
+  applyStyles(root,{width:w+'px',height:h+'px',position:'relative',borderRadius:'6px',overflow:'hidden',cursor:o.clickable?'pointer':'default',transform:'translateZ(0)'});
+  var video=document.createElement('video');
+  video.src='assets/demons/'+d.id+'_card.mp4';video.muted=true;video.loop=true;video.playsInline=true;
+  video.setAttribute('playsinline','');video.setAttribute('webkit-playsinline','');video.setAttribute('disablepictureinpicture','');
+  if(o.animate){video.autoplay=true;var pp=video.play();if(pp&&typeof pp.catch==='function')pp.catch(function(){});}
+  else{video.autoplay=false;video.pause();}
+  applyStyles(video,{width:'100%',height:'100%',objectFit:'cover',display:'block'});
+  var self=this;
+  this._onVideoError=function(){if(video.parentNode)video.parentNode.replaceChild(self._buildFallback(w,h,color,d.name),video);};
+  video.addEventListener('error',this._onVideoError);this._video=video;root.appendChild(video);
+  // Border image
+  var tierBorderSlugs=['shade','imp','fiend','greater','archdemon','sinlord','void'];
+  var borderSlug=tierBorderSlugs[(d.tier-1)]||'shade';
+  var border=document.createElement('img');border.src='assets/borders/infernum_border_'+borderSlug+'.png';border.alt='';
+  applyStyles(border,{position:'absolute',top:'0',left:'0',right:'0',bottom:'0',width:'100%',height:'100%',objectFit:'fill',pointerEvents:'none',zIndex:'2'});
+  border.addEventListener('error',function(){root.style.outline='2px solid '+color;root.style.boxShadow='inset 0 0 0 1px '+color+'90,0 0 18px '+color+'60';border.style.display='none';});
+  root.appendChild(border);
+  if(o.showCount&&d.count&&d.count>1){var badge=document.createElement('div');badge.className='card-count-badge';badge.textContent='×'+d.count;applyStyles(badge,{position:'absolute',top:'4px',left:'4px',background:'rgba(6,0,14,.85)',border:'0.5px solid '+color,borderRadius:'4px',padding:'2px 5px',fontFamily:'sans-serif',fontSize:'8px',color:color,letterSpacing:'1px',lineHeight:'1',pointerEvents:'none',zIndex:'3'});root.appendChild(badge);}
+  if(o.showName||o.showTier){var bar=document.createElement('div');applyStyles(bar,{position:'absolute',bottom:'0',left:'0',right:'0',background:'linear-gradient(to top,rgba(6,0,14,.9) 0%,transparent 100%)',padding:'12px 6px 5px',textAlign:'center',pointerEvents:'none',zIndex:'3'});
+  if(o.showName&&d.name){var nameEl=document.createElement('div');nameEl.textContent=d.name;applyStyles(nameEl,{fontFamily:"'Cinzel',Georgia,serif",fontSize:scaleName(w).toFixed(2)+'px',color:color,letterSpacing:'1px',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'});bar.appendChild(nameEl);}
+  if(o.showTier&&d.tierName){var tierEl=document.createElement('div');tierEl.textContent=d.tierName;applyStyles(tierEl,{fontFamily:'sans-serif',fontSize:scaleTier(w).toFixed(2)+'px',color:color,opacity:'0.7',letterSpacing:'2px',textTransform:'uppercase'});bar.appendChild(tierEl);}
+  root.appendChild(bar);}
+  if(o.clickable&&o.onClick){this._onClick=function(e){o.onClick(self.demon,e);};root.addEventListener('click',this._onClick);}
+  return root;
+};
+DemonCard.prototype._buildFallback=function(w,h,color,name){var wrap=document.createElement('div');applyStyles(wrap,{width:'100%',height:'100%',position:'relative',background:'#0a0410',display:'block'});var tint=document.createElement('div');applyStyles(tint,{position:'absolute',top:'0',left:'0',right:'0',bottom:'0',background:color,opacity:'0.15'});wrap.appendChild(tint);var initial=document.createElement('div');initial.textContent=(name&&name.charAt(0).toUpperCase())||'?';applyStyles(initial,{position:'absolute',top:'0',left:'0',right:'0',bottom:'0',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Cinzel',Georgia,serif",fontSize:Math.round(w*0.4)+'px',color:color,opacity:'0.6',lineHeight:'1',userSelect:'none'});wrap.appendChild(initial);return wrap;};
+DemonCard.prototype.destroy=function(){if(this._onClick&&this.el){this.el.removeEventListener('click',this._onClick);this._onClick=null;}if(this._video){if(this._onVideoError){this._video.removeEventListener('error',this._onVideoError);this._onVideoError=null;}try{this._video.pause();this._video.removeAttribute('src');this._video.load();}catch(e){}this._video=null;}if(this.el&&this.el.parentNode)this.el.parentNode.removeChild(this.el);};
+function applyStyles(el,styles){for(var k in styles)if(Object.prototype.hasOwnProperty.call(styles,k))el.style[k]=styles[k];}
+global.DemonCard=DemonCard;
+})(typeof window!=='undefined'?window:this);
+</script>
+
+<script>
+// ═══════════════════════════════════════════
+// GAME DATA
+// ═══════════════════════════════════════════
 const TIERS=[
-  {id:'shade',         name:'Shade',          label:'Common',    color:'#888888',bg:'#111111',      idx:0},
-  {id:'imp',           name:'Imp',            label:'Uncommon',  color:'#14b8a6',bg:'#042f2e',      idx:1},
-  {id:'fiend',         name:'Fiend',          label:'Rare',      color:'#60a5fa',bg:'#0c1a40',      idx:2},
-  {id:'greater_demon', name:'Greater Demon',  label:'Epic',      color:'#c084fc',bg:'#1e0840',      idx:3},
-  {id:'archdemon',     name:'Archdemon',      label:'Legendary', color:'#f43f5e',bg:'#300010',      idx:4},
-  {id:'sin_lord',      name:'Sin Lord',       label:'Mythic',    color:'#fbbf24',bg:'#1c0a00',      idx:5},
-  {id:'void_primordial',name:'Void Primordial',label:'Abyssal',  color:'#e0e0ff',bg:'#09000f',      idx:6},
+  {id:'shade',         name:'Shade',          label:'Common',    color:'#888888',bg:'#111111',idx:0},
+  {id:'imp',           name:'Imp',            label:'Uncommon',  color:'#14b8a6',bg:'#042f2e',idx:1},
+  {id:'fiend',         name:'Fiend',          label:'Rare',      color:'#60a5fa',bg:'#0c1a40',idx:2},
+  {id:'greater_demon', name:'Greater Demon',  label:'Epic',      color:'#c084fc',bg:'#1e0840',idx:3},
+  {id:'archdemon',     name:'Archdemon',      label:'Legendary', color:'#f43f5e',bg:'#300010',idx:4},
+  {id:'sin_lord',      name:'Sin Lord',       label:'Mythic',    color:'#fbbf24',bg:'#1c0a00',idx:5},
+  {id:'void_primordial',name:'Void Primordial',label:'Abyssal',  color:'#e0e0ff',bg:'#09000f',idx:6},
 ];
 const PROBS=[0.454,0.270,0.150,0.080,0.035,0.010,0.001];
 const POOL={
@@ -896,12 +820,10 @@ const POOL={
   sin_lord:       ["Vrath'ax",'Avara','Luxiel',"Gorm'than",'Envar','Vainglory','Gorgethorn'],
   void_primordial:['The Unnamed One','Null-That-Speaks'],
 };
-// All demons sorted tier-desc for codex
 const ALL_DEMONS=[];
 for(const t of TIERS) for(const n of POOL[t.id]) ALL_DEMONS.push({name:n,tier:t});
 ALL_DEMONS.sort((a,b)=>b.tier.idx-a.tier.idx||a.name.localeCompare(b.name));
 
-// Maps demon name → video/border filename stem
 const DEMON_IDS={
   'Mournveil':'mournveil','Ashwhisper':'ashwhisper','Gravecoil':'gravecoil',
   'Hollowborn':'hollowborn','Duskfang':'duskfang',
@@ -914,395 +836,81 @@ const DEMON_IDS={
   "Gorm'than":'gormthan','Envar':'envar','Vainglory':'vainglory','Gorgethorn':'gorgethorn',
   'The Unnamed One':'the_unnamed_one','Null-That-Speaks':'null_that_speaks',
 };
-
-// Maps tier idx → border filename slug
 const TIER_BORDER_SLUGS=['shade','imp','fiend','greater','archdemon','sinlord','void'];
 
-/* ═══════════════════════════════════════════
-   SCROLL DEFINITIONS
-═══════════════════════════════════════════ */
 const SCROLLS=[
-  {
-    id:'whisper',name:'Whisper Scroll',icon:'📜',
-    color:'#888780',capLabel:'UNCOMMON',capColor:'#14b8a6',
-    cost:'Free · Daily login',locked:false,
-    desc:'Given freely. The ink is made from the tears of Shades.',
-    probs:[0.75,0.25,0,0,0,0,0],
-    pity:{epic:0,leg:0},
-    rates:[
-      {label:'Shade',pct:75,color:'#888780'},
-      {label:'Imp',pct:25,color:'#14b8a6'},
-    ]
-  },
-  {
-    id:'twilight',name:'Twilight Scroll',icon:'🌒',
-    color:'#60a5fa',capLabel:'RARE',capColor:'#60a5fa',
-    cost:'300 ◆',locked:false,
-    desc:'Standard issue. Reliable. Boring — until it isn\'t.',
-    probs:[0.45,0.30,0.25,0,0,0,0],
-    pity:{epic:0,leg:0},
-    rates:[
-      {label:'Shade',pct:45,color:'#888780'},
-      {label:'Imp',pct:30,color:'#14b8a6'},
-      {label:'Fiend',pct:25,color:'#60a5fa'},
-    ]
-  },
-  {
-    id:'infernal',name:'Infernal Scroll',icon:'🔥',
-    color:'#c084fc',capLabel:'EPIC',capColor:'#c084fc',
-    cost:'800 ◆',locked:false,
-    desc:'Forged from contracts of Greater Demons who agreed to be summoned.',
-    probs:[0,0.30,0.45,0.25,0,0,0],
-    pity:{epic:40,leg:0},
-    rates:[
-      {label:'Imp',pct:30,color:'#14b8a6'},
-      {label:'Fiend',pct:45,color:'#60a5fa'},
-      {label:'Greater Demon',pct:25,color:'#c084fc'},
-    ]
-  },
-  {
-    id:'bloodpact',name:'Blood Pact Scroll',icon:'🩸',
-    color:'#f43f5e',capLabel:'LEGENDARY',capColor:'#f43f5e',
-    cost:'2,400 ◆',locked:false,
-    desc:'The contract binds. An Archdemon summoned this way is furious.',
-    probs:[0,0,0.20,0.55,0.25,0,0],
-    pity:{epic:0,leg:70},
-    rates:[
-      {label:'Fiend',pct:20,color:'#60a5fa'},
-      {label:'Greater Demon',pct:55,color:'#c084fc'},
-      {label:'Archdemon',pct:25,color:'#f43f5e'},
-    ]
-  },
-  {
-    id:'sincodex',name:'Sin Codex Scroll',icon:'⭐',
-    color:'#fbbf24',capLabel:'MYTHIC',capColor:'#fbbf24',
-    cost:'Sin Essence only',locked:true,lockHint:'Conquer a Sin Realm to unlock',
-    desc:'One of seven. Cannot be purchased. Earned by conquering a Sin Realm.',
-    probs:[0,0,0,0.25,0.50,0.25,0],
-    pity:{epic:0,leg:0,mythic:90},
-    rates:[
-      {label:'Greater Demon',pct:25,color:'#c084fc'},
-      {label:'Archdemon',pct:50,color:'#f43f5e'},
-      {label:'Sin Lord',pct:25,color:'#fbbf24'},
-    ]
-  },
-  {
-    id:'realmrift',name:'Realm Rift Scroll',icon:'🌀',
-    color:'#2dd4bf',capLabel:'REALM NATIVE',capColor:'#2dd4bf',
-    cost:'Realm Essence',locked:true,lockHint:'Conquer a realm and station a demon',
-    desc:'Torn from a conquered world. Only summons realm-native demons.',
-    probs:[0,0,0.45,0.35,0.20,0,0],
-    pity:{epic:0,leg:0},
-    rates:[
-      {label:'Native Common',pct:45,color:'#888780'},
-      {label:'Native Rare',pct:35,color:'#60a5fa'},
-      {label:'Native Epic+',pct:20,color:'#f43f5e'},
-    ]
-  },
-  {
-    id:'voidtear',name:'Void Tear Scroll',icon:'◈',
-    color:'#e0e0ff',capLabel:'ABYSSAL',capColor:'#e0e0ff',
-    cost:'Void Echoes only',locked:true,lockHint:'Defeat a Void Primordial to earn',
-    desc:'It screams when you hold it. Nobody knows who made it.',
-    probs:[0,0,0,0,0.20,0.50,0.30],
-    pity:{epic:0,leg:0,abyssal:200},
-    rates:[
-      {label:'Archdemon',pct:20,color:'#f43f5e'},
-      {label:'Sin Lord',pct:50,color:'#fbbf24'},
-      {label:'Void Primordial',pct:30,color:'#e0e0ff'},
-    ]
-  },
-  {
-    id:'event',name:'Rift Event Scroll',icon:'⚡',
-    color:'#fb923c',capLabel:'EVENT',capColor:'#fb923c',
-    cost:'Event currency',locked:true,lockHint:'Available during active Rift events',
-    desc:'Limited. Urgent. Already almost gone. Miss the event, miss the demon.',
-    probs:[0,0,0.30,0.30,0.20,0.15,0.05],
-    pity:{epic:40,leg:0},
-    rates:[
-      {label:'Event Common',pct:30,color:'#888780'},
-      {label:'Event Rare/Epic',pct:50,color:'#c084fc'},
-      {label:'Event Exclusive',pct:20,color:'#fb923c'},
-    ]
-  },
+  {id:'whisper',name:'Whisper Scroll',icon:'📜',color:'#888780',capLabel:'UNCOMMON',capColor:'#14b8a6',cost:'Free',locked:false,desc:'Given freely.',probs:[0.75,0.25,0,0,0,0,0],pity:{},rates:[{label:'Shade',pct:75,color:'#888780'},{label:'Imp',pct:25,color:'#14b8a6'}]},
+  {id:'twilight',name:'Twilight Scroll',icon:'🌒',color:'#60a5fa',capLabel:'RARE',capColor:'#60a5fa',cost:'300 ◆',locked:false,desc:'Standard issue.',probs:[0.45,0.30,0.25,0,0,0,0],pity:{},rates:[{label:'Shade',pct:45,color:'#888780'},{label:'Imp',pct:30,color:'#14b8a6'},{label:'Fiend',pct:25,color:'#60a5fa'}]},
+  {id:'infernal',name:'Infernal Scroll',icon:'🔥',color:'#c084fc',capLabel:'EPIC',capColor:'#c084fc',cost:'800 ◆',locked:false,desc:'Greater Demon contracts.',probs:[0,0.30,0.45,0.25,0,0,0],pity:{epic:40},rates:[{label:'Imp',pct:30,color:'#14b8a6'},{label:'Fiend',pct:45,color:'#60a5fa'},{label:'Greater Demon',pct:25,color:'#c084fc'}]},
+  {id:'bloodpact',name:'Blood Pact',icon:'🩸',color:'#f43f5e',capLabel:'LEGENDARY',capColor:'#f43f5e',cost:'2,400 ◆',locked:false,desc:'An Archdemon will be furious.',probs:[0,0,0.20,0.55,0.25,0,0],pity:{leg:70},rates:[{label:'Fiend',pct:20,color:'#60a5fa'},{label:'Greater Demon',pct:55,color:'#c084fc'},{label:'Archdemon',pct:25,color:'#f43f5e'}]},
+  {id:'sincodex',name:'Sin Codex',icon:'⭐',color:'#fbbf24',capLabel:'MYTHIC',capColor:'#fbbf24',cost:'Sin Essence',locked:true,lockHint:'Conquer a Sin Realm',desc:'Cannot be purchased.',probs:[0,0,0,0.25,0.50,0.25,0],pity:{mythic:90},rates:[{label:'Greater Demon',pct:25,color:'#c084fc'},{label:'Archdemon',pct:50,color:'#f43f5e'},{label:'Sin Lord',pct:25,color:'#fbbf24'}]},
+  {id:'realmrift',name:'Realm Rift',icon:'🌀',color:'#2dd4bf',capLabel:'REALM',capColor:'#2dd4bf',cost:'Realm Essence',locked:true,lockHint:'Conquer a realm first',desc:'Realm-native demons only.',probs:[0,0,0.45,0.35,0.20,0,0],pity:{},rates:[{label:'Native Common',pct:45,color:'#888780'},{label:'Native Rare',pct:35,color:'#60a5fa'},{label:'Native Epic+',pct:20,color:'#f43f5e'}]},
+  {id:'voidtear',name:'Void Tear',icon:'◈',color:'#e0e0ff',capLabel:'ABYSSAL',capColor:'#e0e0ff',cost:'Void Echoes',locked:true,lockHint:'Defeat a Void Primordial',desc:'It screams when held.',probs:[0,0,0,0,0.20,0.50,0.30],pity:{abyssal:200},rates:[{label:'Archdemon',pct:20,color:'#f43f5e'},{label:'Sin Lord',pct:50,color:'#fbbf24'},{label:'Void Primordial',pct:30,color:'#e0e0ff'}]},
+  {id:'event',name:'Event Scroll',icon:'⚡',color:'#fb923c',capLabel:'EVENT',capColor:'#fb923c',cost:'Event Currency',locked:true,lockHint:'Active during Rift events',desc:'Limited time only.',probs:[0,0,0.30,0.30,0.20,0.15,0.05],pity:{epic:40},rates:[{label:'Event Common',pct:30,color:'#888780'},{label:'Event Rare/Epic',pct:50,color:'#c084fc'},{label:'Event Exclusive',pct:20,color:'#fb923c'}]},
 ];
 
-/* ═══════════════════════════════════════════
-   SVG ART
-═══════════════════════════════════════════ */
-const SVGS={
-shade:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
-<defs><filter id="sf"><feGaussianBlur stdDeviation="2"/></filter></defs>
-<ellipse cx="40" cy="38" rx="24" ry="30" fill="#555" opacity="0.7" filter="url(#sf)"/>
-<ellipse cx="40" cy="38" rx="18" ry="23" fill="#777" opacity="0.65"/>
-<ellipse cx="33" cy="31" rx="4.5" ry="6" fill="#111" opacity="0.95"/>
-<ellipse cx="47" cy="31" rx="4.5" ry="6" fill="#111" opacity="0.95"/>
-<ellipse cx="33" cy="31" rx="1.5" ry="2" fill="#aaa" opacity="0.3"/>
-<ellipse cx="47" cy="31" rx="1.5" ry="2" fill="#aaa" opacity="0.3"/>
-<path d="M22,60 Q12,74 16,90 Q23,78 28,88 Q33,72 38,86 Q40,70 42,86 Q47,72 52,88 Q57,78 64,90 Q68,74 58,60" fill="#555" opacity="0.5" filter="url(#sf)"/>
-<ellipse cx="40" cy="38" rx="22" ry="27" fill="none" stroke="#888" stroke-width="0.5" opacity="0.25"/>
-</svg>`,
-
-imp:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
-<ellipse cx="40" cy="60" rx="17" ry="21" fill="#0a7a72"/>
-<ellipse cx="40" cy="34" rx="15" ry="14" fill="#0a7a72"/>
-<path d="M27,24 L20,8 L31,17" fill="#085e58"/>
-<path d="M53,24 L60,8 L49,17" fill="#085e58"/>
-<ellipse cx="33" cy="30" rx="4" ry="5" fill="#050e0d"/>
-<ellipse cx="47" cy="30" rx="4" ry="5" fill="#050e0d"/>
-<circle cx="33" cy="30" r="1.8" fill="#14b8a6" opacity="0.9"/>
-<circle cx="47" cy="30" r="1.8" fill="#14b8a6" opacity="0.9"/>
-<path d="M33,40 Q40,47 47,40" fill="none" stroke="#085e58" stroke-width="1.5"/>
-<line x1="35" y1="41" x2="33" y2="46" stroke="#085e58" stroke-width="1.2"/>
-<line x1="40" y1="43" x2="40" y2="48" stroke="#085e58" stroke-width="1.2"/>
-<line x1="45" y1="41" x2="47" y2="46" stroke="#085e58" stroke-width="1.2"/>
-<path d="M23,57 Q11,64 13,74 L17,70 Q22,66 26,60" fill="#0a7a72"/>
-<path d="M57,57 Q69,64 67,74 L63,70 Q58,66 54,60" fill="#0a7a72"/>
-<path d="M40,79 Q56,87 58,97 Q51,91 47,95 Q43,88 40,81" fill="#085e58"/>
-<rect x="31" y="78" width="7" height="16" rx="4" fill="#085e58"/>
-<rect x="42" y="78" width="7" height="16" rx="4" fill="#085e58"/>
-</svg>`,
-
-fiend:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
-<path d="M22,97 L18,65 Q15,50 22,42 L33,34 L40,30 L47,34 L58,42 Q65,50 62,65 L58,97Z" fill="#173880"/>
-<ellipse cx="40" cy="25" rx="19" ry="18" fill="#173880"/>
-<path d="M24,16 L13,2 Q20,10 26,14" fill="#0c2460"/>
-<path d="M56,16 L67,2 Q60,10 54,14" fill="#0c2460"/>
-<ellipse cx="32" cy="22" rx="5.5" ry="6" fill="#000"/>
-<ellipse cx="48" cy="22" rx="5.5" ry="6" fill="#000"/>
-<ellipse cx="32" cy="22" rx="3.5" ry="4" fill="#60a5fa" opacity="0.9"/>
-<ellipse cx="48" cy="22" rx="3.5" ry="4" fill="#60a5fa" opacity="0.9"/>
-<circle cx="32" cy="22" r="1.2" fill="#bfdbfe"/>
-<circle cx="48" cy="22" r="1.2" fill="#bfdbfe"/>
-<path d="M30,34 Q40,42 50,34" fill="none" stroke="#0c2460" stroke-width="1.2"/>
-<line x1="33" y1="35" x2="31" y2="41" stroke="#bfdbfe" stroke-width="1.5"/>
-<line x1="47" y1="35" x2="49" y2="41" stroke="#bfdbfe" stroke-width="1.5"/>
-<path d="M20,43 Q3,36 0,22 Q9,32 17,38" fill="#0c2460" opacity="0.75"/>
-<path d="M60,43 Q77,36 80,22 Q71,32 63,38" fill="#0c2460" opacity="0.75"/>
-<path d="M17,38 Q7,28 3,18" fill="none" stroke="#173880" stroke-width="0.7"/>
-<path d="M63,38 Q73,28 77,18" fill="none" stroke="#173880" stroke-width="0.7"/>
-<path d="M30,50 Q40,47 50,50 Q52,60 40,63 Q28,60 30,50Z" fill="#1e4898" opacity="0.5"/>
-</svg>`,
-
-greater_demon:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
-<defs><radialGradient id="gdg" cx="50%" cy="40%" r="50%">
-<stop offset="0%" stop-color="#c084fc" stop-opacity="0.18"/>
-<stop offset="100%" stop-color="#1e0840" stop-opacity="0"/>
-</radialGradient></defs>
-<ellipse cx="40" cy="52" rx="40" ry="48" fill="url(#gdg)"/>
-<path d="M14,98 L11,62 Q8,46 20,36 L33,27 L40,23 L47,27 L60,36 Q72,46 69,62 L66,98Z" fill="#33106a"/>
-<path d="M28,44 Q40,40 52,44 Q54,56 40,60 Q26,56 28,44Z" fill="#4e1c8a" stroke="#c084fc" stroke-width="0.5" opacity="0.7"/>
-<ellipse cx="40" cy="19" rx="21" ry="19" fill="#33106a"/>
-<path d="M20,13 Q6,2 2,14 Q11,10 17,14" fill="#22084a"/>
-<path d="M60,13 Q74,2 78,14 Q69,10 63,14" fill="#22084a"/>
-<line x1="20" y1="13" x2="8" y2="6" stroke="#c084fc" stroke-width="0.5" opacity="0.4"/>
-<line x1="60" y1="13" x2="72" y2="6" stroke="#c084fc" stroke-width="0.5" opacity="0.4"/>
-<ellipse cx="31" cy="17" rx="6.5" ry="7" fill="#16062a"/>
-<ellipse cx="49" cy="17" rx="6.5" ry="7" fill="#16062a"/>
-<ellipse cx="31" cy="17" rx="4.5" ry="5" fill="#c084fc" opacity="0.95"/>
-<ellipse cx="49" cy="17" rx="4.5" ry="5" fill="#c084fc" opacity="0.95"/>
-<circle cx="31" cy="17" r="1.8" fill="#f0e0ff"/>
-<circle cx="49" cy="17" r="1.8" fill="#f0e0ff"/>
-<path d="M27,28 Q40,36 53,28" fill="none" stroke="#c084fc" stroke-width="1" opacity="0.55"/>
-<line x1="31" y1="29" x2="29" y2="36" stroke="#f0e0ff" stroke-width="1.5"/>
-<line x1="37" y1="32" x2="35" y2="39" stroke="#f0e0ff" stroke-width="1.5"/>
-<line x1="43" y1="32" x2="45" y2="39" stroke="#f0e0ff" stroke-width="1.5"/>
-<line x1="49" y1="29" x2="51" y2="36" stroke="#f0e0ff" stroke-width="1.5"/>
-<path d="M18,38 Q0,26 0,10 Q8,20 15,30" fill="#22084a"/>
-<path d="M62,38 Q80,26 80,10 Q72,20 65,30" fill="#22084a"/>
-<circle cx="40" cy="19" r="24" fill="none" stroke="#c084fc" stroke-width="0.4" opacity="0.25" stroke-dasharray="3,4"/>
-</svg>`,
-
-archdemon:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
-<defs><radialGradient id="ag" cx="50%" cy="30%" r="55%">
-<stop offset="0%" stop-color="#f43f5e" stop-opacity="0.3"/>
-<stop offset="100%" stop-color="#300010" stop-opacity="0"/>
-</radialGradient></defs>
-<ellipse cx="40" cy="50" rx="40" ry="50" fill="url(#ag)"/>
-<path d="M13,98 L9,60 Q7,42 20,30 L33,20 L40,16 L47,20 L60,30 Q73,42 71,60 L67,98Z" fill="#450022"/>
-<path d="M28,38 L33,33 L40,31 L47,33 L52,38 L50,52 L40,56 L30,52Z" fill="#680038" stroke="#f43f5e" stroke-width="0.7" opacity="0.85"/>
-<circle cx="40" cy="43" r="4" fill="#f43f5e" opacity="0.3"/>
-<ellipse cx="40" cy="14" rx="20" ry="17" fill="#450022"/>
-<path d="M20,8 L15,0 L22,5" fill="#300015" stroke="#f43f5e" stroke-width="0.5"/>
-<path d="M28,5 L26,0 L32,3" fill="#f43f5e" opacity="0.8"/>
-<path d="M40,3 L38,0 L42,0 Z" fill="#f43f5e"/>
-<path d="M52,5 L54,0 L48,3" fill="#f43f5e" opacity="0.8"/>
-<path d="M60,8 L65,0 L58,5" fill="#300015" stroke="#f43f5e" stroke-width="0.5"/>
-<ellipse cx="31" cy="12" rx="6" ry="6.5" fill="#190010"/>
-<ellipse cx="49" cy="12" rx="6" ry="6.5" fill="#190010"/>
-<ellipse cx="31" cy="12" rx="4.5" ry="5" fill="#f43f5e"/>
-<ellipse cx="49" cy="12" rx="4.5" ry="5" fill="#f43f5e"/>
-<circle cx="31" cy="12" r="2" fill="#ff9aaa"/>
-<circle cx="49" cy="12" r="2" fill="#ff9aaa"/>
-<path d="M25,24 Q40,34 55,24" fill="#190010" stroke="#f43f5e" stroke-width="1"/>
-<line x1="29" y1="25" x2="27" y2="32" stroke="#ffb0b8" stroke-width="1.5"/>
-<line x1="35" y1="28" x2="33" y2="35" stroke="#ffb0b8" stroke-width="1.5"/>
-<line x1="40" y1="30" x2="40" y2="37" stroke="#ffb0b8" stroke-width="2"/>
-<line x1="45" y1="28" x2="47" y2="35" stroke="#ffb0b8" stroke-width="1.5"/>
-<line x1="51" y1="25" x2="53" y2="32" stroke="#ffb0b8" stroke-width="1.5"/>
-<path d="M18,32 Q0,20 0,4 Q7,16 14,26" fill="#300015"/>
-<path d="M62,32 Q80,20 80,4 Q73,16 66,26" fill="#300015"/>
-<path d="M14,26 Q4,16 2,6" fill="none" stroke="#600028" stroke-width="0.7"/>
-<path d="M66,26 Q76,16 78,6" fill="none" stroke="#600028" stroke-width="0.7"/>
-<circle cx="40" cy="14" r="24" fill="none" stroke="#f43f5e" stroke-width="0.4" opacity="0.2" stroke-dasharray="2,3"/>
-</svg>`,
-
-sin_lord:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
-<defs><radialGradient id="slg" cx="50%" cy="30%" r="60%">
-<stop offset="0%" stop-color="#fbbf24" stop-opacity="0.35"/>
-<stop offset="100%" stop-color="#1c0a00" stop-opacity="0"/>
-</radialGradient></defs>
-<ellipse cx="40" cy="50" rx="40" ry="50" fill="url(#slg)"/>
-<path d="M8,100 L12,56 Q14,38 27,27 L37,19 L40,15 L43,19 L53,27 Q66,38 68,56 L72,100Z" fill="#2e1600"/>
-<path d="M12,62 Q40,56 68,62 Q66,74 40,72 Q14,74 12,62Z" fill="#402000" stroke="#fbbf24" stroke-width="0.5" opacity="0.5"/>
-<path d="M10,80 Q40,74 70,80 Q68,92 40,90 Q12,92 10,80Z" fill="#402000" stroke="#fbbf24" stroke-width="0.4" opacity="0.4"/>
-<circle cx="40" cy="46" r="11" fill="none" stroke="#fbbf24" stroke-width="0.7" opacity="0.7"/>
-<path d="M40,35 L42,42 L49,42 L43,47 L46,54 L40,49 L34,54 L37,47 L31,42 L38,42Z" fill="#fbbf24" opacity="0.45"/>
-<ellipse cx="40" cy="13" rx="17" ry="15" fill="#2e1600"/>
-<circle cx="40" cy="13" r="19" fill="none" stroke="#fbbf24" stroke-width="0.9" opacity="0.8"/>
-<circle cx="40" cy="13" r="22" fill="none" stroke="#fbbf24" stroke-width="0.4" opacity="0.35" stroke-dasharray="2,4"/>
-<path d="M22,8 L17,0 L24,5" fill="#2e1600" stroke="#fbbf24" stroke-width="0.7"/>
-<path d="M30,4 L28,0 L34,2" fill="#fbbf24" opacity="0.9"/>
-<circle cx="40" cy="2" r="3" fill="#fbbf24"/>
-<circle cx="40" cy="2" r="1.2" fill="#fffde0"/>
-<path d="M50,4 L52,0 L46,2" fill="#fbbf24" opacity="0.9"/>
-<path d="M58,8 L63,0 L56,5" fill="#2e1600" stroke="#fbbf24" stroke-width="0.7"/>
-<ellipse cx="33" cy="11" rx="5" ry="5.5" fill="#0a0500"/>
-<ellipse cx="47" cy="11" rx="5" ry="5.5" fill="#0a0500"/>
-<ellipse cx="33" cy="11" rx="3.5" ry="4" fill="#fbbf24"/>
-<ellipse cx="47" cy="11" rx="3.5" ry="4" fill="#fbbf24"/>
-<ellipse cx="33" cy="11" rx="1.5" ry="1.8" fill="#fffde0"/>
-<ellipse cx="47" cy="11" rx="1.5" ry="1.8" fill="#fffde0"/>
-<path d="M32,20 Q40,27 48,20" fill="none" stroke="#fbbf24" stroke-width="0.9" opacity="0.55"/>
-<path d="M23,27 Q4,22 0,8 Q8,18 18,24" fill="#2e1600" stroke="#fbbf24" stroke-width="0.4" opacity="0.4"/>
-<path d="M57,27 Q76,22 80,8 Q72,18 62,24" fill="#2e1600" stroke="#fbbf24" stroke-width="0.4" opacity="0.4"/>
-<circle cx="18" cy="52" r="3" fill="#fbbf24" opacity="0.35"/>
-<circle cx="62" cy="52" r="3" fill="#fbbf24" opacity="0.35"/>
-<path d="M23,27 Q20,40 18,52" fill="none" stroke="#fbbf24" stroke-width="0.45" opacity="0.35"/>
-<path d="M57,27 Q60,40 62,52" fill="none" stroke="#fbbf24" stroke-width="0.45" opacity="0.35"/>
-</svg>`,
-
-void_primordial:`<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<radialGradient id="vpg" cx="50%" cy="42%" r="55%">
-<stop offset="0%" stop-color="#e0e0ff" stop-opacity="0.15"/>
-<stop offset="60%" stop-color="#4040c0" stop-opacity="0.07"/>
-<stop offset="100%" stop-color="#09000f" stop-opacity="0"/>
-</radialGradient>
-<filter id="vpf"><feGaussianBlur stdDeviation="0.8" result="b"/>
-<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-</defs>
-<ellipse cx="40" cy="50" rx="40" ry="50" fill="url(#vpg)"/>
-<polygon points="40,3 75,23 75,63 40,83 5,63 5,23" fill="none" stroke="#e0e0ff" stroke-width="0.55" opacity="0.4"/>
-<polygon points="40,10 68,27 68,60 40,77 12,60 12,27" fill="none" stroke="#b0b0ff" stroke-width="0.4" opacity="0.3" transform="rotate(12,40,43)"/>
-<polygon points="40,17 62,31 62,57 40,71 18,57 18,31" fill="none" stroke="#8888e0" stroke-width="0.3" opacity="0.25" transform="rotate(-8,40,43)"/>
-<polygon points="40,21 58,34 58,56 40,69 22,56 22,34" fill="#0a001e" stroke="#e0e0ff" stroke-width="0.75" opacity="0.95"/>
-<polygon points="40,27 54,37 54,53 40,63 26,53 26,37" fill="#140040" stroke="#c0c0ff" stroke-width="0.5" opacity="0.8"/>
-<polygon points="40,33 50,40 50,50 40,57 30,50 30,40" fill="#1e0060" stroke="#e0e0ff" stroke-width="0.9" opacity="0.9" filter="url(#vpf)"/>
-<circle cx="40" cy="45" r="7" fill="#02000a"/>
-<circle cx="40" cy="45" r="4.5" fill="#e0e0ff" opacity="0.85"/>
-<circle cx="40" cy="45" r="2" fill="white" opacity="0.95"/>
-<line x1="40" y1="69" x2="40" y2="97" stroke="#e0e0ff" stroke-width="0.7" opacity="0.35"/>
-<line x1="22" y1="56" x2="4" y2="82" stroke="#a0a0ff" stroke-width="0.55" opacity="0.3"/>
-<line x1="58" y1="56" x2="76" y2="82" stroke="#a0a0ff" stroke-width="0.55" opacity="0.3"/>
-<line x1="22" y1="34" x2="4" y2="10" stroke="#8080e0" stroke-width="0.45" opacity="0.28"/>
-<line x1="58" y1="34" x2="76" y2="10" stroke="#8080e0" stroke-width="0.45" opacity="0.28"/>
-<line x1="40" y1="21" x2="40" y2="3" stroke="#e0e0ff" stroke-width="0.7" opacity="0.35"/>
-<rect x="7" y="30" width="6" height="6" fill="none" stroke="#e0e0ff" stroke-width="0.5" opacity="0.35" transform="rotate(18,10,33)"/>
-<rect x="67" y="30" width="6" height="6" fill="none" stroke="#e0e0ff" stroke-width="0.5" opacity="0.35" transform="rotate(-18,70,33)"/>
-<polygon points="10,70 16,65 16,75" fill="none" stroke="#a0a0ff" stroke-width="0.5" opacity="0.35"/>
-<polygon points="70,70 64,65 64,75" fill="none" stroke="#a0a0ff" stroke-width="0.5" opacity="0.35"/>
-<polygon points="35,39 38,36 42,39 38,43" fill="#000" stroke="#e0e0ff" stroke-width="0.4"/>
-<polygon points="45,39 48,36 52,39 48,43" fill="#000" stroke="#e0e0ff" stroke-width="0.4"/>
-<circle cx="38" cy="40" r="1.5" fill="#e0e0ff" opacity="0.9"/>
-<circle cx="48" cy="40" r="1.5" fill="#e0e0ff" opacity="0.9"/>
-<circle cx="40" cy="45" r="11" fill="none" stroke="#8080e0" stroke-width="0.3" opacity="0.5" stroke-dasharray="1,3"/>
-</svg>`
-};
-
-const CARD_BACK=`<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="150" fill="#0d0020" rx="7"/>
-<rect x="4" y="4" width="92" height="142" fill="none" stroke="#c084fc" stroke-width="0.6" rx="5" opacity="0.35"/>
-<rect x="8" y="8" width="84" height="134" fill="none" stroke="#c084fc" stroke-width="0.3" rx="4" opacity="0.18"/>
-<circle cx="50" cy="75" r="32" fill="none" stroke="#c084fc" stroke-width="0.55" opacity="0.45"/>
-<circle cx="50" cy="75" r="24" fill="none" stroke="#c084fc" stroke-width="0.4" opacity="0.35"/>
-<polygon points="50,46 70,62 63,86 37,86 30,62" fill="none" stroke="#c084fc" stroke-width="0.65" opacity="0.5"/>
-<polygon points="50,54 66,66 60,82 40,82 34,66" fill="none" stroke="#c084fc" stroke-width="0.3" opacity="0.28"/>
-<circle cx="50" cy="75" r="6" fill="none" stroke="#c084fc" stroke-width="0.9" opacity="0.6"/>
-<circle cx="50" cy="75" r="2" fill="#c084fc" opacity="0.35"/>
-<text x="13" y="23" font-size="11" fill="#c084fc" opacity="0.35" font-family="serif">ᚠ</text>
-<text x="77" y="23" font-size="11" fill="#c084fc" opacity="0.35" font-family="serif">ᚢ</text>
-<text x="13" y="143" font-size="11" fill="#c084fc" opacity="0.35" font-family="serif">ᚦ</text>
-<text x="77" y="143" font-size="11" fill="#c084fc" opacity="0.35" font-family="serif">ᚨ</text>
-<text x="50" y="137" text-anchor="middle" font-size="7" fill="#c084fc" opacity="0.4" letter-spacing="3" font-family="serif">INFERNUM</text>
-</svg>`;
-
-function svg(tierId){return SVGS[tierId]||SVGS.shade}
-
-/* ═══════════════════════════════════════════
-   STATE
-═══════════════════════════════════════════ */
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
 let S={
-  shards:1200,
-  epicPity:0,legPity:0,
-  scrollPity:{},   // per-scroll pity counters keyed by scroll id
-  collection:{},
-  bannerExpiry:null,
-  activeScroll:'infernal',
+  shards:1200,epicPity:0,legPity:0,scrollPity:{},
+  collection:{},garrison:{},garrisonAccum:0,
+  bannerExpiry:null,activeScroll:'infernal',level:1,
 };
 let lastCount=1;
+let garrisonInterval=null;
 
-function save(){localStorage.setItem('inf_s',JSON.stringify(S))}
+const GARRISON_RATES=[10,25,60,150,400,1200,5000]; // per tier per hour in ◆
+
+const REALMS=[
+  {id:'vale',name:'Shattered Vale',icon:'⚔',color:'#60a5fa',stages:13,conquered:0,locked:false},
+  {id:'void',name:'The Void Wastes',icon:'◈',color:'#e0e0ff',stages:13,conquered:0,locked:true},
+  {id:'wrath',name:"Vrath'ax Warfront",icon:'🔥',color:'#f43f5e',stages:13,conquered:0,locked:true},
+  {id:'greed',name:'Gilded Pit',icon:'⭐',color:'#fbbf24',stages:13,conquered:0,locked:true},
+  {id:'sloth',name:'The Stillness',icon:'💤',color:'#6366f1',stages:13,conquered:0,locked:true},
+  {id:'envy',name:'Mirror Maze',icon:'🪞',color:'#2dd4bf',stages:13,conquered:0,locked:true},
+  {id:'pride',name:'Crumbling Throne',icon:'👑',color:'#fde68a',stages:13,conquered:0,locked:true},
+  {id:'glut',name:"Gorgethorn's Maw",icon:'💀',color:'#a78bfa',stages:13,conquered:0,locked:true},
+];
+
+function save(){localStorage.setItem('inf_hub',JSON.stringify(S))}
 function load(){
-  try{
-    const d=localStorage.getItem('inf_s');
-    if(d) S=Object.assign(S,JSON.parse(d));
-  }catch(e){}
-  if(!S.bannerExpiry){
-    S.bannerExpiry=Date.now()+((2*24+14)*3600+33*60)*1000;
-    save();
-  }
+  try{const d=localStorage.getItem('inf_hub');if(d)S=Object.assign(S,JSON.parse(d));}catch(e){}
+  if(!S.bannerExpiry){S.bannerExpiry=Date.now()+((2*24+14)*3600+33*60)*1000;save();}
 }
 
-/* ═══════════════════════════════════════════
-   GACHA LOGIC
-═══════════════════════════════════════════ */
-function getActiveScroll(){
-  return SCROLLS.find(s=>s.id===S.activeScroll)||SCROLLS[2];
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function switchScreen(name, btnEl){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  if(btnEl) btnEl.classList.add('active');
+  else{
+    const navBtn=document.querySelector(`.nav-btn[data-screen="${name}"]`);
+    if(navBtn) navBtn.classList.add('active');
+  }
+  if(name==='codex') renderCodex();
+  if(name==='realms') renderRealms();
+  if(name==='garrison') renderGarrison();
+  if(name==='summon'){renderScrollShelf();renderScrollInfo();}
 }
+
+// ═══════════════════════════════════════════
+// GACHA LOGIC
+// ═══════════════════════════════════════════
+function getActiveScroll(){return SCROLLS.find(s=>s.id===S.activeScroll)||SCROLLS[2]}
 
 function rollTierForScroll(scroll){
   const p=S.scrollPity[scroll.id]||{pulls:0};
   p.pulls=(p.pulls||0)+1;
-
-  // Pity overrides
-  if(scroll.pity.epic&&p.pulls>=scroll.pity.epic){
-    const ti=scroll.probs.findIndex((v,i)=>i>=3&&v>0);
-    if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}
-  }
-  if(scroll.pity.leg&&p.pulls>=scroll.pity.leg){
-    const ti=scroll.probs.findIndex((v,i)=>i>=4&&v>0);
-    if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}
-  }
-  if(scroll.pity.mythic&&p.pulls>=scroll.pity.mythic){
-    const ti=scroll.probs.findIndex((v,i)=>i>=5&&v>0);
-    if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}
-  }
-  if(scroll.pity.abyssal&&p.pulls>=scroll.pity.abyssal){
-    p.pulls=0;S.scrollPity[scroll.id]=p;return 6;
-  }
-
-  // Normal roll
+  if(scroll.pity.epic&&p.pulls>=scroll.pity.epic){const ti=scroll.probs.findIndex((v,i)=>i>=3&&v>0);if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}}
+  if(scroll.pity.leg&&p.pulls>=scroll.pity.leg){const ti=scroll.probs.findIndex((v,i)=>i>=4&&v>0);if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}}
+  if(scroll.pity.mythic&&p.pulls>=scroll.pity.mythic){const ti=scroll.probs.findIndex((v,i)=>i>=5&&v>0);if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}}
+  if(scroll.pity.abyssal&&p.pulls>=scroll.pity.abyssal){p.pulls=0;S.scrollPity[scroll.id]=p;return 6;}
   const r=Math.random();let c=0;
-  for(let i=0;i<scroll.probs.length;i++){
-    c+=scroll.probs[i];
-    if(r<=c&&scroll.probs[i]>0){
-      // Track highest tier for pity reset
-      if(i>=3)p.pulls=0;
-      S.scrollPity[scroll.id]=p;
-      return i;
-    }
-  }
+  for(let i=0;i<scroll.probs.length;i++){c+=scroll.probs[i];if(r<=c&&scroll.probs[i]>0){if(i>=3)p.pulls=0;S.scrollPity[scroll.id]=p;return i;}}
   S.scrollPity[scroll.id]=p;
   return scroll.probs.findIndex(v=>v>0);
 }
@@ -1310,10 +918,8 @@ function rollTierForScroll(scroll){
 function pullOne(){
   const scroll=getActiveScroll();
   const ti=rollTierForScroll(scroll);
-  // Legacy pity tracking for UI bars
   S.epicPity++;S.legPity++;
-  if(ti>=3)S.epicPity=0;
-  if(ti>=4)S.legPity=0;
+  if(ti>=3)S.epicPity=0;if(ti>=4)S.legPity=0;
   const tier=TIERS[ti];
   const pool=POOL[tier.id];
   const name=pool[Math.floor(Math.random()*pool.length)];
@@ -1322,162 +928,71 @@ function pullOne(){
 }
 
 function getCost(count){
-  const scroll=getActiveScroll();
-  const base={whisper:0,twilight:300,infernal:800,bloodpact:2400}[scroll.id];
-  if(base===undefined) return null; // locked/earned scrolls — no shard cost
+  const sc=getActiveScroll();
+  const base={whisper:0,twilight:300,infernal:800,bloodpact:2400}[sc.id];
+  if(base===undefined)return null;
   return count===1?base:Math.floor(base*count*0.9);
 }
+
 function doPull(count){
   const scroll=getActiveScroll();
-  if(scroll.locked) return;
+  if(scroll.locked)return;
   const cost=getCost(count);
-  if(cost===null) return; // earned scroll, handle separately later
-  if(cost>0&&S.shards<cost) return;
+  if(cost===null)return;
+  if(cost>0&&S.shards<cost)return;
   lastCount=count;
-  if(cost>0) S.shards-=cost;
+  if(cost>0)S.shards-=cost;
   const results=[];
-  for(let i=0;i<count;i++) results.push(pullOne());
+  for(let i=0;i<count;i++)results.push(pullOne());
   save();updateUI();
   showOverlay(results);
 }
 
-/* ═══════════════════════════════════════════
-   SCROLL UI
-═══════════════════════════════════════════ */
-function renderScrollShelf(){
-  const shelf=document.getElementById('scroll-shelf');
-  if(!shelf) return;
-  shelf.innerHTML='';
-  SCROLLS.forEach(sc=>{
-    const isActive=sc.id===S.activeScroll;
-    const item=document.createElement('div');
-    item.className='scroll-item'+(sc.locked?' locked':'')+(isActive?' active':'');
-    item.style.borderColor=isActive?sc.color:'';
-    item.style.boxShadow=isActive?`0 0 12px ${sc.color}40`:'';
-    item.title=sc.locked?(sc.lockHint||'Locked'):'';
-    item.innerHTML=`
-      <span class="scroll-icon">${sc.icon}</span>
-      <div class="scroll-name">${sc.name}</div>
-      <div class="scroll-cap" style="color:${sc.capColor};background:${sc.capColor}18;border:0.5px solid ${sc.capColor}40">${sc.capLabel}</div>
-      <div class="scroll-cost">${sc.cost}</div>
-      ${sc.locked?'<span class="scroll-lock-icon">🔒</span>':''}
-    `;
-    if(!sc.locked){
-      item.onclick=()=>{S.activeScroll=sc.id;save();renderScrollShelf();renderScrollInfo();updateUI();};
-    }
-    shelf.appendChild(item);
-  });
-}
+// ═══════════════════════════════════════════
+// PULL OVERLAY
+// ═══════════════════════════════════════════
+const CARD_BACK=`<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="150" fill="#0d0020" rx="7"/><rect x="4" y="4" width="92" height="142" fill="none" stroke="#c084fc" stroke-width="0.6" rx="5" opacity="0.35"/><circle cx="50" cy="75" r="32" fill="none" stroke="#c084fc" stroke-width="0.55" opacity="0.45"/><polygon points="50,46 70,62 63,86 37,86 30,62" fill="none" stroke="#c084fc" stroke-width="0.65" opacity="0.5"/><circle cx="50" cy="75" r="6" fill="none" stroke="#c084fc" stroke-width="0.9" opacity="0.6"/><circle cx="50" cy="75" r="2" fill="#c084fc" opacity="0.35"/><text x="50" y="137" text-anchor="middle" font-size="7" fill="#c084fc" opacity="0.4" letter-spacing="3" font-family="serif">INFERNUM</text></svg>`;
 
-function renderScrollInfo(){
-  const info=document.getElementById('scroll-info');
-  if(!info) return;
-  const sc=getActiveScroll();
-  const maxPct=Math.max(...sc.rates.map(r=>r.pct));
-  info.style.borderColor=sc.color+'40';
-  info.innerHTML=`
-    <div class="si-rates">
-      <div class="si-name" style="color:${sc.color}">${sc.name}</div>
-      <div class="si-desc">${sc.desc}</div>
-      ${sc.rates.map(r=>`
-        <div class="si-rate-row">
-          <div class="si-rate-label" style="color:${r.color}">${r.label}</div>
-          <div class="si-rate-bar"><div class="si-rate-fill" style="width:${Math.round(r.pct/maxPct*100)}%;background:${r.color}"></div></div>
-          <div class="si-rate-val" style="color:${r.color}">${r.pct}%</div>
-        </div>`).join('')}
-      ${sc.locked?`<div style="margin-top:8px;font-size:.6rem;color:#f43f5e;font-style:italic;font-family:Georgia,serif">${sc.lockHint}</div>`:''}
-    </div>
-  `;
-}
-
-/* ═══════════════════════════════════════════
-   PULL OVERLAY — RISE FROM CIRCLE
-═══════════════════════════════════════════ */
 function showOverlay(results){
   const ov=document.getElementById('pull-overlay');
   const stage=document.getElementById('card-stage');
   const pp=document.getElementById('post-pull');
   const isSingle=results.length===1;
-
-  ov.style.display='flex';
-  pp.style.display='none';
-
-  // Clean up old videos
-  if(stage._videos) stage._videos.forEach(v=>{try{v.pause();v.removeAttribute('src');v.load();}catch(e){}});
-  stage._videos=[];
-  stage.innerHTML='';
-
-  // Card dimensions
-  const CW = isSingle ? Math.min(210, window.innerWidth*0.62) : Math.min(108, (window.innerWidth-56)/5.2);
-  const CH = CW * (3/2);
-
-  // Origin point — the summoning circle
-  // On mobile (portrait) circle is at ~73% down. On desktop (landscape) image is
-  // auto-height so circle stays proportionally at ~73% of image height
-  const OX = window.innerWidth / 2;
-  const OY = window.innerHeight * 0.73;
-
-  // Fan destination positions
+  ov.style.display='flex';pp.style.display='none';
+  if(stage._videos)stage._videos.forEach(v=>{try{v.pause();v.removeAttribute('src');v.load();}catch(e){}});
+  stage._videos=[];stage.innerHTML='';
+  const CW=isSingle?Math.min(210,window.innerWidth*0.62):Math.min(108,(window.innerWidth-56)/5.2);
+  const CH=CW*(3/2);
+  const OX=window.innerWidth/2;
+  const OY=window.innerHeight*0.73;
   function getDestinations(count){
-    if(count===1){
-      return [{x:OX, y:OY - window.innerHeight*0.32, rot:0}];
-    }
-    // Two rows of 5
+    if(count===1)return[{x:OX,y:OY-window.innerHeight*0.32,rot:0}];
     const positions=[];
-    const rowW = window.innerWidth;
     for(let row=0;row<2;row++){
       for(let col=0;col<5;col++){
-        const idx=row*5+col;
-        const xSpacing=(rowW-40)/(5);
+        const xSpacing=(window.innerWidth-40)/5;
         const x=20+xSpacing*col+xSpacing/2;
-        const y=row===0
-          ? OY - window.innerHeight*0.42 - CH*0.1
-          : OY - window.innerHeight*0.18;
-        // Slight fan rotation based on position
-        const rot=(col-2)*3;
-        positions.push({x,y,rot});
+        const y=row===0?OY-window.innerHeight*0.42-CH*0.1:OY-window.innerHeight*0.18;
+        positions.push({x,y,rot:(col-2)*3});
       }
     }
     return positions;
   }
-
   const destinations=getDestinations(results.length);
-
-  // Build card elements and animate them rising
   results.forEach((r,i)=>{
     const wrap=buildCardEl(r,i,isSingle,stage._videos);
-    wrap.style.cssText=`
-      position:absolute;
-      width:${CW}px;height:${CH}px;
-      left:${OX}px;top:${OY}px;
-      transform:translate(-50%,-50%) scale(0) rotate(0deg);
-      opacity:0;
-      transition:none;
-      pointer-events:none;
-      z-index:${10+i};
-    `;
+    wrap.style.cssText=`position:absolute;width:${CW}px;height:${CH}px;left:${OX}px;top:${OY}px;transform:translate(-50%,-50%) scale(0) rotate(0deg);opacity:0;transition:none;pointer-events:none;z-index:${10+i};`;
     stage.appendChild(wrap);
-
-    // Animate after stagger delay
     const delay=isSingle?300:300+i*120;
     setTimeout(()=>{
       const dest=destinations[i];
-      // Rise animation — cubic bezier for dramatic float up
-      wrap.style.transition=`transform 0.8s cubic-bezier(0.22,1,0.36,1), opacity 0.4s ease-out, left 0.8s cubic-bezier(0.22,1,0.36,1), top 0.8s cubic-bezier(0.22,1,0.36,1)`;
-      wrap.style.left=`${dest.x}px`;
-      wrap.style.top=`${dest.y}px`;
+      wrap.style.transition='transform 0.8s cubic-bezier(0.22,1,0.36,1),opacity 0.4s ease-out,left 0.8s cubic-bezier(0.22,1,0.36,1),top 0.8s cubic-bezier(0.22,1,0.36,1)';
+      wrap.style.left=`${dest.x}px`;wrap.style.top=`${dest.y}px`;
       wrap.style.transform=`translate(-50%,-50%) scale(1) rotate(${dest.rot}deg)`;
-      wrap.style.opacity='1';
-      wrap.classList.add('risen');
-      wrap.style.pointerEvents='auto';
-
-      // Flip after rise completes
-      const flipDelay=isSingle?750:650;
-      setTimeout(()=>flip(i,r),flipDelay);
+      wrap.style.opacity='1';wrap.classList.add('risen');wrap.style.pointerEvents='auto';
+      setTimeout(()=>flip(i,r),isSingle?750:650);
     },delay);
   });
-
-  // Show post-pull buttons after all animations complete
   const total=isSingle?300+750+800:300+(results.length-1)*120+650+800;
   setTimeout(()=>{pp.style.display='flex'},total);
 }
@@ -1485,249 +1000,260 @@ function showOverlay(results){
 function buildCardEl(r,i,isSingle,videoPool){
   const t=r.tier;
   const demonId=DEMON_IDS[r.name]||r.name.toLowerCase().replace(/['\s]/g,'_').replace(/[^a-z0-9_]/g,'');
-
-  // Outer wrapper fills whatever size showOverlay sets
   const fcWrap=document.createElement('div');
-  fcWrap.className='fc-wrap';
-  fcWrap.style.cssText='width:100%;height:100%;';
-
-  const fc=document.createElement('div');
-  fc.className='fc';fc.id='fc'+i;
-
-  // Back face
-  const back=document.createElement('div');
-  back.className='fc-face fc-back';
+  fcWrap.className='fc-wrap';fcWrap.style.cssText='width:100%;height:100%;';
+  const fc=document.createElement('div');fc.className='fc';fc.id='fc'+i;
+  const back=document.createElement('div');back.className='fc-face fc-back';
   const backImg=document.createElement('img');
-  backImg.src='assets/ui/card_back.png';
-  backImg.alt='';
+  backImg.src='assets/ui/card_back.png';backImg.alt='';
   backImg.style.cssText='width:100%;height:100%;object-fit:cover;display:block;border-radius:9px;';
   backImg.addEventListener('error',()=>{back.innerHTML=CARD_BACK;});
   back.appendChild(backImg);
-
-  // Front face
-  const front=document.createElement('div');
-  front.className='fc-face fc-front';
+  const front=document.createElement('div');front.className='fc-face fc-front';
   front.style.cssText=`transform:rotateY(180deg);padding:0;background:${t.bg};`;
-
-  // Video
   const video=document.createElement('video');
-  video.src='assets/demons/'+demonId+'_card.mp4';
-  video.autoplay=true;video.loop=true;video.muted=true;video.playsInline=true;
+  video.src='assets/demons/'+demonId+'_card.mp4';video.autoplay=true;video.loop=true;video.muted=true;video.playsInline=true;
   video.setAttribute('playsinline','');video.setAttribute('webkit-playsinline','');
   video.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;';
-  video.play().catch(()=>{});
-  if(videoPool) videoPool.push(video);
-
-  // Border image overlay
+  video.play().catch(()=>{});if(videoPool)videoPool.push(video);
   const borderSlug=TIER_BORDER_SLUGS[t.idx]||'shade';
   const borderImg=document.createElement('img');
-  borderImg.src='assets/borders/infernum_border_'+borderSlug+'.png';
-  borderImg.alt='';
+  borderImg.src='assets/borders/infernum_border_'+borderSlug+'.png';borderImg.alt='';
   borderImg.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;z-index:2;';
-  borderImg.addEventListener('error',()=>{
-    front.style.outline=`2px solid ${t.color}`;
-    front.style.boxShadow=`inset 0 0 0 1px ${t.color}90,0 0 18px ${t.color}60`;
-    borderImg.style.display='none';
-  });
-
-  // Info bar
+  borderImg.addEventListener('error',()=>{front.style.outline=`2px solid ${t.color}`;front.style.boxShadow=`inset 0 0 0 1px ${t.color}90,0 0 18px ${t.color}60`;borderImg.style.display='none';});
   const infoBar=document.createElement('div');
   infoBar.style.cssText='position:absolute;bottom:0;left:0;right:0;z-index:3;background:linear-gradient(to top,rgba(6,0,14,.92) 40%,transparent);padding:18px 6px 6px;text-align:center;pointer-events:none;';
-  infoBar.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:0.18em;color:${t.color};text-shadow:0 0 8px ${t.color}80;margin-bottom:3px;text-transform:uppercase;">${t.label.toUpperCase()}</div><div style="font-style:italic;font-size:0.58rem;color:#d4c8e8;line-height:1.3;">${r.name}</div>`;
-
-  front.appendChild(video);
-  front.appendChild(borderImg);
-  front.appendChild(infoBar);
-  fc.appendChild(back);fc.appendChild(front);
-  fcWrap.appendChild(fc);
+  infoBar.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:.18em;color:${t.color};text-shadow:0 0 8px ${t.color}80;margin-bottom:3px;text-transform:uppercase;">${t.label.toUpperCase()}</div><div style="font-style:italic;font-size:0.58rem;color:#d4c8e8;line-height:1.3;">${r.name}</div>`;
+  front.appendChild(video);front.appendChild(borderImg);front.appendChild(infoBar);
+  fc.appendChild(back);fc.appendChild(front);fcWrap.appendChild(fc);
   return fcWrap;
 }
 
 function flip(i,r){
-  const card=document.getElementById('fc'+i);
-  if(!card) return;
+  const card=document.getElementById('fc'+i);if(!card)return;
   card.classList.add('flipped');
-  if(r.ti>=4){
-    setTimeout(()=>flash(r.tier.color),420);
-  }
+  if(r.ti>=4)setTimeout(()=>flash(r.tier.color),420);
 }
 
 function flash(col){
   const el=document.getElementById('tier-flash');
-  el.style.background=col;
-  el.style.transition='opacity 0.12s ease';
-  el.style.opacity='0.32';
-  setTimeout(()=>{
-    el.style.transition='opacity 1.8s ease';
-    el.style.opacity='0';
-  },180);
+  el.style.background=col;el.style.transition='opacity .12s ease';el.style.opacity='0.32';
+  setTimeout(()=>{el.style.transition='opacity 1.8s ease';el.style.opacity='0';},180);
 }
 
 function closeOverlay(){
   const ov=document.getElementById('pull-overlay');
   const stage=document.getElementById('card-stage');
   ov.style.display='none';
-  if(stage._videos){
-    stage._videos.forEach(v=>{try{v.pause();v.removeAttribute('src');v.load();}catch(e){}});
-    stage._videos=[];
-  }
+  if(stage._videos){stage._videos.forEach(v=>{try{v.pause();v.removeAttribute('src');v.load();}catch(e){}});stage._videos=[];}
   stage.innerHTML='';
 }
 
-/* ═══════════════════════════════════════════
-   UI
-═══════════════════════════════════════════ */
-function updateUI(){
-  const scroll=getActiveScroll();
-  const cost1=getCost(1);
-  const cost10=getCost(10);
-  document.getElementById('shard-count').textContent=S.shards.toLocaleString();
-  const btn1=document.getElementById('btn-pull-1');
-  const btn10=document.getElementById('btn-pull-10');
-  btn1.disabled=scroll.locked||(cost1>0&&S.shards<cost1);
-  btn10.disabled=scroll.locked||(cost10>0&&S.shards<cost10);
-  // Update button costs
-  const cost1Label=btn1.querySelector('.btn-cost');
-  const cost10Label=btn10.querySelector('.btn-cost');
-  if(cost1Label) cost1Label.textContent=cost1===0?'Free':cost1===null?'Earned Only':`◆ ${cost1.toLocaleString()}`;
-  if(cost10Label) cost10Label.textContent=cost10===0?'Free ×10':cost10===null?'Earned Only':`◆ ${cost10?.toLocaleString()}`;
-  // Pity bars — show active scroll's pity if applicable
-  const p=S.scrollPity[scroll.id]||{pulls:0};
-  const epicThresh=scroll.pity.epic||40;
-  const legThresh=scroll.pity.leg||70;
-  document.getElementById('epic-count').textContent=`${S.epicPity} / ${epicThresh}`;
-  document.getElementById('leg-count').textContent=`${S.legPity} / ${legThresh}`;
-  document.getElementById('epic-fill').style.width=`${Math.min(100,(S.epicPity/epicThresh)*100)}%`;
-  document.getElementById('leg-fill').style.width=`${Math.min(100,(S.legPity/legThresh)*100)}%`;
-  // Hide pity bars that don't apply to this scroll
-  const epicBar=document.querySelector('.pity-bar.epic');
-  const legBar=document.querySelector('.pity-bar.legendary');
-  if(epicBar) epicBar.style.opacity=scroll.pity.epic?'1':'0.25';
-  if(legBar) legBar.style.opacity=scroll.pity.leg?'1':'0.25';
-}
-
-function addDemoShards(){
-  S.shards+=500;save();updateUI();
-  const d=document.getElementById('shard-display');
-  d.classList.add('shard-pulse');
-  setTimeout(()=>d.classList.remove('shard-pulse'),400);
-}
-
-function switchTab(tab){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  document.getElementById('summon-screen').classList.toggle('active',tab==='summon');
-  document.getElementById('codex-screen').classList.toggle('active',tab==='codex');
-  if(tab==='codex') renderCodex();
-}
-
-/* ═══════════════════════════════════════════
-   CODEX
-═══════════════════════════════════════════ */
+// ═══════════════════════════════════════════
+// CODEX
+// ═══════════════════════════════════════════
 function renderCodex(){
   const grid=document.getElementById('codex-grid');
+  if(!grid)return;
   const owned=ALL_DEMONS.filter(d=>(S.collection[d.name]||0)>0).length;
   document.getElementById('codex-count').textContent=`${owned} / ${ALL_DEMONS.length} demons bound`;
-
-  // Destroy old DemonCards
-  if(grid._cards) grid._cards.forEach(c=>c.destroy());
-  grid._cards=[];
-  grid.innerHTML='';
-
+  if(grid._cards)grid._cards.forEach(c=>c.destroy());
+  grid._cards=[];grid.innerHTML='';
+  // Compute card width based on grid columns
+  const cols=window.innerWidth>=700?5:window.innerWidth>=480?4:3;
+  const cardW=Math.floor((window.innerWidth-32-10*(cols-1))/cols);
   for(const d of ALL_DEMONS){
     const cnt=S.collection[d.name]||0;
     const t=d.tier;
-
-    if(cnt>0){
-      // Use DemonCard component for owned demons
-      const demonObj={
-        id: DEMON_IDS[d.name]||d.name.toLowerCase().replace(/['\s]/g,'_').replace(/[^a-z0-9_]/g,''),
-        name: d.name,
-        tier: t.idx+1,
-        tierName: t.name,
-        color: t.color,
-        count: cnt
-      };
-      const card=new DemonCard(demonObj,{
-        width:120, // DemonCard handles sizing; CSS grid stretches it
-        showName:true,
-        showTier:true,
-        showCount:true,
-        animate:true,
-      });
-      // Override DemonCard's fixed width so it fills the grid cell
-      card.el.style.width='100%';
-      card.el.style.height='100%';
-      card.el.style.position='absolute';
-      card.el.style.inset='0';
-      card.el.style.borderRadius='9px';
-
-      // Wrapper cell (maintains aspect ratio via existing .codex-card CSS)
-      const cell=document.createElement('div');
-      cell.className='codex-card';
-      cell.style.cssText=`border-color:${t.color}35;background:${t.bg};position:relative;padding:0;`;
-      cell.appendChild(card.el);
-      grid.appendChild(cell);
-      grid._cards.push(card);
+    const cell=document.createElement('div');
+    cell.className='codex-cell'+(cnt===0?' unknown':'');
+    if(cnt===0){
+      cell.innerHTML=`<div class="cc-unknown-art">👤</div><div class="cc-unknown-name">???</div>`;
     } else {
-      // Unknown demon — keep SVG placeholder
-      const cell=document.createElement('div');
-      cell.className='codex-card cc-unknown';
-      cell.innerHTML=`<div class="cc-art">${svg(t.id)}</div><div><div class="cc-name">???</div><div class="cc-tier" style="color:#2a1a4a">???</div></div>`;
-      grid.appendChild(cell);
+      const demonObj={id:DEMON_IDS[d.name]||d.name.toLowerCase().replace(/['\s]/g,'_').replace(/[^a-z0-9_]/g,''),name:d.name,tier:t.idx+1,tierName:t.name,color:t.color,count:cnt};
+      const card=new DemonCard(demonObj,{width:cardW,showName:true,showTier:true,showCount:true,animate:true});
+      card.el.style.cssText='width:100%;height:100%;position:absolute;inset:0;border-radius:8px;';
+      cell.style.position='relative';
+      cell.appendChild(card.el);
+      grid._cards.push(card);
     }
+    grid.appendChild(cell);
   }
 }
 
-/* ═══════════════════════════════════════════
-   COUNTDOWN
-═══════════════════════════════════════════ */
-function tick(){
-  const rem=Math.max(0,S.bannerExpiry-Date.now());
-  if(rem<=0){document.getElementById('countdown').textContent='BANNER ENDED';return}
-  const d=Math.floor(rem/86400000);
-  const h=Math.floor((rem%86400000)/3600000);
-  const m=Math.floor((rem%3600000)/60000);
-  const s=Math.floor((rem%60000)/1000);
-  document.getElementById('countdown').textContent=
-    (d>0?d+'d ':'')+h+'h '+m+'m '+s+'s';
+// ═══════════════════════════════════════════
+// REALMS
+// ═══════════════════════════════════════════
+function renderRealms(){
+  const grid=document.getElementById('realms-grid');if(!grid)return;
+  grid.innerHTML=REALMS.map(r=>`
+    <div class="realm-card${r.locked?' locked':''}" onclick="${r.locked?'':'enterRealm(\''+r.id+'\')'}">
+      <div class="realm-icon">${r.icon}</div>
+      <div class="realm-name" style="color:${r.color}">${r.name}</div>
+      <div class="realm-progress">${r.conquered} / ${r.stages} stages</div>
+      <div class="realm-bar"><div class="realm-bar-fill" style="width:${r.conquered/r.stages*100}%;background:${r.color}"></div></div>
+      <span class="realm-status" style="background:${r.locked?'rgba(255,255,255,.05)':r.color+'18'};color:${r.locked?'#2d1a4b':r.color};border:0.5px solid ${r.locked?'rgba(255,255,255,.08)':r.color+'40'}">
+        ${r.locked?'🔒 LOCKED':r.conquered===0?'ENTER':'CONTINUE'}
+      </span>
+    </div>`).join('');
+}
+function enterRealm(id){alert('Battle system coming soon — '+id+' realm');}
+
+// ═══════════════════════════════════════════
+// GARRISON
+// ═══════════════════════════════════════════
+function getGarrisonRate(){
+  // Sum up hourly rate from all garrisoned demons
+  let rate=0;
+  for(const[stage,demon] of Object.entries(S.garrison||{})){
+    if(demon&&demon.tierIdx!==undefined)rate+=GARRISON_RATES[demon.tierIdx]||0;
+  }
+  return rate;
 }
 
-/* ═══════════════════════════════════════════
-   WIRE-UP
-═══════════════════════════════════════════ */
-document.getElementById('btn-again').onclick=()=>{
-  closeOverlay();
-  const cost=lastCount===1?100:900;
-  if(S.shards>=cost) setTimeout(()=>doPull(lastCount),80);
-};
-document.getElementById('btn-codex-nav').onclick=()=>{
-  closeOverlay();switchTab('codex');
-};
+function startGarrisonTicker(){
+  if(garrisonInterval)clearInterval(garrisonInterval);
+  garrisonInterval=setInterval(()=>{
+    const rate=getGarrisonRate();
+    if(rate>0){
+      S.garrisonAccum=(S.garrisonAccum||0)+rate/3600; // per second accumulation
+      // Update hub display
+      const hubIncome=document.getElementById('hub-income');
+      if(hubIncome)hubIncome.textContent=`◆ ${Math.floor(S.garrisonAccum).toLocaleString()}`;
+    }
+  },1000);
+}
 
-/* ═══════════════════════════════════════════
-   INIT
-═══════════════════════════════════════════ */
+function collectAll(){
+  const accumulated=Math.floor(S.garrisonAccum||0);
+  if(accumulated>0){
+    S.shards+=accumulated;S.garrisonAccum=0;save();updateUI();
+    const el=document.getElementById('hub-income');
+    if(el){el.textContent='◆ 0';el.style.color='#fbbf24';setTimeout(()=>{el.style.color='#4ade80';},600);}
+  }
+  renderGarrison();
+}
+
+function renderGarrison(){
+  const slots=document.getElementById('garrison-slots');
+  const total=document.getElementById('garrison-total');
+  const rateLabel=document.getElementById('garrison-rate-label');
+  if(!slots)return;
+  const rate=getGarrisonRate();
+  const accum=Math.floor(S.garrisonAccum||0);
+  if(total)total.textContent=`◆ ${accum.toLocaleString()}`;
+  if(rateLabel)rateLabel.textContent=`${rate.toLocaleString()} ◆/hr from ${Object.keys(S.garrison||{}).length} garrisons`;
+  // Show conquered stages as garrison slots
+  const garrisoned=Object.entries(S.garrison||{});
+  if(garrisoned.length===0){
+    slots.innerHTML=`<div class="gslot"><div class="gslot-empty-msg">No garrisons active. Conquer stages in the Realms to unlock garrison slots and assign your demons.</div></div>`;
+    return;
+  }
+  slots.innerHTML=garrisoned.map(([stage,demon])=>`
+    <div class="gslot">
+      <div class="gslot-art"><div class="gslot-art-empty">👤</div></div>
+      <div class="gslot-info">
+        <div class="gslot-stage">${stage}</div>
+        <div class="gslot-demon" style="color:${demon.color||'#e2d9f3'}">${demon.name}</div>
+        <div class="gslot-income">${GARRISON_RATES[demon.tierIdx]||0} ◆/hr</div>
+      </div>
+      <button class="gslot-collect" onclick="collectSlot('${stage}')">Collect</button>
+    </div>`).join('');
+}
+
+function collectSlot(stage){collectAll();}
+
+// ═══════════════════════════════════════════
+// SCROLL UI
+// ═══════════════════════════════════════════
+function renderScrollShelf(){
+  const shelf=document.getElementById('scroll-shelf');if(!shelf)return;
+  shelf.innerHTML='';
+  SCROLLS.forEach(sc=>{
+    const isActive=sc.id===S.activeScroll;
+    const item=document.createElement('div');
+    item.className='scroll-item'+(sc.locked?' locked':'')+(isActive?' active':'');
+    item.style.borderColor=isActive?sc.color:'';
+    item.style.boxShadow=isActive?`0 0 10px ${sc.color}40`:'';
+    item.title=sc.locked?(sc.lockHint||'Locked'):'';
+    item.innerHTML=`<span class="scroll-icon">${sc.icon}</span><div class="scroll-name">${sc.name}</div><div class="scroll-cap" style="color:${sc.capColor};background:${sc.capColor}18;border:0.5px solid ${sc.capColor}40">${sc.capLabel}</div><div class="scroll-cost">${sc.cost}</div>${sc.locked?'<span class="scroll-lock-icon">🔒</span>':''}`;
+    if(!sc.locked)item.onclick=()=>{S.activeScroll=sc.id;save();renderScrollShelf();renderScrollInfo();updateUI();};
+    shelf.appendChild(item);
+  });
+}
+
+function renderScrollInfo(){
+  const info=document.getElementById('scroll-info');if(!info)return;
+  const sc=getActiveScroll();
+  const maxPct=Math.max(...sc.rates.map(r=>r.pct));
+  info.style.borderColor=sc.color+'40';
+  info.innerHTML=`<div class="si-name" style="color:${sc.color}">${sc.name}</div><div class="si-desc">${sc.desc}</div>${sc.rates.map(r=>`<div class="si-rate-row"><div class="si-rate-label" style="color:${r.color}">${r.label}</div><div class="si-rate-bar"><div class="si-rate-fill" style="width:${Math.round(r.pct/maxPct*100)}%;background:${r.color}"></div></div><div class="si-rate-val" style="color:${r.color}">${r.pct}%</div></div>`).join('')}${sc.locked?`<div style="margin-top:8px;font-size:.6rem;color:#f43f5e;font-style:italic">${sc.lockHint}</div>`:''}`;
+}
+
+// ═══════════════════════════════════════════
+// UI UPDATE
+// ═══════════════════════════════════════════
+function updateUI(){
+  const scroll=getActiveScroll();
+  const cost1=getCost(1),cost10=getCost(10);
+  document.getElementById('shard-count').textContent=S.shards.toLocaleString();
+  // Pity
+  const epicThresh=scroll.pity.epic||40,legThresh=scroll.pity.leg||70;
+  const ec=document.getElementById('epic-count'),lc=document.getElementById('leg-count');
+  if(ec)ec.textContent=`${S.epicPity} / ${epicThresh}`;
+  if(lc)lc.textContent=`${S.legPity} / ${legThresh}`;
+  const ef=document.getElementById('epic-fill'),lf=document.getElementById('leg-fill');
+  if(ef)ef.style.width=`${Math.min(100,(S.epicPity/epicThresh)*100)}%`;
+  if(lf)lf.style.width=`${Math.min(100,(S.legPity/legThresh)*100)}%`;
+  // Summon screen buttons
+  const bp1=document.getElementById('btn-pull-1'),bp10=document.getElementById('btn-pull-10');
+  if(bp1)bp1.disabled=scroll.locked||(cost1>0&&S.shards<cost1);
+  if(bp10)bp10.disabled=scroll.locked||(cost10>0&&S.shards<cost10);
+  const c1l=document.getElementById('cost-1-label'),c10l=document.getElementById('cost-10-label');
+  if(c1l)c1l.textContent=cost1===0?'Free':cost1===null?'Earned Only':`◆ ${cost1?.toLocaleString()}`;
+  if(c10l)c10l.textContent=cost10===0?'Free ×10':cost10===null?'Earned Only':`◆ ${cost10?.toLocaleString()}`;
+  // Hub banner buttons
+  const hb1=document.getElementById('hub-pull-1'),hb10=document.getElementById('hub-pull-10');
+  if(hb1)hb1.disabled=S.shards<800;
+  if(hb10)hb10.disabled=S.shards<7200;
+  // Stats
+  const owned=ALL_DEMONS.filter(d=>(S.collection[d.name]||0)>0).length;
+  const sb=document.getElementById('stat-bound');if(sb)sb.textContent=owned;
+  const cb=document.getElementById('codex-badge');if(cb)cb.textContent=`${owned} / ${ALL_DEMONS.length}`;
+  const sg=document.getElementById('stat-garrison');if(sg)sg.textContent=Object.keys(S.garrison||{}).length;
+  const ss=document.getElementById('stat-stages');if(ss)ss.textContent=REALMS.reduce((a,r)=>a+r.conquered,0);
+  // Garrison ticker
+  const rate=getGarrisonRate();
+  const hr=document.getElementById('hub-rate');
+  if(hr)hr.textContent=rate>0?`${rate.toLocaleString()} ◆/hr passive income`:'No garrisons active';
+}
+
+function addDemoShards(){S.shards+=500;save();updateUI();}
+
+// ═══════════════════════════════════════════
+// COUNTDOWN
+// ═══════════════════════════════════════════
+function tick(){
+  const rem=Math.max(0,S.bannerExpiry-Date.now());
+  const fmt=(n)=>String(n).padStart(2,'0');
+  if(rem<=0){['hub-countdown'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='BANNER ENDED';});return;}
+  const d=Math.floor(rem/86400000),h=Math.floor((rem%86400000)/3600000);
+  const m=Math.floor((rem%3600000)/60000),s=Math.floor((rem%60000)/1000);
+  const txt=(d>0?d+'d ':'')+fmt(h)+'h '+fmt(m)+'m '+fmt(s)+'s';
+  const el=document.getElementById('hub-countdown');if(el)el.textContent=txt;
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
 (function init(){
   load();
-  // Featured card — show Void Primordial video art
-  const featArt=document.getElementById('featured-art');
-  const featVideo=document.createElement('video');
-  featVideo.src='assets/demons/the_unnamed_one_card.mp4';
-  featVideo.autoplay=true;featVideo.loop=true;featVideo.muted=true;featVideo.playsInline=true;
-  featVideo.setAttribute('playsinline','');
-  featVideo.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;';
-  featVideo.play().catch(()=>{});
-  // Fallback to SVG if video missing
-  featVideo.addEventListener('error',()=>{
-    featArt.innerHTML=SVGS.void_primordial;
-  });
-  featArt.innerHTML='';
-  featArt.style.cssText='flex:1;width:88%;overflow:hidden;border-radius:10px;';
-  featArt.appendChild(featVideo);
+  document.getElementById('btn-again').onclick=()=>{closeOverlay();const cost=lastCount===1?getCost(1):getCost(10);if(S.shards>=(cost||0))setTimeout(()=>doPull(lastCount),80);};
+  document.getElementById('btn-close-pull').onclick=()=>closeOverlay();
+  renderScrollShelf();renderScrollInfo();
+  renderRealms();renderGarrison();
   updateUI();
-  renderScrollShelf();
-  renderScrollInfo();
-  renderCodex();
+  startGarrisonTicker();
   tick();setInterval(tick,1000);
 })();
 </script>
