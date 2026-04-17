@@ -696,6 +696,15 @@ header{
   position:absolute;top:4px;right:4px;
   font-size:.55rem;opacity:.6;
 }
+/* ── CODEX BG ── */
+#codex-screen{
+  position:relative;
+}
+#codex-screen::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:url('assets/ui/codex_bg.jpg') center center/cover no-repeat;
+  opacity:0.18;pointer-events:none;
+}
 /* ── MISC ── */
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .fade-in{animation:fadeIn 0.4s ease both}
