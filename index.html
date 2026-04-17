@@ -517,25 +517,17 @@ header{
   padding-bottom:60px;
 }
 #pull-overlay.active{display:flex}
-/* Summon scene background */
+/* Summon scene background — portrait for mobile, landscape for desktop */
 #pull-overlay::before{
   content:'';position:absolute;inset:0;
-  background:#06000e url('assets/ui/summon_scene.jpg') center bottom/cover no-repeat;
+  background:#06000e url('assets/ui/summon_scene.jpg') center 60%/cover no-repeat;
   z-index:0;
 }
-/* Desktop: fit full portrait image to viewport height so smoke + circle both show */
 @media(min-aspect-ratio:3/4){
   #pull-overlay::before{
-    background-size:auto 100%;
-    background-position:center center;
+    background-image:url('assets/ui/summon_scene_wide.jpg');
+    background-position:center 65%;
   }
-}
-/* Circle glow tracks the image center on desktop */
-@media(min-aspect-ratio:3/4){
-  #circle-glow{bottom:12%;}
-}
-@media(min-aspect-ratio:16/9){
-  #circle-glow{bottom:8%;}
 }
 /* Dark vignette at bottom so cards/buttons are readable */
 #pull-overlay::after{
@@ -552,11 +544,9 @@ header{
   z-index:2;pointer-events:none;
   animation:circleBreath 2.4s ease-in-out infinite;
 }
+/* Desktop — circle is lower in the landscape image */
 @media(min-aspect-ratio:3/4){
-  #circle-glow{bottom:12%;}
-}
-@media(min-aspect-ratio:16/9){
-  #circle-glow{bottom:8%;}
+  #circle-glow{bottom:22%;width:min(420px,50vw);height:min(420px,50vw);}
 }
 @keyframes circleBreath{
   0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}
