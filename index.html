@@ -520,8 +520,19 @@ header{
 /* Summon scene background */
 #pull-overlay::before{
   content:'';position:absolute;inset:0;
-  background:url('assets/ui/summon_scene.jpg') center 30%/cover no-repeat;
+  background:url('assets/ui/summon_scene.jpg') center bottom/cover no-repeat;
   z-index:0;
+}
+/* On wide screens anchor to bottom so circle stays visible */
+@media(min-aspect-ratio:3/4){
+  #pull-overlay::before{
+    background-position:center 85%;
+  }
+}
+@media(min-aspect-ratio:16/9){
+  #pull-overlay::before{
+    background-position:center 95%;
+  }
 }
 /* Dark vignette at bottom so cards/buttons are readable */
 #pull-overlay::after{
@@ -531,12 +542,18 @@ header{
 }
 /* Circle glow pulse on open */
 #circle-glow{
-  position:absolute;bottom:22%;left:50%;transform:translateX(-50%);
+  position:absolute;bottom:15%;left:50%;transform:translateX(-50%);
   width:min(340px,80vw);height:min(340px,80vw);
   border-radius:50%;
   background:radial-gradient(circle,rgba(192,132,252,.55) 0%,rgba(124,58,237,.25) 45%,transparent 70%);
   z-index:2;pointer-events:none;
   animation:circleBreath 2.4s ease-in-out infinite;
+}
+@media(min-aspect-ratio:3/4){
+  #circle-glow{bottom:8%;}
+}
+@media(min-aspect-ratio:16/9){
+  #circle-glow{bottom:4%;}
 }
 @keyframes circleBreath{
   0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}
@@ -1401,9 +1418,11 @@ function showOverlay(results){
   const CW = isSingle ? Math.min(210, window.innerWidth*0.62) : Math.min(108, (window.innerWidth-56)/5.2);
   const CH = CW * (3/2);
 
-  // Origin point — the summoning circle: center-x, ~73% down screen
+  // Origin point — the summoning circle: center-x, ~78% down screen on mobile, lower on desktop
+  const aspectRatio = window.innerWidth / window.innerHeight;
+  const circleYPct = aspectRatio > 1.3 ? 0.82 : aspectRatio > 0.75 ? 0.78 : 0.73;
   const OX = window.innerWidth / 2;
-  const OY = window.innerHeight * 0.73;
+  const OY = window.innerHeight * circleYPct;
 
   // Fan destination positions
   function getDestinations(count){
