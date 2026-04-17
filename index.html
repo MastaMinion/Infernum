@@ -94,110 +94,262 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .nav-btn.active .nav-label{color:var(--purple)}
 
 /* ══════════════════════════════════════
-   HUB SCREEN
+   HUB SCREEN — PREMIUM ANIMATED
 ══════════════════════════════════════ */
 #screen-hub{
   background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
-  background-attachment:fixed;
 }
 #screen-hub::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(to bottom,rgba(6,0,14,.6) 0%,rgba(6,0,14,.3) 40%,rgba(6,0,14,.8) 100%);
-  pointer-events:none;z-index:0;
+  content:'';position:absolute;inset:0;z-index:0;
+  background:linear-gradient(175deg,rgba(6,0,14,.55) 0%,rgba(6,0,14,.2) 35%,rgba(6,0,14,.75) 100%);
+  pointer-events:none;
 }
 #screen-hub > *{position:relative;z-index:1}
 
-.hub-inner{padding:20px 16px 30px;display:flex;flex-direction:column;align-items:center;gap:20px}
+/* Ember particles */
+#hub-particles{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.ember{
+  position:absolute;border-radius:50%;
+  background:radial-gradient(circle,rgba(192,132,252,1) 0%,rgba(124,58,237,.6) 50%,transparent 100%);
+  animation:emberFloat linear infinite;
+  pointer-events:none;
+}
+@keyframes emberFloat{
+  0%{transform:translateY(0) translateX(0) scale(1);opacity:0}
+  10%{opacity:1}
+  90%{opacity:.6}
+  100%{transform:translateY(-110vh) translateX(var(--drift)) scale(.3);opacity:0}
+}
 
-/* Featured banner */
-.featured-banner{
-  width:100%;max-width:420px;
-  background:rgba(6,0,14,.7);border:0.5px solid rgba(224,224,255,.2);
-  border-radius:12px;overflow:hidden;
-  display:flex;flex-direction:column;align-items:center;
-  padding:16px;
-  backdrop-filter:blur(4px);
+.hub-inner{
+  padding:0 0 100px;
+  display:flex;flex-direction:column;
 }
-.feat-eyebrow{
-  font-family:var(--serif);font-size:.6rem;letter-spacing:.35em;
-  color:var(--gold);margin-bottom:12px;
-  text-shadow:0 0 12px rgba(251,191,36,.5);
+
+/* ── HERO SECTION ── */
+.hub-hero{
+  position:relative;width:100%;
+  min-height:68vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;
+  padding-bottom:24px;overflow:hidden;
 }
-.feat-art{
-  width:min(220px,60vw);aspect-ratio:2/3;border-radius:8px;
-  overflow:hidden;position:relative;margin-bottom:12px;
-  background:linear-gradient(158deg,#09000f,#1a0840,#06000e);
-}
-.feat-art-overlay{
+.hub-hero-art{
   position:absolute;inset:0;
-  background:linear-gradient(to top,rgba(6,0,14,.75) 0%,transparent 50%);
-  pointer-events:none;z-index:3;
+  display:flex;align-items:center;justify-content:center;
+  z-index:0;
 }
-.feat-border{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;z-index:4}
-.feat-name{font-family:var(--deco);font-size:.9rem;color:#e0e0ff;letter-spacing:.1em;margin-bottom:2px;text-align:center}
-.feat-tier{font-family:var(--serif);font-size:.55rem;letter-spacing:.3em;color:#e0e0ff;opacity:.7;margin-bottom:12px;text-align:center}
-.feat-countdown-label{font-size:.55rem;color:var(--muted);letter-spacing:.12em;margin-bottom:4px;font-family:var(--serif)}
-#hub-countdown{font-family:var(--serif);font-size:1rem;font-weight:600;color:var(--gold);letter-spacing:.1em}
-.feat-pull-btns{display:flex;gap:10px;margin-top:14px;width:100%}
-.feat-btn{
-  flex:1;font-family:var(--serif);font-size:.75rem;font-weight:600;
-  letter-spacing:.1em;padding:11px 8px;border-radius:7px;cursor:pointer;
-  transition:all .15s;border:0.5px solid;text-align:center;
+.hub-hero-art video{
+  height:100%;width:auto;max-width:none;
+  object-fit:cover;opacity:.9;
 }
-.feat-btn-1{background:rgba(124,58,237,.2);border-color:rgba(192,132,252,.4);color:var(--purple)}
-.feat-btn-1:hover{background:rgba(124,58,237,.4);border-color:var(--purple)}
-.feat-btn-10{background:rgba(180,83,9,.2);border-color:rgba(251,191,36,.4);color:var(--gold)}
-.feat-btn-10:hover{background:rgba(180,83,9,.4);border-color:var(--gold)}
-.feat-btn:disabled{opacity:.3;cursor:not-allowed}
+.hub-hero-art-fallback{
+  position:absolute;inset:0;
+  background:linear-gradient(158deg,#09000f,#1e0840 40%,#06000e);
+  display:flex;align-items:center;justify-content:center;
+}
+.hub-hero-art-border{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:fill;pointer-events:none;z-index:2;
+}
+/* Gradient overlay so bottom content is readable */
+.hub-hero::after{
+  content:'';position:absolute;inset:0;z-index:1;
+  background:linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 30%,
+    rgba(6,0,14,.4) 55%,
+    rgba(6,0,14,.9) 80%,
+    rgba(6,0,14,1) 100%
+  );
+  pointer-events:none;
+}
+/* Shimmer sweep on hero card */
+@keyframes shimmer{
+  0%{transform:translateX(-150%) skewX(-15deg)}
+  100%{transform:translateX(250%) skewX(-15deg)}
+}
+.hub-hero-shimmer{
+  position:absolute;top:0;left:0;right:0;bottom:0;z-index:3;
+  overflow:hidden;pointer-events:none;border-radius:0;
+}
+.hub-hero-shimmer::after{
+  content:'';position:absolute;top:0;bottom:0;width:40%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
+  animation:shimmer 4s ease-in-out infinite;
+  animation-delay:2s;
+}
 
-/* Quick stats row */
-.hub-stats{display:flex;gap:8px;width:100%;max-width:420px}
+.hub-hero-info{
+  position:relative;z-index:3;
+  text-align:center;width:100%;padding:0 20px;
+}
+.hub-eyebrow{
+  font-family:var(--serif);font-size:.58rem;letter-spacing:.4em;
+  color:var(--gold);margin-bottom:6px;
+  text-shadow:0 0 20px rgba(251,191,36,.7);
+  animation:pulse-gold 3s ease-in-out infinite;
+}
+@keyframes pulse-gold{0%,100%{text-shadow:0 0 20px rgba(251,191,36,.7)}50%{text-shadow:0 0 35px rgba(251,191,36,1),0 0 60px rgba(251,191,36,.4)}}
+.hub-demon-name{
+  font-family:var(--deco);
+  font-size:clamp(1.4rem,6vw,2.2rem);
+  color:#e0e0ff;letter-spacing:.08em;
+  text-shadow:0 0 30px rgba(224,224,255,.5),0 2px 4px rgba(0,0,0,.8);
+  line-height:1.1;margin-bottom:4px;
+}
+.hub-demon-tier{
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.35em;
+  color:#a0a0dd;margin-bottom:16px;
+}
+/* Countdown */
+.hub-countdown-wrap{
+  display:flex;flex-direction:column;align-items:center;margin-bottom:18px;
+}
+.hub-countdown-label{font-size:.5rem;letter-spacing:.25em;color:var(--muted);font-family:var(--serif);margin-bottom:4px}
+#hub-countdown{
+  font-family:var(--serif);font-size:1.1rem;font-weight:600;
+  color:var(--gold);letter-spacing:.08em;
+  text-shadow:0 0 14px rgba(251,191,36,.5);
+}
+/* Hero pull buttons */
+.hub-pull-row{display:flex;gap:10px;width:100%;max-width:380px;margin:0 auto}
+.hub-pull-btn{
+  flex:1;font-family:var(--serif);font-size:.78rem;font-weight:600;
+  letter-spacing:.08em;padding:13px 10px;border-radius:8px;
+  cursor:pointer;transition:all .2s;border:0.5px solid;text-align:center;
+  position:relative;overflow:hidden;
+}
+.hub-pull-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.04) 100%);
+}
+.hub-pull-btn:active{transform:scale(.97)}
+.hub-pull-btn:disabled{opacity:.3;cursor:not-allowed}
+.hub-pull-btn-1{
+  background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(76,29,149,.5));
+  border-color:rgba(192,132,252,.5);color:var(--purple);
+  box-shadow:0 0 20px rgba(124,58,237,.2),inset 0 0 20px rgba(124,58,237,.05);
+}
+.hub-pull-btn-1:hover:not(:disabled){
+  border-color:var(--purple);background:linear-gradient(135deg,rgba(124,58,237,.5),rgba(76,29,149,.7));
+  box-shadow:0 0 30px rgba(192,132,252,.4);
+}
+.hub-pull-btn-10{
+  background:linear-gradient(135deg,rgba(180,83,9,.35),rgba(120,53,15,.5));
+  border-color:rgba(251,191,36,.5);color:var(--gold);
+  box-shadow:0 0 20px rgba(180,83,9,.2),inset 0 0 20px rgba(180,83,9,.05);
+}
+.hub-pull-btn-10:hover:not(:disabled){
+  border-color:var(--gold);background:linear-gradient(135deg,rgba(180,83,9,.5),rgba(120,53,15,.7));
+  box-shadow:0 0 30px rgba(251,191,36,.4);
+}
+.hub-btn-label{display:block;margin-bottom:2px}
+.hub-btn-cost{display:block;font-size:.6rem;font-weight:400;opacity:.65}
+
+/* ── STATS STRIP ── */
+.hub-stats-strip{
+  display:flex;gap:0;
+  background:rgba(6,0,14,.6);
+  border-top:0.5px solid rgba(124,58,237,.15);
+  border-bottom:0.5px solid rgba(124,58,237,.15);
+}
 .hstat{
-  flex:1;background:rgba(6,0,14,.75);border:0.5px solid var(--border);
-  border-radius:8px;padding:10px 8px;text-align:center;backdrop-filter:blur(4px);
-  cursor:pointer;transition:all .2s;
+  flex:1;padding:12px 6px;text-align:center;cursor:pointer;
+  transition:all .2s;border-right:0.5px solid rgba(124,58,237,.1);
+  position:relative;overflow:hidden;
 }
-.hstat:hover{border-color:rgba(192,132,252,.4);background:rgba(124,58,237,.1)}
-.hstat-val{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--purple)}
-.hstat-label{font-size:.5rem;letter-spacing:.2em;color:var(--muted);margin-top:2px;font-family:var(--serif);text-transform:uppercase}
+.hstat:last-child{border-right:none}
+.hstat::after{
+  content:'';position:absolute;bottom:0;left:50%;right:50%;
+  height:2px;background:var(--purple);transition:all .25s;
+}
+.hstat:hover::after{left:10%;right:10%}
+.hstat:hover{background:rgba(124,58,237,.08)}
+.hstat-val{
+  font-family:var(--serif);font-size:1.15rem;font-weight:600;
+  color:var(--purple);line-height:1;margin-bottom:3px;
+}
+.hstat-label{font-size:.45rem;letter-spacing:.2em;color:var(--muted);font-family:var(--serif);text-transform:uppercase}
 
-/* Hub nav tiles */
-.hub-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:420px}
-.hub-tile{
-  background:rgba(6,0,14,.75);border:0.5px solid var(--border);
-  border-radius:10px;padding:16px 12px;cursor:pointer;
-  transition:all .2s;display:flex;flex-direction:column;gap:6px;
-  backdrop-filter:blur(4px);
+/* ── SECTION CARDS (scrollable) ── */
+.hub-sections{
+  display:flex;flex-direction:column;gap:0;
+  padding:16px 14px 0;
 }
-.hub-tile:hover{border-color:rgba(192,132,252,.45);background:rgba(124,58,237,.12);transform:translateY(-2px)}
-.hub-tile:active{transform:scale(.97)}
-.tile-icon{font-size:1.6rem}
-.tile-name{font-family:var(--serif);font-size:.7rem;letter-spacing:.15em;color:var(--text)}
-.tile-desc{font-size:.6rem;color:var(--muted);font-style:italic;line-height:1.4}
-.tile-badge{
+.hub-section-card{
+  background:rgba(6,0,14,.55);
+  border:0.5px solid rgba(124,58,237,.12);
+  border-radius:12px;margin-bottom:10px;
+  overflow:hidden;cursor:pointer;
+  transition:all .25s;
+  display:flex;align-items:stretch;
+  min-height:76px;
+  backdrop-filter:blur(8px);
+  position:relative;
+}
+.hub-section-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--accent-color,var(--purple));
+  opacity:0;transition:opacity .2s;
+}
+.hub-section-card:hover{
+  border-color:rgba(192,132,252,.3);
+  background:rgba(124,58,237,.08);
+  transform:translateX(3px);
+}
+.hub-section-card:hover::before{opacity:1}
+.hub-section-card:active{transform:scale(.99)}
+.hsc-accent{
+  width:4px;background:var(--accent-color,var(--purple));
+  flex-shrink:0;opacity:.7;
+}
+.hsc-icon{
+  width:68px;display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;flex-shrink:0;
+}
+.hsc-body{flex:1;padding:13px 12px 13px 0;display:flex;flex-direction:column;justify-content:center;gap:3px}
+.hsc-name{font-family:var(--serif);font-size:.75rem;letter-spacing:.12em;color:var(--text)}
+.hsc-desc{font-size:.6rem;color:var(--muted);font-style:italic;line-height:1.4}
+.hsc-badge{
   display:inline-block;font-size:.45rem;letter-spacing:.1em;
-  padding:2px 7px;border-radius:10px;font-family:var(--serif);margin-top:2px;
+  padding:2px 8px;border-radius:10px;font-family:var(--serif);margin-top:3px;
+  width:fit-content;
 }
+.hsc-arrow{
+  width:36px;display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:.8rem;flex-shrink:0;
+  transition:transform .2s;
+}
+.hub-section-card:hover .hsc-arrow{transform:translateX(3px);color:var(--purple)}
 
-/* Garrison income ticker */
-.garrison-ticker{
-  width:100%;max-width:420px;
-  background:rgba(6,0,14,.75);border:0.5px solid rgba(74,222,128,.2);
-  border-radius:8px;padding:10px 14px;
-  display:flex;align-items:center;gap:12px;backdrop-filter:blur(4px);
+/* ── GARRISON STRIP ── */
+.hub-garrison-strip{
+  margin:0 14px 10px;
+  background:rgba(6,0,14,.6);
+  border:0.5px solid rgba(74,222,128,.18);
+  border-radius:12px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;
+  backdrop-filter:blur(8px);
 }
-.gt-icon{font-size:1.2rem}
-.gt-body{flex:1}
-.gt-label{font-size:.5rem;letter-spacing:.25em;color:#1a6030;font-family:var(--serif);text-transform:uppercase;margin-bottom:2px}
-.gt-income{font-family:var(--serif);font-size:.9rem;color:#4ade80}
-.gt-rate{font-size:.55rem;color:#1a6030;font-style:italic}
-.gt-collect{
-  font-family:var(--serif);font-size:.6rem;letter-spacing:.1em;
-  padding:6px 12px;border-radius:20px;cursor:pointer;
-  background:rgba(74,222,128,.12);border:0.5px solid rgba(74,222,128,.35);
-  color:#4ade80;transition:all .2s;
+.hgs-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:#4ade80;flex-shrink:0;
+  animation:gsDot 2s ease-in-out infinite;
 }
-.gt-collect:hover{background:rgba(74,222,128,.25)}
+@keyframes gsDot{0%,100%{opacity:.5;box-shadow:0 0 0 0 rgba(74,222,128,.4)}50%{opacity:1;box-shadow:0 0 0 5px rgba(74,222,128,.1)}}
+.hgs-body{flex:1}
+.hgs-label{font-size:.48rem;letter-spacing:.25em;color:#1a6030;font-family:var(--serif);text-transform:uppercase;margin-bottom:2px}
+.hgs-income{font-family:var(--serif);font-size:.85rem;color:#4ade80}
+.hgs-rate{font-size:.5rem;color:#1a6030;font-style:italic}
+.hgs-btn{
+  font-family:var(--serif);font-size:.58rem;letter-spacing:.08em;
+  padding:7px 13px;border-radius:20px;cursor:pointer;
+  background:rgba(74,222,128,.1);border:0.5px solid rgba(74,222,128,.3);
+  color:#4ade80;transition:all .2s;white-space:nowrap;
+}
+.hgs-btn:hover{background:rgba(74,222,128,.25);border-color:rgba(74,222,128,.6)}
 
 /* ══════════════════════════════════════
    SUMMON SCREEN
@@ -533,43 +685,49 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
     <!-- HUB -->
     <div id="screen-hub" class="screen active">
+      <!-- Ember particles -->
+      <div id="hub-particles"></div>
       <div class="hub-inner">
-        <!-- Featured banner -->
-        <div class="featured-banner">
-          <div class="feat-eyebrow">✦ VOID GATE · RATE UP ✦</div>
-          <div class="feat-art" id="feat-art-container">
+
+        <!-- HERO: Full-bleed featured demon -->
+        <div class="hub-hero">
+          <div class="hub-hero-art">
             <video id="feat-video" autoplay loop muted playsinline
-              style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;">
+              style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
               <source src="assets/demons/the_unnamed_one_card.mp4" type="video/mp4">
             </video>
-            <!-- Fallback gradient if video missing -->
-            <div id="feat-fallback" style="position:absolute;inset:0;background:linear-gradient(158deg,#09000f,#1a0840,#06000e);display:flex;align-items:center;justify-content:center;">
-              <div style="text-align:center;opacity:.4">
-                <div style="font-size:3rem;margin-bottom:8px">◈</div>
-                <div style="font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.3em;color:#e0e0ff">VOID PRIMORDIAL</div>
+            <div id="feat-fallback" class="hub-hero-art-fallback">
+              <div style="text-align:center;opacity:.35">
+                <div style="font-size:5rem;margin-bottom:10px">◈</div>
+                <div style="font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.4em;color:#e0e0ff">VOID PRIMORDIAL</div>
               </div>
             </div>
-            <img src="assets/borders/infernum_border_void.png" class="feat-border" alt=""
-              style="position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;z-index:2;"
-              onerror="this.style.display='none'">
-            <div class="feat-art-overlay"></div>
+            <img src="assets/borders/infernum_border_void.png" class="hub-hero-art-border" alt="" onerror="this.style.display='none'">
+            <div class="hub-hero-shimmer"></div>
           </div>
-          <div class="feat-name">The Unnamed One</div>
-          <div class="feat-tier">✦ VOID PRIMORDIAL ✦</div>
-          <div class="feat-countdown-label">BANNER EXPIRES IN</div>
-          <div id="hub-countdown">—</div>
-          <div class="feat-pull-btns">
-            <button class="feat-btn feat-btn-1" id="hub-pull-1" onclick="doPull(1)">
-              Summon ×1<br><small style="font-size:.6rem;opacity:.6">◆ 800</small>
-            </button>
-            <button class="feat-btn feat-btn-10" id="hub-pull-10" onclick="doPull(10)">
-              Summon ×10<br><small style="font-size:.6rem;opacity:.6">◆ 7,200</small>
-            </button>
+          <div class="hub-hero-info">
+            <div class="hub-eyebrow">✦ LIMITED BANNER · VOID GATE ✦</div>
+            <div class="hub-demon-name">The Unnamed One</div>
+            <div class="hub-demon-tier">✦ VOID PRIMORDIAL · RATE UP ✦</div>
+            <div class="hub-countdown-wrap">
+              <div class="hub-countdown-label">BANNER EXPIRES IN</div>
+              <div id="hub-countdown">—</div>
+            </div>
+            <div class="hub-pull-row">
+              <button class="hub-pull-btn hub-pull-btn-1" id="hub-pull-1" onclick="doPull(1)">
+                <span class="hub-btn-label">Summon ×1</span>
+                <span class="hub-btn-cost">◆ 800 Soul Shards</span>
+              </button>
+              <button class="hub-pull-btn hub-pull-btn-10" id="hub-pull-10" onclick="doPull(10)">
+                <span class="hub-btn-label">Summon ×10</span>
+                <span class="hub-btn-cost">◆ 7,200 Soul Shards</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Stats row -->
-        <div class="hub-stats">
+        <!-- STATS STRIP -->
+        <div class="hub-stats-strip">
           <div class="hstat" onclick="switchScreen('codex')">
             <div class="hstat-val" id="stat-bound">0</div>
             <div class="hstat-label">Bound</div>
@@ -582,46 +740,83 @@ body{font-family:var(--body);color:var(--text);position:relative}
             <div class="hstat-val" id="stat-garrison">0</div>
             <div class="hstat-label">Garrisoned</div>
           </div>
+          <div class="hstat" onclick="switchScreen('riftwalk')">
+            <div class="hstat-val">1</div>
+            <div class="hstat-label">RW Level</div>
+          </div>
         </div>
 
-        <!-- Garrison ticker -->
-        <div class="garrison-ticker">
-          <div class="gt-icon">⚑</div>
-          <div class="gt-body">
-            <div class="gt-label">Garrison Income</div>
-            <div class="gt-income" id="hub-income">◆ 0</div>
-            <div class="gt-rate" id="hub-rate">No garrisons active</div>
+        <!-- GARRISON TICKER -->
+        <div style="padding:10px 14px 0">
+          <div class="hub-garrison-strip">
+            <div class="hgs-dot"></div>
+            <div class="hgs-body">
+              <div class="hgs-label">Garrison Income</div>
+              <div class="hgs-income" id="hub-income">◆ 0</div>
+              <div class="hgs-rate" id="hub-rate">No garrisons active</div>
+            </div>
+            <button class="hgs-btn" onclick="collectAll()">Collect All</button>
           </div>
-          <button class="gt-collect" onclick="collectAll()">Collect</button>
         </div>
 
-        <!-- Nav tiles -->
-        <div class="hub-tiles">
-          <div class="hub-tile" onclick="switchScreen('summon')">
-            <div class="tile-icon">📜</div>
-            <div class="tile-name">Summons</div>
-            <div class="tile-desc">8 scroll types · Infernal pity system</div>
-            <span class="tile-badge" style="background:rgba(192,132,252,.12);color:var(--purple);border:0.5px solid rgba(192,132,252,.3)">ACTIVE BANNER</span>
+        <!-- SECTION CARDS -->
+        <div class="hub-sections">
+          <div class="hub-section-card" style="--accent-color:#c084fc" onclick="switchScreen('summon')">
+            <div class="hsc-accent"></div>
+            <div class="hsc-icon">📜</div>
+            <div class="hsc-body">
+              <div class="hsc-name">Abyssal Summons</div>
+              <div class="hsc-desc">8 scroll types · Independent pity per scroll · Rate-up banners</div>
+              <span class="hsc-badge" style="background:rgba(192,132,252,.12);color:#c084fc;border:0.5px solid rgba(192,132,252,.3)">ACTIVE BANNER</span>
+            </div>
+            <div class="hsc-arrow">›</div>
           </div>
-          <div class="hub-tile" onclick="switchScreen('realms')">
-            <div class="tile-icon">⚔</div>
-            <div class="tile-name">Realms</div>
-            <div class="tile-desc">8 realms · 13 stages each · Conquest</div>
-            <span class="tile-badge" style="background:rgba(239,68,68,.1);color:#f43f5e;border:0.5px solid rgba(239,68,68,.25)">0 / 8 REALMS</span>
+
+          <div class="hub-section-card" style="--accent-color:#f43f5e" onclick="switchScreen('realms')">
+            <div class="hsc-accent"></div>
+            <div class="hsc-icon">⚔</div>
+            <div class="hsc-body">
+              <div class="hsc-name">Realm Conquest</div>
+              <div class="hsc-desc">8 realms · 13 stages each · Station demons · Earn passive income</div>
+              <span class="hsc-badge" id="realms-badge" style="background:rgba(244,63,94,.1);color:#f43f5e;border:0.5px solid rgba(244,63,94,.25)">0 / 8 REALMS</span>
+            </div>
+            <div class="hsc-arrow">›</div>
           </div>
-          <div class="hub-tile" onclick="switchScreen('codex')">
-            <div class="tile-icon">📖</div>
-            <div class="tile-name">Codex</div>
-            <div class="tile-desc">Your bound demon collection</div>
-            <span class="tile-badge" id="codex-badge" style="background:rgba(96,165,250,.1);color:#60a5fa;border:0.5px solid rgba(96,165,250,.25)">0 / 28</span>
+
+          <div class="hub-section-card" style="--accent-color:#60a5fa" onclick="switchScreen('codex')">
+            <div class="hsc-accent"></div>
+            <div class="hsc-icon">📖</div>
+            <div class="hsc-body">
+              <div class="hsc-name">Codex Infernum</div>
+              <div class="hsc-desc">Your bound demon collection · 28 demons across 7 tiers</div>
+              <span class="hsc-badge" id="codex-badge" style="background:rgba(96,165,250,.1);color:#60a5fa;border:0.5px solid rgba(96,165,250,.25)">0 / 28</span>
+            </div>
+            <div class="hsc-arrow">›</div>
           </div>
-          <div class="hub-tile" onclick="switchScreen('riftwalk')">
-            <div class="tile-icon">🌀</div>
-            <div class="tile-name">Rift Walker</div>
-            <div class="tile-desc">Gear · Runes · Talent tree</div>
-            <span class="tile-badge" style="background:rgba(251,191,36,.1);color:var(--gold);border:0.5px solid rgba(251,191,36,.25)">LVL 1</span>
+
+          <div class="hub-section-card" style="--accent-color:#4ade80" onclick="switchScreen('garrison')">
+            <div class="hsc-accent"></div>
+            <div class="hsc-icon">⚑</div>
+            <div class="hsc-body">
+              <div class="hsc-name">Garrison</div>
+              <div class="hsc-desc">Passive income from conquered stages · 0 active garrisons</div>
+              <span class="hsc-badge" style="background:rgba(74,222,128,.1);color:#4ade80;border:0.5px solid rgba(74,222,128,.25)">0 ◆/HR</span>
+            </div>
+            <div class="hsc-arrow">›</div>
+          </div>
+
+          <div class="hub-section-card" style="--accent-color:#fbbf24" onclick="switchScreen('riftwalk')">
+            <div class="hsc-accent"></div>
+            <div class="hsc-icon">🌀</div>
+            <div class="hsc-body">
+              <div class="hsc-name">Rift Walker</div>
+              <div class="hsc-desc">Gear · Rune slots · Talent tree · Passive battlefield auras</div>
+              <span class="hsc-badge" style="background:rgba(251,191,36,.1);color:#fbbf24;border:0.5px solid rgba(251,191,36,.25)">LEVEL 1</span>
+            </div>
+            <div class="hsc-arrow">›</div>
           </div>
         </div>
+
       </div>
     </div>
 
@@ -1262,7 +1457,26 @@ function tick(){
   load();
   document.getElementById('btn-again').onclick=()=>{closeOverlay();const cost=lastCount===1?getCost(1):getCost(10);if(S.shards>=(cost||0))setTimeout(()=>doPull(lastCount),80);};
   document.getElementById('btn-close-pull').onclick=()=>closeOverlay();
-  // Featured card video — hide fallback when video loads
+  // Ember particles
+  (function spawnEmbers(){
+    const container=document.getElementById('hub-particles');
+    if(!container)return;
+    function createEmber(){
+      const el=document.createElement('div');
+      el.className='ember';
+      const size=Math.random()*4+2;
+      const x=Math.random()*100;
+      const duration=Math.random()*8+6;
+      const drift=(Math.random()-.5)*120;
+      el.style.cssText=`width:${size}px;height:${size}px;left:${x}%;bottom:-10px;--drift:${drift}px;animation-duration:${duration}s;animation-delay:${Math.random()*duration}s;opacity:0;`;
+      container.appendChild(el);
+      setTimeout(()=>el.remove(),duration*1000+2000);
+    }
+    for(let i=0;i<12;i++)createEmber();
+    setInterval(()=>createEmber(),800);
+  })();
+
+  // Featured video fallback
   const featVideo=document.getElementById('feat-video');
   const featFallback=document.getElementById('feat-fallback');
   if(featVideo&&featFallback){
