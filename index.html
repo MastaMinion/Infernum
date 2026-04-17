@@ -92,266 +92,99 @@ body{font-family:var(--body);color:var(--text);position:relative}
   color:var(--muted);transition:color .2s;text-transform:uppercase;
 }
 .nav-btn.active .nav-label{color:var(--purple)}
-
 /* ══════════════════════════════════════
-   HUB SCREEN — PREMIUM ANIMATED
+   HUB — THE RIFT WALKER'S SANCTUM
 ══════════════════════════════════════ */
 #screen-hub{
   background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
+  overflow:hidden;
 }
 #screen-hub::before{
   content:'';position:absolute;inset:0;z-index:0;
-  background:linear-gradient(175deg,rgba(6,0,14,.55) 0%,rgba(6,0,14,.2) 35%,rgba(6,0,14,.75) 100%);
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 40%,rgba(124,58,237,.12) 0%,transparent 70%),
+    linear-gradient(to bottom,rgba(6,0,14,.7) 0%,rgba(6,0,14,.45) 40%,rgba(6,0,14,.88) 100%);
   pointer-events:none;
 }
 #screen-hub > *{position:relative;z-index:1}
-
-/* Ember particles */
-#hub-particles{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.ember{
-  position:absolute;border-radius:50%;
-  background:radial-gradient(circle,rgba(192,132,252,1) 0%,rgba(124,58,237,.6) 50%,transparent 100%);
-  animation:emberFloat linear infinite;
-  pointer-events:none;
+#hub-sigils{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.sigil{position:absolute;font-family:serif;color:rgba(192,132,252,.18);animation:sigilDrift linear infinite;user-select:none}
+@keyframes sigilDrift{0%{transform:translateY(0) rotate(0deg);opacity:0}10%{opacity:1}85%{opacity:.4}100%{transform:translateY(-100vh) rotate(180deg);opacity:0}}
+.ember{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(192,132,252,.9),rgba(124,58,237,.4) 50%,transparent);animation:emberRise linear infinite;}
+@keyframes emberRise{0%{transform:translateY(0) translateX(0) scale(1);opacity:0}8%{opacity:1}88%{opacity:.5}100%{transform:translateY(-100vh) translateX(var(--drift,0px)) scale(.2);opacity:0}}
+.sanctum-wrap{display:flex;flex-direction:column;min-height:calc(100vh - 112px);padding-bottom:12px;}
+.rw-identity{text-align:center;padding:16px 20px 8px;}
+.rw-identity-title{font-family:var(--serif);font-size:.52rem;letter-spacing:.45em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+.rw-identity-name{font-family:var(--deco);font-size:1.4rem;letter-spacing:.12em;color:var(--purple);text-shadow:0 0 30px rgba(192,132,252,.6),0 0 60px rgba(124,58,237,.3);animation:rwPulse 4s ease-in-out infinite;}
+@keyframes rwPulse{0%,100%{text-shadow:0 0 30px rgba(192,132,252,.6),0 0 60px rgba(124,58,237,.3)}50%{text-shadow:0 0 50px rgba(192,132,252,.9),0 0 100px rgba(124,58,237,.5)}}
+.rw-identity-sub{font-family:var(--body);font-size:.62rem;color:var(--muted);font-style:italic;margin-top:2px;}
+.main-rift-wrap{display:flex;flex-direction:column;align-items:center;padding:4px 20px 14px;}
+.main-rift{position:relative;width:min(240px,65vw);height:min(240px,65vw);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-bottom:14px;}
+.rift-ring{position:absolute;border-radius:50%;border:1px solid transparent;animation:riftSpin linear infinite;pointer-events:none;}
+.rift-ring-1{inset:-2px;border-color:rgba(192,132,252,.4) rgba(192,132,252,.1) rgba(192,132,252,.4) rgba(192,132,252,.1);animation-duration:12s;}
+.rift-ring-2{inset:12px;border-color:rgba(124,58,237,.6) transparent rgba(124,58,237,.6) transparent;animation-duration:8s;animation-direction:reverse;}
+.rift-ring-3{inset:26px;border-color:rgba(192,132,252,.2) rgba(192,132,252,.05) rgba(192,132,252,.2) rgba(192,132,252,.05);animation-duration:20s;}
+@keyframes riftSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.rift-core{position:absolute;inset:36px;border-radius:50%;background:radial-gradient(circle at 40% 35%,rgba(192,132,252,.25) 0%,rgba(124,58,237,.15) 35%,rgba(76,29,149,.1) 60%,rgba(6,0,14,.8) 100%);box-shadow:inset 0 0 40px rgba(124,58,237,.3),0 0 50px rgba(124,58,237,.25),0 0 100px rgba(124,58,237,.1);animation:riftBreath 3s ease-in-out infinite;}
+@keyframes riftBreath{0%,100%{box-shadow:inset 0 0 40px rgba(124,58,237,.3),0 0 50px rgba(124,58,237,.25),0 0 100px rgba(124,58,237,.1)}50%{box-shadow:inset 0 0 60px rgba(192,132,252,.5),0 0 80px rgba(124,58,237,.45),0 0 140px rgba(124,58,237,.2)}}
+.rift-inner{position:relative;z-index:2;text-align:center;padding:6px;}
+.rift-banner-label{font-family:var(--serif);font-size:.44rem;letter-spacing:.35em;color:var(--gold);margin-bottom:5px;display:block;text-shadow:0 0 12px rgba(251,191,36,.6);}
+.rift-banner-name{font-family:var(--deco);font-size:.78rem;letter-spacing:.08em;color:#e0e0ff;line-height:1.2;margin-bottom:3px;text-shadow:0 0 20px rgba(224,224,255,.4);}
+.rift-banner-tier{font-family:var(--serif);font-size:.38rem;letter-spacing:.25em;color:#a0a0dd;display:block;margin-bottom:6px;}
+.rift-countdown{font-family:var(--serif);font-size:.72rem;font-weight:600;color:var(--gold);letter-spacing:.06em;text-shadow:0 0 14px rgba(251,191,36,.5);}
+.rift-summon-btns{display:flex;gap:9px;width:100%;max-width:280px;}
+.rift-btn{flex:1;font-family:var(--serif);font-size:.68rem;font-weight:600;letter-spacing:.08em;padding:11px 7px;border-radius:8px;cursor:pointer;transition:all .2s;border:0.5px solid;text-align:center;position:relative;overflow:hidden;}
+.rift-btn:active{transform:scale(.97)}
+.rift-btn:disabled{opacity:.3;cursor:not-allowed}
+.rift-btn-1{background:rgba(124,58,237,.25);border-color:rgba(192,132,252,.45);color:var(--purple);box-shadow:0 0 16px rgba(124,58,237,.2);}
+.rift-btn-1:hover:not(:disabled){background:rgba(124,58,237,.45);border-color:var(--purple);box-shadow:0 0 28px rgba(192,132,252,.4)}
+.rift-btn-10{background:rgba(120,53,15,.25);border-color:rgba(251,191,36,.45);color:var(--gold);box-shadow:0 0 16px rgba(180,83,9,.2);}
+.rift-btn-10:hover:not(:disabled){background:rgba(120,53,15,.45);border-color:var(--gold);box-shadow:0 0 28px rgba(251,191,36,.4)}
+.rb-label{display:block;margin-bottom:2px}
+.rb-cost{display:block;font-size:.52rem;font-weight:400;opacity:.6}
+.sanctum-status{display:flex;align-items:center;gap:0;background:rgba(6,0,14,.65);border-top:0.5px solid rgba(124,58,237,.12);border-bottom:0.5px solid rgba(124,58,237,.12);}
+.sstat{flex:1;padding:9px 6px;text-align:center;border-right:0.5px solid rgba(124,58,237,.08);cursor:pointer;transition:background .2s;position:relative;}
+.sstat:last-child{border-right:none}
+.sstat:hover{background:rgba(124,58,237,.06)}
+.sstat::after{content:'';position:absolute;bottom:0;left:50%;right:50%;height:1.5px;background:var(--purple);transition:all .3s;}
+.sstat:hover::after{left:8%;right:8%}
+.sstat-val{font-family:var(--serif);font-size:.95rem;color:var(--purple);line-height:1;margin-bottom:2px}
+.sstat-label{font-size:.4rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;font-family:var(--serif)}
+.tribute-strip{display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(6,0,14,.5);border-bottom:0.5px solid rgba(74,222,128,.1);}
+.tribute-pulse{width:6px;height:6px;border-radius:50%;background:#4ade80;flex-shrink:0;animation:tributePulse 2.5s ease-in-out infinite;}
+@keyframes tributePulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.4);box-shadow:0 0 8px rgba(74,222,128,.5)}}
+.tribute-body{flex:1}
+.tribute-label{font-size:.42rem;letter-spacing:.25em;color:#1a6030;font-family:var(--serif);text-transform:uppercase;margin-bottom:1px;}
+.tribute-val{font-family:var(--serif);font-size:.78rem;color:#4ade80}
+.tribute-rate{font-size:.45rem;color:#1a4020;font-style:italic;}
+.tribute-collect{font-family:var(--serif);font-size:.52rem;letter-spacing:.06em;padding:5px 11px;border-radius:14px;cursor:pointer;background:rgba(74,222,128,.08);border:0.5px solid rgba(74,222,128,.25);color:#4ade80;transition:all .2s;white-space:nowrap;}
+.tribute-collect:hover{background:rgba(74,222,128,.2)}
+.rift-doors{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px 14px 0;}
+.rift-door{background:rgba(6,0,14,.6);border:0.5px solid rgba(124,58,237,.15);border-radius:10px;padding:12px 10px;cursor:pointer;transition:all .25s;display:flex;align-items:center;gap:9px;position:relative;overflow:hidden;backdrop-filter:blur(6px);}
+.rift-door::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--door-color,var(--purple));box-shadow:0 0 8px var(--door-color,var(--purple));animation:doorGlow 3s ease-in-out infinite;animation-delay:var(--door-delay,0s);}
+@keyframes doorGlow{0%,100%{opacity:.45;box-shadow:0 0 5px var(--door-color,var(--purple))}50%{opacity:1;box-shadow:0 0 14px var(--door-color,var(--purple)),0 0 22px var(--door-color,var(--purple))}}
+.rift-door:hover{background:rgba(124,58,237,.1);border-color:rgba(192,132,252,.3);transform:translateY(-2px);}
+.rift-door:active{transform:scale(.97)}
+.rd-icon{font-size:1.4rem;flex-shrink:0}
+.rd-body{flex:1;min-width:0}
+.rd-name{font-family:var(--serif);font-size:.65rem;letter-spacing:.1em;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rd-badge{display:inline-block;font-size:.38rem;letter-spacing:.08em;padding:2px 6px;border-radius:7px;font-family:var(--serif);}
+@media(min-width:700px){
+  .sanctum-wrap{flex-direction:row;align-items:stretch;min-height:calc(100vh - 112px);padding-bottom:0;}
+  .sanctum-left{width:210px;flex-shrink:0;display:flex;flex-direction:column;border-right:0.5px solid rgba(124,58,237,.12);background:rgba(6,0,14,.45);backdrop-filter:blur(8px);}
+  .sanctum-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+  .sanctum-right{width:200px;flex-shrink:0;display:flex;flex-direction:column;border-left:0.5px solid rgba(124,58,237,.12);background:rgba(6,0,14,.45);backdrop-filter:blur(8px);padding:12px 10px;gap:7px;}
+  .rw-identity{padding:18px 14px 10px;}
+  .main-rift{width:min(300px,38vw);height:min(300px,38vw);}
+  .rift-summon-btns{max-width:340px;}
+  .sanctum-status{flex-direction:column;border-top:none;border-bottom:none;border-right:none;}
+  .sstat{border-right:none;border-bottom:0.5px solid rgba(124,58,237,.08);}
+  .sstat:last-child{border-bottom:none}
+  .tribute-strip{flex-direction:column;align-items:flex-start;gap:4px;padding:10px 14px;}
+  .rift-doors{grid-template-columns:1fr;gap:6px;padding:0;}
+  .rift-door{padding:10px 8px;}
+  .mobile-only{display:none}
 }
-@keyframes emberFloat{
-  0%{transform:translateY(0) translateX(0) scale(1);opacity:0}
-  10%{opacity:1}
-  90%{opacity:.6}
-  100%{transform:translateY(-110vh) translateX(var(--drift)) scale(.3);opacity:0}
-}
-
-.hub-inner{
-  padding:0 0 100px;
-  display:flex;flex-direction:column;
-}
-
-/* ── HERO SECTION ── */
-.hub-hero{
-  position:relative;width:100%;
-  min-height:68vh;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:flex-end;
-  padding-bottom:24px;overflow:hidden;
-}
-.hub-hero-art{
-  position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  z-index:0;
-}
-.hub-hero-art video{
-  height:100%;width:auto;max-width:none;
-  object-fit:cover;opacity:.9;
-}
-.hub-hero-art-fallback{
-  position:absolute;inset:0;
-  background:linear-gradient(158deg,#09000f,#1e0840 40%,#06000e);
-  display:flex;align-items:center;justify-content:center;
-}
-.hub-hero-art-border{
-  position:absolute;inset:0;width:100%;height:100%;
-  object-fit:fill;pointer-events:none;z-index:2;
-}
-/* Gradient overlay so bottom content is readable */
-.hub-hero::after{
-  content:'';position:absolute;inset:0;z-index:1;
-  background:linear-gradient(
-    to bottom,
-    transparent 0%,
-    transparent 30%,
-    rgba(6,0,14,.4) 55%,
-    rgba(6,0,14,.9) 80%,
-    rgba(6,0,14,1) 100%
-  );
-  pointer-events:none;
-}
-/* Shimmer sweep on hero card */
-@keyframes shimmer{
-  0%{transform:translateX(-150%) skewX(-15deg)}
-  100%{transform:translateX(250%) skewX(-15deg)}
-}
-.hub-hero-shimmer{
-  position:absolute;top:0;left:0;right:0;bottom:0;z-index:3;
-  overflow:hidden;pointer-events:none;border-radius:0;
-}
-.hub-hero-shimmer::after{
-  content:'';position:absolute;top:0;bottom:0;width:40%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
-  animation:shimmer 4s ease-in-out infinite;
-  animation-delay:2s;
-}
-
-.hub-hero-info{
-  position:relative;z-index:3;
-  text-align:center;width:100%;padding:0 20px;
-}
-.hub-eyebrow{
-  font-family:var(--serif);font-size:.58rem;letter-spacing:.4em;
-  color:var(--gold);margin-bottom:6px;
-  text-shadow:0 0 20px rgba(251,191,36,.7);
-  animation:pulse-gold 3s ease-in-out infinite;
-}
-@keyframes pulse-gold{0%,100%{text-shadow:0 0 20px rgba(251,191,36,.7)}50%{text-shadow:0 0 35px rgba(251,191,36,1),0 0 60px rgba(251,191,36,.4)}}
-.hub-demon-name{
-  font-family:var(--deco);
-  font-size:clamp(1.4rem,6vw,2.2rem);
-  color:#e0e0ff;letter-spacing:.08em;
-  text-shadow:0 0 30px rgba(224,224,255,.5),0 2px 4px rgba(0,0,0,.8);
-  line-height:1.1;margin-bottom:4px;
-}
-.hub-demon-tier{
-  font-family:var(--serif);font-size:.55rem;letter-spacing:.35em;
-  color:#a0a0dd;margin-bottom:16px;
-}
-/* Countdown */
-.hub-countdown-wrap{
-  display:flex;flex-direction:column;align-items:center;margin-bottom:18px;
-}
-.hub-countdown-label{font-size:.5rem;letter-spacing:.25em;color:var(--muted);font-family:var(--serif);margin-bottom:4px}
-#hub-countdown{
-  font-family:var(--serif);font-size:1.1rem;font-weight:600;
-  color:var(--gold);letter-spacing:.08em;
-  text-shadow:0 0 14px rgba(251,191,36,.5);
-}
-/* Hero pull buttons */
-.hub-pull-row{display:flex;gap:10px;width:100%;max-width:380px;margin:0 auto}
-.hub-pull-btn{
-  flex:1;font-family:var(--serif);font-size:.78rem;font-weight:600;
-  letter-spacing:.08em;padding:13px 10px;border-radius:8px;
-  cursor:pointer;transition:all .2s;border:0.5px solid;text-align:center;
-  position:relative;overflow:hidden;
-}
-.hub-pull-btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.04) 100%);
-}
-.hub-pull-btn:active{transform:scale(.97)}
-.hub-pull-btn:disabled{opacity:.3;cursor:not-allowed}
-.hub-pull-btn-1{
-  background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(76,29,149,.5));
-  border-color:rgba(192,132,252,.5);color:var(--purple);
-  box-shadow:0 0 20px rgba(124,58,237,.2),inset 0 0 20px rgba(124,58,237,.05);
-}
-.hub-pull-btn-1:hover:not(:disabled){
-  border-color:var(--purple);background:linear-gradient(135deg,rgba(124,58,237,.5),rgba(76,29,149,.7));
-  box-shadow:0 0 30px rgba(192,132,252,.4);
-}
-.hub-pull-btn-10{
-  background:linear-gradient(135deg,rgba(180,83,9,.35),rgba(120,53,15,.5));
-  border-color:rgba(251,191,36,.5);color:var(--gold);
-  box-shadow:0 0 20px rgba(180,83,9,.2),inset 0 0 20px rgba(180,83,9,.05);
-}
-.hub-pull-btn-10:hover:not(:disabled){
-  border-color:var(--gold);background:linear-gradient(135deg,rgba(180,83,9,.5),rgba(120,53,15,.7));
-  box-shadow:0 0 30px rgba(251,191,36,.4);
-}
-.hub-btn-label{display:block;margin-bottom:2px}
-.hub-btn-cost{display:block;font-size:.6rem;font-weight:400;opacity:.65}
-
-/* ── STATS STRIP ── */
-.hub-stats-strip{
-  display:flex;gap:0;
-  background:rgba(6,0,14,.6);
-  border-top:0.5px solid rgba(124,58,237,.15);
-  border-bottom:0.5px solid rgba(124,58,237,.15);
-}
-.hstat{
-  flex:1;padding:12px 6px;text-align:center;cursor:pointer;
-  transition:all .2s;border-right:0.5px solid rgba(124,58,237,.1);
-  position:relative;overflow:hidden;
-}
-.hstat:last-child{border-right:none}
-.hstat::after{
-  content:'';position:absolute;bottom:0;left:50%;right:50%;
-  height:2px;background:var(--purple);transition:all .25s;
-}
-.hstat:hover::after{left:10%;right:10%}
-.hstat:hover{background:rgba(124,58,237,.08)}
-.hstat-val{
-  font-family:var(--serif);font-size:1.15rem;font-weight:600;
-  color:var(--purple);line-height:1;margin-bottom:3px;
-}
-.hstat-label{font-size:.45rem;letter-spacing:.2em;color:var(--muted);font-family:var(--serif);text-transform:uppercase}
-
-/* ── SECTION CARDS (scrollable) ── */
-.hub-sections{
-  display:flex;flex-direction:column;gap:0;
-  padding:16px 14px 0;
-}
-.hub-section-card{
-  background:rgba(6,0,14,.55);
-  border:0.5px solid rgba(124,58,237,.12);
-  border-radius:12px;margin-bottom:10px;
-  overflow:hidden;cursor:pointer;
-  transition:all .25s;
-  display:flex;align-items:stretch;
-  min-height:76px;
-  backdrop-filter:blur(8px);
-  position:relative;
-}
-.hub-section-card::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
-  background:var(--accent-color,var(--purple));
-  opacity:0;transition:opacity .2s;
-}
-.hub-section-card:hover{
-  border-color:rgba(192,132,252,.3);
-  background:rgba(124,58,237,.08);
-  transform:translateX(3px);
-}
-.hub-section-card:hover::before{opacity:1}
-.hub-section-card:active{transform:scale(.99)}
-.hsc-accent{
-  width:4px;background:var(--accent-color,var(--purple));
-  flex-shrink:0;opacity:.7;
-}
-.hsc-icon{
-  width:68px;display:flex;align-items:center;justify-content:center;
-  font-size:1.8rem;flex-shrink:0;
-}
-.hsc-body{flex:1;padding:13px 12px 13px 0;display:flex;flex-direction:column;justify-content:center;gap:3px}
-.hsc-name{font-family:var(--serif);font-size:.75rem;letter-spacing:.12em;color:var(--text)}
-.hsc-desc{font-size:.6rem;color:var(--muted);font-style:italic;line-height:1.4}
-.hsc-badge{
-  display:inline-block;font-size:.45rem;letter-spacing:.1em;
-  padding:2px 8px;border-radius:10px;font-family:var(--serif);margin-top:3px;
-  width:fit-content;
-}
-.hsc-arrow{
-  width:36px;display:flex;align-items:center;justify-content:center;
-  color:var(--muted);font-size:.8rem;flex-shrink:0;
-  transition:transform .2s;
-}
-.hub-section-card:hover .hsc-arrow{transform:translateX(3px);color:var(--purple)}
-
-/* ── GARRISON STRIP ── */
-.hub-garrison-strip{
-  margin:0 14px 10px;
-  background:rgba(6,0,14,.6);
-  border:0.5px solid rgba(74,222,128,.18);
-  border-radius:12px;padding:12px 14px;
-  display:flex;align-items:center;gap:12px;
-  backdrop-filter:blur(8px);
-}
-.hgs-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:#4ade80;flex-shrink:0;
-  animation:gsDot 2s ease-in-out infinite;
-}
-@keyframes gsDot{0%,100%{opacity:.5;box-shadow:0 0 0 0 rgba(74,222,128,.4)}50%{opacity:1;box-shadow:0 0 0 5px rgba(74,222,128,.1)}}
-.hgs-body{flex:1}
-.hgs-label{font-size:.48rem;letter-spacing:.25em;color:#1a6030;font-family:var(--serif);text-transform:uppercase;margin-bottom:2px}
-.hgs-income{font-family:var(--serif);font-size:.85rem;color:#4ade80}
-.hgs-rate{font-size:.5rem;color:#1a6030;font-style:italic}
-.hgs-btn{
-  font-family:var(--serif);font-size:.58rem;letter-spacing:.08em;
-  padding:7px 13px;border-radius:20px;cursor:pointer;
-  background:rgba(74,222,128,.1);border:0.5px solid rgba(74,222,128,.3);
-  color:#4ade80;transition:all .2s;white-space:nowrap;
-}
-.hgs-btn:hover{background:rgba(74,222,128,.25);border-color:rgba(74,222,128,.6)}
-
-/* ══════════════════════════════════════
    SUMMON SCREEN
 ══════════════════════════════════════ */
 #screen-summon{background:var(--bg)}
@@ -685,135 +518,112 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
     <!-- HUB -->
     <div id="screen-hub" class="screen active">
-      <!-- Ember particles -->
-      <div id="hub-particles"></div>
-      <div class="hub-inner">
+      <div id="hub-sigils"></div>
+      <div class="sanctum-wrap">
 
-        <!-- HERO: Full-bleed featured demon -->
-        <div class="hub-hero">
-          <div class="hub-hero-art">
-            <video id="feat-video" autoplay loop muted playsinline
-              style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
-              <source src="assets/demons/the_unnamed_one_card.mp4" type="video/mp4">
-            </video>
-            <div id="feat-fallback" class="hub-hero-art-fallback">
-              <div style="text-align:center;opacity:.35">
-                <div style="font-size:5rem;margin-bottom:10px">◈</div>
-                <div style="font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.4em;color:#e0e0ff">VOID PRIMORDIAL</div>
+        <!-- MOBILE: single column -->
+        <!-- DESKTOP LEFT: identity + stats + tribute -->
+        <div class="sanctum-left">
+          <div class="rw-identity">
+            <div class="rw-identity-title">You are</div>
+            <div class="rw-identity-name">Rift Walker</div>
+            <div class="rw-identity-sub">The wound between worlds</div>
+          </div>
+          <div class="sanctum-status">
+            <div class="sstat" onclick="switchScreen('codex')">
+              <div class="sstat-val" id="stat-bound">0</div>
+              <div class="sstat-label">Bound</div>
+            </div>
+            <div class="sstat" onclick="switchScreen('realms')">
+              <div class="sstat-val" id="stat-stages">0</div>
+              <div class="sstat-label">Conquered</div>
+            </div>
+            <div class="sstat" onclick="switchScreen('garrison')">
+              <div class="sstat-val" id="stat-garrison">0</div>
+              <div class="sstat-label">Garrisons</div>
+            </div>
+            <div class="sstat">
+              <div class="sstat-val">1</div>
+              <div class="sstat-label">RW Level</div>
+            </div>
+          </div>
+          <div class="tribute-strip">
+            <div class="tribute-pulse"></div>
+            <div class="tribute-body">
+              <div class="tribute-label">Tribute flowing in</div>
+              <div class="tribute-val" id="hub-income">◆ 0</div>
+              <div class="tribute-rate" id="hub-rate">No garrisons active</div>
+            </div>
+            <button class="tribute-collect" onclick="collectAll()">Collect</button>
+          </div>
+        </div>
+
+        <!-- CENTER: The active rift portal -->
+        <div class="sanctum-center">
+          <div class="main-rift-wrap">
+            <div class="main-rift" onclick="switchScreen('summon')">
+              <div class="rift-ring rift-ring-1"></div>
+              <div class="rift-ring rift-ring-2"></div>
+              <div class="rift-ring rift-ring-3"></div>
+              <div class="rift-core"></div>
+              <div class="rift-inner">
+                <span class="rift-banner-label">✦ OPEN RIFT · VOID GATE ✦</span>
+                <div class="rift-banner-name">The Unnamed<br>One</div>
+                <span class="rift-banner-tier">✦ VOID PRIMORDIAL ✦</span>
+                <div class="rift-countdown" id="hub-countdown">—</div>
               </div>
             </div>
-            <img src="assets/borders/infernum_border_void.png" class="hub-hero-art-border" alt="" onerror="this.style.display='none'">
-            <div class="hub-hero-shimmer"></div>
-          </div>
-          <div class="hub-hero-info">
-            <div class="hub-eyebrow">✦ LIMITED BANNER · VOID GATE ✦</div>
-            <div class="hub-demon-name">The Unnamed One</div>
-            <div class="hub-demon-tier">✦ VOID PRIMORDIAL · RATE UP ✦</div>
-            <div class="hub-countdown-wrap">
-              <div class="hub-countdown-label">BANNER EXPIRES IN</div>
-              <div id="hub-countdown">—</div>
-            </div>
-            <div class="hub-pull-row">
-              <button class="hub-pull-btn hub-pull-btn-1" id="hub-pull-1" onclick="doPull(1)">
-                <span class="hub-btn-label">Summon ×1</span>
-                <span class="hub-btn-cost">◆ 800 Soul Shards</span>
+            <div class="rift-summon-btns">
+              <button class="rift-btn rift-btn-1" id="hub-pull-1" onclick="doPull(1)">
+                <span class="rb-label">Summon ×1</span>
+                <span class="rb-cost">◆ 800</span>
               </button>
-              <button class="hub-pull-btn hub-pull-btn-10" id="hub-pull-10" onclick="doPull(10)">
-                <span class="hub-btn-label">Summon ×10</span>
-                <span class="hub-btn-cost">◆ 7,200 Soul Shards</span>
+              <button class="rift-btn rift-btn-10" id="hub-pull-10" onclick="doPull(10)">
+                <span class="rb-label">Summon ×10</span>
+                <span class="rb-cost">◆ 7,200</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- STATS STRIP -->
-        <div class="hub-stats-strip">
-          <div class="hstat" onclick="switchScreen('codex')">
-            <div class="hstat-val" id="stat-bound">0</div>
-            <div class="hstat-label">Bound</div>
-          </div>
-          <div class="hstat" onclick="switchScreen('realms')">
-            <div class="hstat-val" id="stat-stages">0</div>
-            <div class="hstat-label">Conquered</div>
-          </div>
-          <div class="hstat" onclick="switchScreen('garrison')">
-            <div class="hstat-val" id="stat-garrison">0</div>
-            <div class="hstat-label">Garrisoned</div>
-          </div>
-          <div class="hstat" onclick="switchScreen('riftwalk')">
-            <div class="hstat-val">1</div>
-            <div class="hstat-label">RW Level</div>
-          </div>
-        </div>
-
-        <!-- GARRISON TICKER -->
-        <div style="padding:10px 14px 0">
-          <div class="hub-garrison-strip">
-            <div class="hgs-dot"></div>
-            <div class="hgs-body">
-              <div class="hgs-label">Garrison Income</div>
-              <div class="hgs-income" id="hub-income">◆ 0</div>
-              <div class="hgs-rate" id="hub-rate">No garrisons active</div>
+        <!-- RIGHT / MOBILE BOTTOM: Rift doors -->
+        <div class="sanctum-right">
+          <div class="rift-doors">
+            <div class="rift-door" style="--door-color:#f43f5e;--door-delay:0s" onclick="switchScreen('realms')">
+              <div class="rd-icon">⚔</div>
+              <div class="rd-body">
+                <div class="rd-name">Realms</div>
+                <span class="rd-badge" style="background:rgba(244,63,94,.1);color:#f43f5e;border:0.5px solid rgba(244,63,94,.3)">0 / 8</span>
+              </div>
             </div>
-            <button class="hgs-btn" onclick="collectAll()">Collect All</button>
-          </div>
-        </div>
-
-        <!-- SECTION CARDS -->
-        <div class="hub-sections">
-          <div class="hub-section-card" style="--accent-color:#c084fc" onclick="switchScreen('summon')">
-            <div class="hsc-accent"></div>
-            <div class="hsc-icon">📜</div>
-            <div class="hsc-body">
-              <div class="hsc-name">Abyssal Summons</div>
-              <div class="hsc-desc">8 scroll types · Independent pity per scroll · Rate-up banners</div>
-              <span class="hsc-badge" style="background:rgba(192,132,252,.12);color:#c084fc;border:0.5px solid rgba(192,132,252,.3)">ACTIVE BANNER</span>
+            <div class="rift-door" style="--door-color:#60a5fa;--door-delay:.5s" onclick="switchScreen('codex')">
+              <div class="rd-icon">📖</div>
+              <div class="rd-body">
+                <div class="rd-name">Codex</div>
+                <span class="rd-badge" id="codex-badge" style="background:rgba(96,165,250,.1);color:#60a5fa;border:0.5px solid rgba(96,165,250,.3)">0 / 28</span>
+              </div>
             </div>
-            <div class="hsc-arrow">›</div>
-          </div>
-
-          <div class="hub-section-card" style="--accent-color:#f43f5e" onclick="switchScreen('realms')">
-            <div class="hsc-accent"></div>
-            <div class="hsc-icon">⚔</div>
-            <div class="hsc-body">
-              <div class="hsc-name">Realm Conquest</div>
-              <div class="hsc-desc">8 realms · 13 stages each · Station demons · Earn passive income</div>
-              <span class="hsc-badge" id="realms-badge" style="background:rgba(244,63,94,.1);color:#f43f5e;border:0.5px solid rgba(244,63,94,.25)">0 / 8 REALMS</span>
+            <div class="rift-door" style="--door-color:#4ade80;--door-delay:1s" onclick="switchScreen('garrison')">
+              <div class="rd-icon">⚑</div>
+              <div class="rd-body">
+                <div class="rd-name">Garrison</div>
+                <span class="rd-badge" style="background:rgba(74,222,128,.1);color:#4ade80;border:0.5px solid rgba(74,222,128,.3)">0 ◆/hr</span>
+              </div>
             </div>
-            <div class="hsc-arrow">›</div>
-          </div>
-
-          <div class="hub-section-card" style="--accent-color:#60a5fa" onclick="switchScreen('codex')">
-            <div class="hsc-accent"></div>
-            <div class="hsc-icon">📖</div>
-            <div class="hsc-body">
-              <div class="hsc-name">Codex Infernum</div>
-              <div class="hsc-desc">Your bound demon collection · 28 demons across 7 tiers</div>
-              <span class="hsc-badge" id="codex-badge" style="background:rgba(96,165,250,.1);color:#60a5fa;border:0.5px solid rgba(96,165,250,.25)">0 / 28</span>
+            <div class="rift-door" style="--door-color:#fbbf24;--door-delay:1.5s" onclick="switchScreen('riftwalk')">
+              <div class="rd-icon">🌀</div>
+              <div class="rd-body">
+                <div class="rd-name">Rift Walker</div>
+                <span class="rd-badge" style="background:rgba(251,191,36,.1);color:#fbbf24;border:0.5px solid rgba(251,191,36,.3)">LVL 1</span>
+              </div>
             </div>
-            <div class="hsc-arrow">›</div>
-          </div>
-
-          <div class="hub-section-card" style="--accent-color:#4ade80" onclick="switchScreen('garrison')">
-            <div class="hsc-accent"></div>
-            <div class="hsc-icon">⚑</div>
-            <div class="hsc-body">
-              <div class="hsc-name">Garrison</div>
-              <div class="hsc-desc">Passive income from conquered stages · 0 active garrisons</div>
-              <span class="hsc-badge" style="background:rgba(74,222,128,.1);color:#4ade80;border:0.5px solid rgba(74,222,128,.25)">0 ◆/HR</span>
+            <div class="rift-door" style="--door-color:#c084fc;--door-delay:2s" onclick="switchScreen('summon')">
+              <div class="rd-icon">📜</div>
+              <div class="rd-body">
+                <div class="rd-name">Summons</div>
+                <span class="rd-badge" style="background:rgba(192,132,252,.1);color:#c084fc;border:0.5px solid rgba(192,132,252,.3)">ACTIVE</span>
+              </div>
             </div>
-            <div class="hsc-arrow">›</div>
-          </div>
-
-          <div class="hub-section-card" style="--accent-color:#fbbf24" onclick="switchScreen('riftwalk')">
-            <div class="hsc-accent"></div>
-            <div class="hsc-icon">🌀</div>
-            <div class="hsc-body">
-              <div class="hsc-name">Rift Walker</div>
-              <div class="hsc-desc">Gear · Rune slots · Talent tree · Passive battlefield auras</div>
-              <span class="hsc-badge" style="background:rgba(251,191,36,.1);color:#fbbf24;border:0.5px solid rgba(251,191,36,.25)">LEVEL 1</span>
-            </div>
-            <div class="hsc-arrow">›</div>
           </div>
         </div>
 
@@ -1457,23 +1267,30 @@ function tick(){
   load();
   document.getElementById('btn-again').onclick=()=>{closeOverlay();const cost=lastCount===1?getCost(1):getCost(10);if(S.shards>=(cost||0))setTimeout(()=>doPull(lastCount),80);};
   document.getElementById('btn-close-pull').onclick=()=>closeOverlay();
-  // Ember particles
-  (function spawnEmbers(){
-    const container=document.getElementById('hub-particles');
-    if(!container)return;
-    function createEmber(){
-      const el=document.createElement('div');
-      el.className='ember';
-      const size=Math.random()*4+2;
-      const x=Math.random()*100;
-      const duration=Math.random()*8+6;
-      const drift=(Math.random()-.5)*120;
-      el.style.cssText=`width:${size}px;height:${size}px;left:${x}%;bottom:-10px;--drift:${drift}px;animation-duration:${duration}s;animation-delay:${Math.random()*duration}s;opacity:0;`;
-      container.appendChild(el);
-      setTimeout(()=>el.remove(),duration*1000+2000);
+  // Sanctum ambient: sigils + embers
+  (function spawnAmbient(){
+    const sigCont=document.getElementById('hub-sigils');
+    if(!sigCont)return;
+    const SIGILS=['ᚠ','ᚢ','ᚦ','ᚨ','ᚱ','ᚲ','ᚷ','ᚹ','✦','◈','⬡','✧'];
+    function createSigil(){
+      const el=document.createElement('div');el.className='sigil';
+      el.textContent=SIGILS[Math.floor(Math.random()*SIGILS.length)];
+      const sz=Math.random()*14+8;
+      const dur=Math.random()*20+15;
+      el.style.cssText=`font-size:${sz}px;left:${Math.random()*100}%;bottom:-20px;animation-duration:${dur}s;animation-delay:${Math.random()*dur}s;opacity:0;`;
+      sigCont.appendChild(el);
+      setTimeout(()=>el.remove(),(dur+3)*1000);
     }
-    for(let i=0;i<12;i++)createEmber();
-    setInterval(()=>createEmber(),800);
+    function createEmber(){
+      const el=document.createElement('div');el.className='ember';
+      const sz=Math.random()*3+1.5;
+      const dur=Math.random()*10+8;
+      el.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;bottom:-5px;--drift:${(Math.random()-.5)*100}px;animation-duration:${dur}s;animation-delay:${Math.random()*dur}s;opacity:0;`;
+      sigCont.appendChild(el);
+      setTimeout(()=>el.remove(),(dur+2)*1000);
+    }
+    for(let i=0;i<8;i++){createSigil();createEmber();}
+    setInterval(()=>{createSigil();createEmber();},1200);
   })();
 
   // Featured video fallback
