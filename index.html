@@ -1009,8 +1009,8 @@ body{font-family:var(--body);color:var(--text);position:relative}
         </svg>
       </div>
       <div class="mm-meta">
-        <div class="mm-title" id="mmTitle">Rift Walker</div>
-        <div class="mm-sub" id="mmSub">NOW PLAYING · TAP TO EXPAND</div>
+        <div class="mm-title" id="mmTitle">—</div>
+        <div class="mm-sub" id="mmSub">LOADING</div>
       </div>
     </div>
     <button class="mm-btn" id="mmPlay" aria-label="Play or pause" onclick="Music.toggle()">
@@ -1067,7 +1067,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
           <circle cx="60" cy="60" r="6" fill="var(--gold)" opacity=".8"/>
         </svg>
       </div>
-      <div class="ms-now-title" id="msNowTitle">Rift Walker</div>
+      <div class="ms-now-title" id="msNowTitle">—</div>
       <div class="ms-now-label">NOW PLAYING</div>
 
       <div class="ms-controls">
@@ -1092,7 +1092,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
     <div class="ms-list">
       <div class="ms-section">
         <span>ROTATION</span>
-        <span class="ms-section-count" id="msBoundCount">1 OF 4 BOUND</span>
+        <span class="ms-section-count" id="msBoundCount">—</span>
       </div>
       <div id="msTracks"></div>
     </div>
@@ -1214,7 +1214,7 @@ let S={
   collection:{},garrison:{},garrisonAccum:0,
   bannerExpiry:null,activeScroll:'infernal',level:1,
   realmProgress:{},
-  musicUnlocked:['rift_walker'],musicPlaylist:['rift_walker'],
+  musicUnlocked:['infernum_welcome','rift_walker'],musicPlaylist:['infernum_welcome','rift_walker'],
   musicVolume:0.7,musicEnabled:true,
 };
 let lastCount=1;
@@ -1240,8 +1240,13 @@ function load(){
   // Backfill realm progress for existing saves
   if(!S.realmProgress)S.realmProgress={};
   // Backfill music state for existing saves
-  if(!S.musicUnlocked)S.musicUnlocked=['rift_walker'];
-  if(!S.musicPlaylist)S.musicPlaylist=['rift_walker'];
+  if(!S.musicUnlocked)S.musicUnlocked=['infernum_welcome','rift_walker'];
+  if(!S.musicPlaylist)S.musicPlaylist=['infernum_welcome','rift_walker'];
+  // Quietly add welcome track to existing saves that predate it (no toast — it's a default, not an achievement)
+  if(S.musicUnlocked.indexOf('infernum_welcome')===-1){
+    S.musicUnlocked.unshift('infernum_welcome');
+    if(S.musicPlaylist.indexOf('infernum_welcome')===-1)S.musicPlaylist.unshift('infernum_welcome');
+  }
   if(typeof S.musicVolume!=='number')S.musicVolume=0.7;
   if(typeof S.musicEnabled!=='boolean')S.musicEnabled=true;
 }
@@ -1672,6 +1677,8 @@ function tick(){
 (function(global){'use strict';
 
 var TRACKS = [
+  {id:'infernum_welcome', name:'Infernum Welcome', file:'assets/audio/infernum_welcome.mp3',
+    condition:'Unlocked by default', check:function(){return true;}},
   {id:'rift_walker', name:'Rift Walker', file:'assets/audio/rift_walker.mp3',
     condition:'Unlocked by default', check:function(){return true;}},
   {id:'sin_lords_anthem', name:"Sin Lords' Anthem", file:'assets/audio/sin_lords_anthem.mp3',
