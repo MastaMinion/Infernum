@@ -92,6 +92,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
   color:var(--muted);transition:color .2s;text-transform:uppercase;
 }
 .nav-btn.active .nav-label{color:var(--purple)}
+
 /* ══════════════════════════════════════
    HUB — THE RIFT WALKER'S SANCTUM
 ══════════════════════════════════════ */
@@ -185,6 +186,8 @@ body{font-family:var(--body);color:var(--text);position:relative}
   .rift-door{padding:10px 8px;}
   .mobile-only{display:none}
 }
+
+/* ══════════════════════════════════════
    SUMMON SCREEN
 ══════════════════════════════════════ */
 #screen-summon{background:var(--bg)}
@@ -474,6 +477,271 @@ body{font-family:var(--body);color:var(--text);position:relative}
 /* Animations */
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
 .fade-in{animation:fadeIn .4s ease both}
+
+/* ══════════════════════════════════════
+   MUSIC — mini player (flex child of #shell)
+══════════════════════════════════════ */
+.music-mini{
+  flex-shrink:0;
+  height:60px;
+  display:flex;align-items:center;gap:12px;
+  padding:10px 14px;
+  background:linear-gradient(180deg,rgba(6,0,14,.88) 0%,rgba(6,0,14,.98) 100%);
+  border-top:0.5px solid var(--border);
+  user-select:none;
+}
+.mm-tap{
+  flex:1;min-width:0;
+  display:flex;align-items:center;gap:12px;
+  cursor:pointer;
+  border-radius:6px;padding:4px;margin:-4px;
+  transition:background .15s ease;
+}
+.mm-tap:hover{background:rgba(124,58,237,.08);}
+.mm-tap:focus-visible{outline:1px solid var(--purple);outline-offset:2px;}
+.mm-art{
+  width:42px;height:42px;flex-shrink:0;
+  border-radius:6px;
+  background:#1a0a2e;
+  border:0.5px solid rgba(124,58,237,.35);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.mm-art svg{width:22px;height:22px;}
+.mm-meta{flex:1;min-width:0;}
+.mm-title{
+  font-family:var(--serif);
+  font-size:12px;letter-spacing:.08em;
+  color:#e9d5ff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mm-sub{
+  font-size:10px;letter-spacing:.12em;
+  color:var(--muted);
+  margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mm-btn{
+  width:32px;height:32px;flex-shrink:0;
+  border-radius:50%;
+  background:transparent;
+  border:0.5px solid rgba(124,58,237,.3);
+  color:var(--purple);
+  display:flex;align-items:center;justify-content:center;
+  padding:0;cursor:pointer;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.mm-btn:hover{
+  background:rgba(124,58,237,.12);
+  border-color:rgba(124,58,237,.55);
+  color:var(--gold);
+}
+.mm-btn:active{transform:scale(.94);}
+.mm-btn svg{width:14px;height:14px;}
+
+/* ══════════════════════════════════════
+   MUSIC — full playlist screen
+══════════════════════════════════════ */
+.music-screen{
+  position:fixed;inset:0;
+  background:var(--bg);
+  z-index:200;
+  display:flex;flex-direction:column;
+  transform:translateY(100%);
+  transition:transform .32s cubic-bezier(.2,.8,.2,1);
+  overflow:hidden;
+  pointer-events:none;
+}
+.music-screen.open{transform:translateY(0);pointer-events:auto;}
+.ms-header{
+  height:56px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;
+  border-bottom:0.5px solid var(--border);
+}
+.ms-close{
+  background:transparent;border:none;
+  color:var(--purple);
+  width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;
+  padding:0;cursor:pointer;border-radius:50%;
+  transition:background .15s;
+}
+.ms-close:hover{background:rgba(124,58,237,.12);}
+.ms-title-bar{
+  font-family:var(--serif);
+  font-size:13px;letter-spacing:.25em;
+  color:var(--gold);
+  font-weight:500;
+  margin:0;
+}
+.ms-mute{
+  width:32px;height:32px;
+  border-radius:50%;
+  background:transparent;
+  border:0.5px solid rgba(124,58,237,.3);
+  color:var(--purple);
+  display:flex;align-items:center;justify-content:center;
+  padding:0;cursor:pointer;
+  transition:border-color .15s,color .15s;
+}
+.ms-mute[aria-pressed="true"]{
+  color:var(--muted);
+  border-color:rgba(74,45,107,.3);
+}
+.ms-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+
+.ms-hero{padding:28px 20px 20px;text-align:center;}
+.ms-art-lg{
+  width:180px;height:180px;
+  margin:0 auto 20px;
+  border-radius:8px;
+  background:radial-gradient(circle at 50% 40%,#2a0f4a 0%,#0a0418 70%);
+  border:0.5px solid rgba(124,58,237,.35);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.ms-art-lg svg{width:120px;height:120px;}
+.ms-now-title{
+  font-family:var(--serif);
+  font-size:18px;letter-spacing:.12em;
+  color:#e9d5ff;
+  margin-bottom:4px;
+}
+.ms-now-label{font-size:10px;letter-spacing:.2em;color:var(--muted);}
+
+.ms-controls{
+  display:flex;align-items:center;justify-content:center;
+  gap:20px;margin-top:18px;
+}
+.ms-ctrl{
+  width:36px;height:36px;
+  border-radius:50%;
+  background:transparent;
+  border:0.5px solid rgba(124,58,237,.3);
+  color:var(--purple);
+  display:flex;align-items:center;justify-content:center;
+  padding:0;cursor:pointer;
+  transition:all .15s;
+}
+.ms-ctrl:hover{border-color:var(--gold);color:var(--gold);}
+.ms-ctrl:active{transform:scale(.92);}
+.ms-ctrl svg{width:14px;height:14px;}
+.ms-ctrl-play{
+  width:52px;height:52px;
+  background:#1a0a2e;
+  border-color:var(--gold);
+  color:var(--gold);
+}
+.ms-ctrl-play svg{width:18px;height:18px;}
+
+.ms-vol{display:flex;align-items:center;gap:10px;margin-top:20px;padding:0 8px;}
+.ms-vol input[type="range"]{
+  flex:1;
+  -webkit-appearance:none;appearance:none;
+  height:2px;background:rgba(124,58,237,.2);border-radius:1px;
+  outline:none;cursor:pointer;
+}
+.ms-vol input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--gold);border:none;cursor:pointer;
+}
+.ms-vol input[type="range"]::-moz-range-thumb{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--gold);border:none;cursor:pointer;
+}
+
+.ms-list{padding:0 20px 40px;}
+.ms-section{
+  font-family:var(--serif);
+  font-size:10px;letter-spacing:.25em;
+  color:var(--gold);
+  padding:12px 4px;
+  border-top:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ms-section-count{color:var(--muted);letter-spacing:.15em;}
+.ms-track{
+  display:flex;align-items:center;
+  padding:10px 6px;
+  border-radius:4px;
+  margin-bottom:4px;
+  transition:background .15s;
+}
+.ms-track.playing{background:rgba(124,58,237,.06);}
+.ms-track.locked{opacity:.45;}
+.ms-track-indicator{
+  width:3px;height:28px;
+  margin-right:12px;
+  border-radius:1px;
+  background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.ms-track.playing .ms-track-indicator{background:var(--gold);}
+.ms-track.locked .ms-track-indicator svg{width:11px;height:11px;fill:var(--muted);margin-left:-2px;}
+.ms-track-info{flex:1;min-width:0;}
+.ms-track-name{
+  font-family:var(--serif);
+  font-size:13px;letter-spacing:.08em;
+  color:#e9d5ff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ms-track.locked .ms-track-name{color:var(--muted);}
+.ms-track-cond{
+  font-size:10px;letter-spacing:.08em;
+  color:var(--muted);
+  margin-top:2px;
+  font-style:italic;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ms-toggle{
+  width:36px;height:20px;
+  border-radius:10px;
+  background:rgba(124,58,237,.15);
+  border:none;padding:0;
+  position:relative;
+  cursor:pointer;flex-shrink:0;
+  transition:background .18s;
+}
+.ms-toggle::after{
+  content:'';position:absolute;
+  left:2px;top:2px;
+  width:16px;height:16px;
+  border-radius:50%;
+  background:rgba(107,91,122,.6);
+  transition:left .18s,background .18s;
+}
+.ms-toggle.on{background:var(--gold);}
+.ms-toggle.on::after{left:18px;background:var(--bg);}
+.ms-toggle:disabled{cursor:not-allowed;}
+
+/* Unlock toast */
+.music-toast{
+  position:fixed;top:70px;right:16px;
+  background:linear-gradient(135deg,rgba(10,2,25,.95),rgba(28,10,46,.95));
+  border:0.5px solid rgba(251,191,36,.5);
+  border-radius:8px;
+  padding:10px 16px;
+  z-index:350;
+  transform:translateX(calc(100% + 24px));
+  transition:transform .4s cubic-bezier(.2,.8,.2,1);
+  box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 20px rgba(251,191,36,.2);
+  pointer-events:none;
+}
+.music-toast.show{transform:translateX(0);}
+.mt-label{
+  font-family:var(--serif);
+  font-size:9px;letter-spacing:.25em;
+  color:var(--gold);
+  margin-bottom:3px;
+}
+.mt-name{
+  font-family:var(--serif);
+  font-size:13px;letter-spacing:.08em;
+  color:#e9d5ff;
+}
 </style>
 </head>
 <body>
@@ -521,7 +789,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
       <div id="hub-sigils"></div>
       <div class="sanctum-wrap">
 
-        <!-- MOBILE: single column -->
         <!-- DESKTOP LEFT: identity + stats + tribute -->
         <div class="sanctum-left">
           <div class="rw-identity">
@@ -732,6 +999,28 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
   </div><!-- /content -->
 
+  <!-- MINI MUSIC PLAYER (sits directly above bottom nav) -->
+  <div class="music-mini" id="musicMini">
+    <div class="mm-tap" role="button" tabindex="0" aria-label="Open music player" onclick="Music.openScreen()">
+      <div class="mm-art" id="mmArt">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="var(--gold)" stroke-width="1" opacity=".6"/>
+          <path d="M12 3 L13.5 10.5 L21 12 L13.5 13.5 L12 21 L10.5 13.5 L3 12 L10.5 10.5 Z" fill="var(--purple)" opacity=".7"/>
+        </svg>
+      </div>
+      <div class="mm-meta">
+        <div class="mm-title" id="mmTitle">Rift Walker</div>
+        <div class="mm-sub" id="mmSub">NOW PLAYING · TAP TO EXPAND</div>
+      </div>
+    </div>
+    <button class="mm-btn" id="mmPlay" aria-label="Play or pause" onclick="Music.toggle()">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5 L19 12 L7 19 Z"/></svg>
+    </button>
+    <button class="mm-btn" id="mmSkip" aria-label="Skip to next track" onclick="Music.next()">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 4 L16 12 L5 20 Z"/><rect x="17" y="4" width="2" height="16" rx="1"/></svg>
+    </button>
+  </div>
+
   <!-- BOTTOM NAV -->
   <div id="bottomnav">
     <button class="nav-btn active" data-screen="hub" onclick="switchScreen('hub',this)">
@@ -754,6 +1043,61 @@ body{font-family:var(--body);color:var(--text);position:relative}
     </button>
   </div>
 </div><!-- /shell -->
+
+<!-- FULL PLAYLIST SCREEN -->
+<div class="music-screen" id="musicScreen" aria-hidden="true">
+  <div class="ms-header">
+    <button class="ms-close" aria-label="Close" onclick="Music.closeScreen()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 10l5 5 5-5z"/></svg>
+    </button>
+    <h2 class="ms-title-bar">MUSIC</h2>
+    <button class="ms-mute" id="msMute" aria-label="Mute" aria-pressed="false" onclick="Music.toggleMute()">
+      <svg class="ms-mute-on" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+      <svg class="ms-mute-off" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+    </button>
+  </div>
+
+  <div class="ms-body">
+    <div class="ms-hero">
+      <div class="ms-art-lg" id="msArtLg">
+        <svg viewBox="0 0 120 120" fill="none" aria-hidden="true">
+          <circle cx="60" cy="60" r="54" stroke="var(--gold)" stroke-width=".8" opacity=".5"/>
+          <circle cx="60" cy="60" r="40" stroke="var(--purple)" stroke-width=".5" opacity=".4"/>
+          <path d="M60 12 L66 54 L108 60 L66 66 L60 108 L54 66 L12 60 L54 54 Z" fill="var(--purple)" opacity=".65"/>
+          <circle cx="60" cy="60" r="6" fill="var(--gold)" opacity=".8"/>
+        </svg>
+      </div>
+      <div class="ms-now-title" id="msNowTitle">Rift Walker</div>
+      <div class="ms-now-label">NOW PLAYING</div>
+
+      <div class="ms-controls">
+        <button class="ms-ctrl" aria-label="Previous" onclick="Music.prev()">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="transform:scaleX(-1);" aria-hidden="true"><path d="M5 4 L16 12 L5 20 Z"/><rect x="17" y="4" width="2" height="16" rx="1"/></svg>
+        </button>
+        <button class="ms-ctrl ms-ctrl-play" id="msPlay" aria-label="Play or pause" onclick="Music.toggle()">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5 L19 12 L7 19 Z"/></svg>
+        </button>
+        <button class="ms-ctrl" aria-label="Next" onclick="Music.next()">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 4 L16 12 L5 20 Z"/><rect x="17" y="4" width="2" height="16" rx="1"/></svg>
+        </button>
+      </div>
+
+      <div class="ms-vol">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#6b5b7a" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/></svg>
+        <input type="range" id="msVol" min="0" max="100" value="70" aria-label="Volume"/>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--purple)" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      </div>
+    </div>
+
+    <div class="ms-list">
+      <div class="ms-section">
+        <span>ROTATION</span>
+        <span class="ms-section-count" id="msBoundCount">1 OF 4 BOUND</span>
+      </div>
+      <div id="msTracks"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ═══════════════════════════════════════════
@@ -789,7 +1133,6 @@ DemonCard.prototype._build=function(){
   var self=this;
   this._onVideoError=function(){if(video.parentNode)video.parentNode.replaceChild(self._buildFallback(w,h,color,d.name),video);};
   video.addEventListener('error',this._onVideoError);this._video=video;root.appendChild(video);
-  // Border image
   var tierBorderSlugs=['shade','imp','fiend','greater','archdemon','sinlord','void'];
   var borderSlug=tierBorderSlugs[(d.tier-1)]||'shade';
   var border=document.createElement('img');border.src='assets/borders/infernum_border_'+borderSlug+'.png';border.alt='';
@@ -870,11 +1213,14 @@ let S={
   shards:1200,epicPity:0,legPity:0,scrollPity:{},
   collection:{},garrison:{},garrisonAccum:0,
   bannerExpiry:null,activeScroll:'infernal',level:1,
+  realmProgress:{},
+  musicUnlocked:['rift_walker'],musicPlaylist:['rift_walker'],
+  musicVolume:0.7,musicEnabled:true,
 };
 let lastCount=1;
 let garrisonInterval=null;
 
-const GARRISON_RATES=[10,25,60,150,400,1200,5000]; // per tier per hour in ◆
+const GARRISON_RATES=[10,25,60,150,400,1200,5000];
 
 const REALMS=[
   {id:'vale',name:'Shattered Vale',icon:'⚔',color:'#60a5fa',stages:13,conquered:0,locked:false},
@@ -891,6 +1237,13 @@ function save(){localStorage.setItem('inf_hub',JSON.stringify(S))}
 function load(){
   try{const d=localStorage.getItem('inf_hub');if(d)S=Object.assign(S,JSON.parse(d));}catch(e){}
   if(!S.bannerExpiry){S.bannerExpiry=Date.now()+((2*24+14)*3600+33*60)*1000;save();}
+  // Backfill realm progress for existing saves
+  if(!S.realmProgress)S.realmProgress={};
+  // Backfill music state for existing saves
+  if(!S.musicUnlocked)S.musicUnlocked=['rift_walker'];
+  if(!S.musicPlaylist)S.musicPlaylist=['rift_walker'];
+  if(typeof S.musicVolume!=='number')S.musicVolume=0.7;
+  if(typeof S.musicEnabled!=='boolean')S.musicEnabled=true;
 }
 
 // ═══════════════════════════════════════════
@@ -959,6 +1312,7 @@ function doPull(count){
   const results=[];
   for(let i=0;i<count;i++)results.push(pullOne());
   save();updateUI();
+  if(window.Music) Music.checkUnlocks();
   showOverlay(results);
 }
 
@@ -1073,7 +1427,6 @@ function renderCodex(){
   document.getElementById('codex-count').textContent=`${owned} / ${ALL_DEMONS.length} demons bound`;
   if(grid._cards)grid._cards.forEach(c=>c.destroy());
   grid._cards=[];grid.innerHTML='';
-  // Compute card width based on grid columns
   const cols=window.innerWidth>=700?5:window.innerWidth>=480?4:3;
   const cardW=Math.floor((window.innerWidth-32-10*(cols-1))/cols);
   for(const d of ALL_DEMONS){
@@ -1100,24 +1453,42 @@ function renderCodex(){
 // ═══════════════════════════════════════════
 function renderRealms(){
   const grid=document.getElementById('realms-grid');if(!grid)return;
-  grid.innerHTML=REALMS.map(r=>`
+  grid.innerHTML=REALMS.map(r=>{
+    const conquered=S.realmProgress[r.id]||0;
+    const done=conquered>=r.stages;
+    return `
     <div class="realm-card${r.locked?' locked':''}" onclick="${r.locked?'':'enterRealm(\''+r.id+'\')'}">
       <div class="realm-icon">${r.icon}</div>
       <div class="realm-name" style="color:${r.color}">${r.name}</div>
-      <div class="realm-progress">${r.conquered} / ${r.stages} stages</div>
-      <div class="realm-bar"><div class="realm-bar-fill" style="width:${r.conquered/r.stages*100}%;background:${r.color}"></div></div>
+      <div class="realm-progress">${conquered} / ${r.stages} stages</div>
+      <div class="realm-bar"><div class="realm-bar-fill" style="width:${conquered/r.stages*100}%;background:${r.color}"></div></div>
       <span class="realm-status" style="background:${r.locked?'rgba(255,255,255,.05)':r.color+'18'};color:${r.locked?'#2d1a4b':r.color};border:0.5px solid ${r.locked?'rgba(255,255,255,.08)':r.color+'40'}">
-        ${r.locked?'🔒 LOCKED':r.conquered===0?'ENTER':'CONTINUE'}
+        ${r.locked?'🔒 LOCKED':done?'CONQUERED':conquered===0?'ENTER':'CONTINUE'}
       </span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
-function enterRealm(id){alert('Battle system coming soon — '+id+' realm');}
+function enterRealm(id){
+  // TEMPORARY dev helper until battle system exists — advances realm by 1 stage per click
+  const realm=REALMS.find(r=>r.id===id);
+  if(!realm||realm.locked)return;
+  const current=S.realmProgress[id]||0;
+  if(current>=realm.stages){
+    alert(realm.name+' already fully conquered — replace this with battle system');
+    return;
+  }
+  S.realmProgress[id]=current+1;
+  save();updateUI();renderRealms();
+  if(window.Music)Music.checkUnlocks();
+  if(S.realmProgress[id]===realm.stages){
+    setTimeout(()=>alert('🏆 '+realm.name+' fully conquered!'),100);
+  }
+}
 
 // ═══════════════════════════════════════════
 // GARRISON
 // ═══════════════════════════════════════════
 function getGarrisonRate(){
-  // Sum up hourly rate from all garrisoned demons
   let rate=0;
   for(const[stage,demon] of Object.entries(S.garrison||{})){
     if(demon&&demon.tierIdx!==undefined)rate+=GARRISON_RATES[demon.tierIdx]||0;
@@ -1130,8 +1501,7 @@ function startGarrisonTicker(){
   garrisonInterval=setInterval(()=>{
     const rate=getGarrisonRate();
     if(rate>0){
-      S.garrisonAccum=(S.garrisonAccum||0)+rate/3600; // per second accumulation
-      // Update hub display
+      S.garrisonAccum=(S.garrisonAccum||0)+rate/3600;
       const hubIncome=document.getElementById('hub-income');
       if(hubIncome)hubIncome.textContent=`◆ ${Math.floor(S.garrisonAccum).toLocaleString()}`;
     }
@@ -1157,7 +1527,6 @@ function renderGarrison(){
   const accum=Math.floor(S.garrisonAccum||0);
   if(total)total.textContent=`◆ ${accum.toLocaleString()}`;
   if(rateLabel)rateLabel.textContent=`${rate.toLocaleString()} ◆/hr from ${Object.keys(S.garrison||{}).length} garrisons`;
-  // Show conquered stages as garrison slots
   const garrisoned=Object.entries(S.garrison||{});
   if(garrisoned.length===0){
     slots.innerHTML=`<div class="gslot"><div class="gslot-empty-msg">No garrisons active. Conquer stages in the Realms to unlock garrison slots and assign your demons.</div></div>`;
@@ -1214,7 +1583,6 @@ function updateUI(){
   const scroll=getActiveScroll();
   const cost1=getCost(1),cost10=getCost(10);
   document.getElementById('shard-count').textContent=S.shards.toLocaleString();
-  // Pity
   const epicThresh=scroll.pity.epic||40,legThresh=scroll.pity.leg||70;
   const ec=document.getElementById('epic-count'),lc=document.getElementById('leg-count');
   if(ec)ec.textContent=`${S.epicPity} / ${epicThresh}`;
@@ -1222,24 +1590,20 @@ function updateUI(){
   const ef=document.getElementById('epic-fill'),lf=document.getElementById('leg-fill');
   if(ef)ef.style.width=`${Math.min(100,(S.epicPity/epicThresh)*100)}%`;
   if(lf)lf.style.width=`${Math.min(100,(S.legPity/legThresh)*100)}%`;
-  // Summon screen buttons
   const bp1=document.getElementById('btn-pull-1'),bp10=document.getElementById('btn-pull-10');
   if(bp1)bp1.disabled=scroll.locked||(cost1>0&&S.shards<cost1);
   if(bp10)bp10.disabled=scroll.locked||(cost10>0&&S.shards<cost10);
   const c1l=document.getElementById('cost-1-label'),c10l=document.getElementById('cost-10-label');
   if(c1l)c1l.textContent=cost1===0?'Free':cost1===null?'Earned Only':`◆ ${cost1?.toLocaleString()}`;
   if(c10l)c10l.textContent=cost10===0?'Free ×10':cost10===null?'Earned Only':`◆ ${cost10?.toLocaleString()}`;
-  // Hub banner buttons
   const hb1=document.getElementById('hub-pull-1'),hb10=document.getElementById('hub-pull-10');
   if(hb1)hb1.disabled=S.shards<800;
   if(hb10)hb10.disabled=S.shards<7200;
-  // Stats
   const owned=ALL_DEMONS.filter(d=>(S.collection[d.name]||0)>0).length;
   const sb=document.getElementById('stat-bound');if(sb)sb.textContent=owned;
   const cb=document.getElementById('codex-badge');if(cb)cb.textContent=`${owned} / ${ALL_DEMONS.length}`;
   const sg=document.getElementById('stat-garrison');if(sg)sg.textContent=Object.keys(S.garrison||{}).length;
-  const ss=document.getElementById('stat-stages');if(ss)ss.textContent=REALMS.reduce((a,r)=>a+r.conquered,0);
-  // Garrison ticker
+  const ss=document.getElementById('stat-stages');if(ss)ss.textContent=Object.values(S.realmProgress||{}).reduce((a,b)=>a+b,0);
   const rate=getGarrisonRate();
   const hr=document.getElementById('hub-rate');
   if(hr)hr.textContent=rate>0?`${rate.toLocaleString()} ◆/hr passive income`:'No garrisons active';
@@ -1267,7 +1631,6 @@ function tick(){
   load();
   document.getElementById('btn-again').onclick=()=>{closeOverlay();const cost=lastCount===1?getCost(1):getCost(10);if(S.shards>=(cost||0))setTimeout(()=>doPull(lastCount),80);};
   document.getElementById('btn-close-pull').onclick=()=>closeOverlay();
-  // Sanctum ambient: sigils + embers
   (function spawnAmbient(){
     const sigCont=document.getElementById('hub-sigils');
     if(!sigCont)return;
@@ -1293,19 +1656,315 @@ function tick(){
     setInterval(()=>{createSigil();createEmber();},1200);
   })();
 
-  // Featured video fallback
-  const featVideo=document.getElementById('feat-video');
-  const featFallback=document.getElementById('feat-fallback');
-  if(featVideo&&featFallback){
-    featVideo.addEventListener('loadeddata',()=>{featFallback.style.display='none';});
-    featVideo.addEventListener('error',()=>{featVideo.style.display='none';});
-  }
   renderScrollShelf();renderScrollInfo();
   renderRealms();renderGarrison();
   updateUI();
   startGarrisonTicker();
   tick();setInterval(tick,1000);
+  if(window.Music&&window.Music.init)window.Music.init();
 })();
+</script>
+
+<script>
+// ═══════════════════════════════════════════
+// MUSIC SYSTEM
+// ═══════════════════════════════════════════
+(function(global){'use strict';
+
+var TRACKS = [
+  {id:'rift_walker', name:'Rift Walker', file:'assets/audio/rift_walker.mp3',
+    condition:'Unlocked by default', check:function(){return true;}},
+  {id:'sin_lords_anthem', name:"Sin Lords' Anthem", file:'assets/audio/sin_lords_anthem.mp3',
+    condition:'Bind a Sin Lord',
+    check:function(){return (POOL.sin_lord||[]).some(function(n){return (S.collection[n]||0)>0;});}},
+  {id:'the_binding', name:'The Binding', file:'assets/audio/the_binding.mp3',
+    condition:'Perform 10 summons',
+    check:function(){var t=0,c=S.collection||{};for(var k in c)t+=c[k]||0;return t>=10;}},
+  {id:'the_unnamed_one', name:'The Unnamed One', file:'assets/audio/the_unnamed_one.mp3',
+    condition:'Bind a Void Primordial',
+    check:function(){return (POOL.void_primordial||[]).some(function(n){return (S.collection[n]||0)>0;});}},
+  {id:'the_shattered_vale', name:'The Shattered Vale', file:'assets/audio/the_shattered_vale.mp3',
+    condition:'Conquer the Shattered Vale',
+    check:function(){
+      var realm=REALMS.find(function(r){return r.id==='vale';});
+      if(!realm) return false;
+      return (S.realmProgress.vale||0) >= realm.stages;
+    }}
+];
+
+var audioA, audioB, active;
+var fadeTimer = null;
+var currentIdx = 0;
+var playing = false;
+var audioUnlocked = false;
+var booted = false;
+
+var PLAY_ICON  = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5 L19 12 L7 19 Z"/></svg>';
+var PAUSE_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+var LOCK_SVG   = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/></svg>';
+
+function target(){ return S.musicEnabled ? S.musicVolume : 0; }
+function isUnlocked(id){ return S.musicUnlocked.indexOf(id) !== -1; }
+function isEnabled(id){ return S.musicPlaylist.indexOf(id) !== -1; }
+function getRotation(){ return TRACKS.filter(function(t){ return isUnlocked(t.id) && isEnabled(t.id); }); }
+function getCurrent(){ var r=getRotation(); return r.length ? r[currentIdx%r.length] : null; }
+function stopFade(){ if(fadeTimer){ clearInterval(fadeTimer); fadeTimer=null; } }
+
+function fade(ramps, duration, onDone){
+  stopFade();
+  duration = duration || 1200;
+  var steps = 24, step = 0;
+  fadeTimer = setInterval(function(){
+    step++;
+    var p = step / steps;
+    ramps.forEach(function(r){
+      var a = r[0]; if(!a) return;
+      a.volume = Math.max(0, Math.min(1, r[1] + (r[2]-r[1])*p));
+    });
+    if(step >= steps){ stopFade(); if(onDone) onDone(); }
+  }, duration / steps);
+}
+
+function playCurrent(){
+  var t = getCurrent();
+  if(!t){ playing = false; updateMiniPlayer(); return; }
+  var next = (active === audioA) ? audioB : audioA;
+  var prev = active;
+  try { next.src = t.file; } catch(e){ return; }
+  next.volume = 0;
+  var p = next.play();
+  if(p && p.catch) p.catch(function(){ playing = false; updateMiniPlayer(); });
+  var targ = target();
+  fade([
+    [prev, prev ? prev.volume : 0, 0],
+    [next, 0, targ]
+  ], 1200, function(){
+    if(prev && prev !== next){ try{ prev.pause(); }catch(e){} }
+    active = next;
+    active.volume = targ;
+  });
+  playing = true;
+  updateMiniPlayer();
+}
+
+function next(){ var r=getRotation(); if(!r.length) return; currentIdx=(currentIdx+1)%r.length; playCurrent(); }
+function prev(){ var r=getRotation(); if(!r.length) return; currentIdx=(currentIdx-1+r.length)%r.length; playCurrent(); }
+
+function toggle(){
+  if(!audioUnlocked){ audioUnlocked=true; playCurrent(); return; }
+  if(playing && active){
+    fade([[active, active.volume, 0]], 400, function(){ try{ active.pause(); }catch(e){} });
+    playing = false;
+  } else if(active && active.src){
+    active.volume = 0;
+    var p = active.play();
+    if(p && p.catch) p.catch(function(){});
+    fade([[active, 0, target()]], 600);
+    playing = true;
+  } else {
+    playCurrent();
+  }
+  updateMiniPlayer();
+}
+
+function toggleMute(){
+  S.musicEnabled = !S.musicEnabled;
+  save();
+  if(audioA) audioA.muted = !S.musicEnabled;
+  if(audioB) audioB.muted = !S.musicEnabled;
+  updateMuteUI();
+}
+
+function setVolume(v){
+  v = Math.max(0, Math.min(1, v));
+  S.musicVolume = v;
+  save();
+  if(!fadeTimer && active) active.volume = target();
+}
+
+function togglePlaylist(id){
+  if(!isUnlocked(id)) return;
+  var cur = getCurrent();
+  var curId = cur ? cur.id : null;
+  var i = S.musicPlaylist.indexOf(id);
+  if(i >= 0) S.musicPlaylist.splice(i, 1);
+  else S.musicPlaylist.push(id);
+  save();
+  var r = getRotation();
+  if(r.length === 0){
+    if(active){ try{ active.pause(); }catch(e){} }
+    playing = false;
+  } else if(curId === id && i >= 0){
+    currentIdx = 0;
+    if(playing) playCurrent();
+  } else if(curId){
+    for(var j=0; j<r.length; j++){ if(r[j].id === curId){ currentIdx=j; break; } }
+  }
+  renderTracks();
+  updateMiniPlayer();
+}
+
+function checkUnlocks(){
+  if(!S.musicUnlocked) return;
+  var newly = [];
+  for(var i=0; i<TRACKS.length; i++){
+    var t = TRACKS[i];
+    if(!isUnlocked(t.id) && t.check()){
+      S.musicUnlocked.push(t.id);
+      if(!isEnabled(t.id)) S.musicPlaylist.push(t.id);
+      newly.push(t);
+    }
+  }
+  if(newly.length){
+    save();
+    newly.forEach(showToast);
+    renderTracks();
+  }
+}
+
+function showToast(track){
+  var el = document.createElement('div');
+  el.className = 'music-toast';
+  el.innerHTML = '<div class="mt-label">NEW TRACK UNLOCKED</div><div class="mt-name">' + track.name + '</div>';
+  document.body.appendChild(el);
+  requestAnimationFrame(function(){ el.classList.add('show'); });
+  setTimeout(function(){
+    el.classList.remove('show');
+    setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 400);
+  }, 3000);
+}
+
+function openScreen(){
+  var s = document.getElementById('musicScreen');
+  if(!s) return;
+  renderTracks();
+  updateVolumeSlider();
+  updateMuteUI();
+  updateMiniPlayer();
+  s.classList.add('open');
+  s.setAttribute('aria-hidden', 'false');
+}
+function closeScreen(){
+  var s = document.getElementById('musicScreen');
+  if(!s) return;
+  s.classList.remove('open');
+  s.setAttribute('aria-hidden', 'true');
+}
+
+function updateMiniPlayer(){
+  var cur = getCurrent();
+  var title = document.getElementById('mmTitle');
+  var sub = document.getElementById('mmSub');
+  var play = document.getElementById('mmPlay');
+  var msPlay = document.getElementById('msPlay');
+  var msNow = document.getElementById('msNowTitle');
+  if(cur){
+    if(title) title.textContent = cur.name;
+    if(msNow) msNow.textContent = cur.name;
+    if(sub) sub.textContent = playing ? 'NOW PLAYING · TAP TO EXPAND' : 'PAUSED · TAP TO EXPAND';
+  } else {
+    if(title) title.textContent = 'No tracks in rotation';
+    if(msNow) msNow.textContent = '—';
+    if(sub) sub.textContent = 'SELECT A TRACK · TAP TO EXPAND';
+  }
+  if(play) play.innerHTML = playing ? PAUSE_ICON : PLAY_ICON;
+  if(msPlay) msPlay.innerHTML = playing ? PAUSE_ICON : PLAY_ICON;
+}
+
+function updateMuteUI(){
+  var btn = document.getElementById('msMute');
+  if(!btn) return;
+  btn.setAttribute('aria-pressed', S.musicEnabled ? 'false' : 'true');
+  var on = btn.querySelector('.ms-mute-on');
+  var off = btn.querySelector('.ms-mute-off');
+  if(on) on.style.display = S.musicEnabled ? '' : 'none';
+  if(off) off.style.display = S.musicEnabled ? 'none' : '';
+}
+
+function updateVolumeSlider(){
+  var v = document.getElementById('msVol');
+  if(v) v.value = Math.round(S.musicVolume * 100);
+}
+
+function renderTracks(){
+  var c = document.getElementById('msTracks');
+  var countEl = document.getElementById('msBoundCount');
+  if(!c) return;
+  if(countEl) countEl.textContent = S.musicUnlocked.length + ' OF ' + TRACKS.length + ' BOUND';
+  c.innerHTML = '';
+  var cur = getCurrent();
+  TRACKS.forEach(function(t){
+    var locked = !isUnlocked(t.id);
+    var enabled = isEnabled(t.id);
+    var isNow = playing && cur && cur.id === t.id;
+    var row = document.createElement('div');
+    row.className = 'ms-track' + (locked?' locked':'') + (isNow?' playing':'');
+    var subText = locked ? t.condition : (isNow ? 'Playing now' : (enabled ? 'In rotation' : 'Not in rotation'));
+    row.innerHTML =
+      '<div class="ms-track-indicator">' + (locked ? LOCK_SVG : '') + '</div>' +
+      '<div class="ms-track-info">' +
+        '<div class="ms-track-name">' + t.name + '</div>' +
+        '<div class="ms-track-cond">' + subText + '</div>' +
+      '</div>' +
+      '<button class="ms-toggle' + (!locked && enabled ? ' on' : '') + '"' +
+        (locked?' disabled':'') + ' data-id="' + t.id + '" aria-label="Toggle ' + t.name + '"></button>';
+    c.appendChild(row);
+  });
+  Array.prototype.forEach.call(c.querySelectorAll('.ms-toggle'), function(btn){
+    btn.addEventListener('click', function(){ togglePlaylist(btn.getAttribute('data-id')); });
+  });
+}
+
+function init(){
+  if(booted) return;
+  if(typeof S === 'undefined' || typeof POOL === 'undefined') return;
+  booted = true;
+
+  if(!S.musicUnlocked) S.musicUnlocked = ['rift_walker'];
+  if(!S.musicPlaylist) S.musicPlaylist = ['rift_walker'];
+  if(typeof S.musicVolume !== 'number') S.musicVolume = 0.7;
+  if(typeof S.musicEnabled !== 'boolean') S.musicEnabled = true;
+
+  audioA = document.createElement('audio');
+  audioB = document.createElement('audio');
+  audioA.preload = audioB.preload = 'auto';
+  audioA.muted = audioB.muted = !S.musicEnabled;
+  active = audioA;
+
+  [audioA, audioB].forEach(function(a){
+    a.addEventListener('ended', function(){ if(a === active && playing) next(); });
+  });
+
+  checkUnlocks();
+
+  var vol = document.getElementById('msVol');
+  if(vol) vol.addEventListener('input', function(e){ setVolume(e.target.value / 100); });
+
+  var unlock = function(){
+    if(audioUnlocked) return;
+    audioUnlocked = true;
+    if(S.musicEnabled && getRotation().length > 0) playCurrent();
+  };
+  document.addEventListener('click', unlock, {once:true, capture:true});
+  document.addEventListener('touchstart', unlock, {once:true, capture:true});
+  document.addEventListener('keydown', unlock, {once:true, capture:true});
+
+  renderTracks();
+  updateMiniPlayer();
+  updateMuteUI();
+  updateVolumeSlider();
+}
+
+global.Music = {
+  init: init, toggle: toggle, next: next, prev: prev,
+  toggleMute: toggleMute, setVolume: setVolume, togglePlaylist: togglePlaylist,
+  openScreen: openScreen, closeScreen: closeScreen, checkUnlocks: checkUnlocks
+};
+
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+
+})(window);
 </script>
 </body>
 </html>
