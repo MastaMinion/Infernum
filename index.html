@@ -1214,7 +1214,7 @@ let S={
   collection:{},garrison:{},garrisonAccum:0,
   bannerExpiry:null,activeScroll:'infernal',level:1,
   realmProgress:{},
-  musicUnlocked:['infernum_welcome','rift_walker'],musicPlaylist:['infernum_welcome','rift_walker'],
+  musicUnlocked:['infernum_welcome'],musicPlaylist:['infernum_welcome'],
   musicVolume:0.7,musicEnabled:true,
 };
 let lastCount=1;
@@ -1240,8 +1240,8 @@ function load(){
   // Backfill realm progress for existing saves
   if(!S.realmProgress)S.realmProgress={};
   // Backfill music state for existing saves
-  if(!S.musicUnlocked)S.musicUnlocked=['infernum_welcome','rift_walker'];
-  if(!S.musicPlaylist)S.musicPlaylist=['infernum_welcome','rift_walker'];
+  if(!S.musicUnlocked)S.musicUnlocked=['infernum_welcome'];
+  if(!S.musicPlaylist)S.musicPlaylist=['infernum_welcome'];
   // Quietly add welcome track to existing saves that predate it (no toast — it's a default, not an achievement)
   if(S.musicUnlocked.indexOf('infernum_welcome')===-1){
     S.musicUnlocked.unshift('infernum_welcome');
@@ -1677,26 +1677,146 @@ function tick(){
 (function(global){'use strict';
 
 var TRACKS = [
+  // ─── MAIN PROGRESSION (13) ───
+  // 01
   {id:'infernum_welcome', name:'Infernum Welcome', file:'assets/audio/infernum_welcome.mp3',
     condition:'Unlocked by default', check:function(){return true;}},
-  {id:'rift_walker', name:'Rift Walker', file:'assets/audio/rift_walker.mp3',
-    condition:'Unlocked by default', check:function(){return true;}},
-  {id:'sin_lords_anthem', name:"Sin Lords' Anthem", file:'assets/audio/sin_lords_anthem.mp3',
-    condition:'Bind a Sin Lord',
-    check:function(){return (POOL.sin_lord||[]).some(function(n){return (S.collection[n]||0)>0;});}},
+
+  // 02 — TODO: Wire when scroll inventory + tutorial exist. First scroll is
+  // earned during the tutorial, which forces the player to use it. Check shape:
+  //   return (S.scrollInventory && Object.keys(S.scrollInventory).length > 0);
+  // or if tutorial sets a flag:
+  //   return !!S.tutorialFirstScrollReceived;
+  {id:'the_pull', name:'The Pull', file:'assets/audio/the_pull.mp3',
+    condition:'Receive your first scroll',
+    check:function(){return false;}},
+
+  // 03
   {id:'the_binding', name:'The Binding', file:'assets/audio/the_binding.mp3',
-    condition:'Perform 10 summons',
-    check:function(){var t=0,c=S.collection||{};for(var k in c)t+=c[k]||0;return t>=10;}},
-  {id:'the_unnamed_one', name:'The Unnamed One', file:'assets/audio/the_unnamed_one.mp3',
-    condition:'Bind a Void Primordial',
-    check:function(){return (POOL.void_primordial||[]).some(function(n){return (S.collection[n]||0)>0;});}},
+    condition:'Complete your first pull',
+    check:function(){var t=0,c=S.collection||{};for(var k in c)t+=c[k]||0;return t>=1;}},
+
+  // 04
+  {id:'shade', name:'Shade', file:'assets/audio/shade.mp3',
+    condition:'Bind all 5 Shades',
+    check:function(){return (POOL.shade||[]).every(function(n){return (S.collection[n]||0)>0;});}},
+
+  // 05 — TODO: Wire when garrison assignment UI exists. Demons have to be
+  // assignable to conquered stages from the Garrison screen. Check shape:
+  //   return Object.keys(S.garrison||{}).length > 0;
+  {id:'the_garrison', name:'The Garrison', file:'assets/audio/the_garrison.mp3',
+    condition:'Garrison your first demon',
+    check:function(){return false;}},
+
+  // 06 — R1 reuses this same file per spec
   {id:'the_shattered_vale', name:'The Shattered Vale', file:'assets/audio/the_shattered_vale.mp3',
     condition:'Conquer the Shattered Vale',
     check:function(){
       var realm=REALMS.find(function(r){return r.id==='vale';});
       if(!realm) return false;
       return (S.realmProgress.vale||0) >= realm.stages;
-    }}
+    }},
+
+  // 07
+  {id:'sin_lords_anthem', name:"Sin Lords' Anthem", file:'assets/audio/sin_lords_anthem.mp3',
+    condition:'Bind your first Sin Lord',
+    check:function(){return (POOL.sin_lord||[]).some(function(n){return (S.collection[n]||0)>0;});}},
+
+  // 08
+  {id:'the_codex', name:'The Codex', file:'assets/audio/the_codex.mp3',
+    condition:'Bind 14 demons — half the roster',
+    check:function(){
+      var count=0;
+      for(var i=0;i<ALL_DEMONS.length;i++){if((S.collection[ALL_DEMONS[i].name]||0)>0)count++;}
+      return count>=14;
+    }},
+
+  // 09
+  {id:'rift_walker', name:'Rift Walker', file:'assets/audio/rift_walker.mp3',
+    condition:"Bind all three Archdemons — Bal'zeth, Xerathos, Malvekis",
+    check:function(){return (POOL.archdemon||[]).every(function(n){return (S.collection[n]||0)>0;});}},
+
+  // 10
+  {id:'the_unnamed_one', name:'The Unnamed One', file:'assets/audio/the_unnamed_one.mp3',
+    condition:'Pull your first Void Primordial',
+    check:function(){return (POOL.void_primordial||[]).some(function(n){return (S.collection[n]||0)>0;});}},
+
+  // 11 — TODO: Wire when realm unlocking exists. All 8 realms fully conquered.
+  // Check shape:
+  //   return REALMS.every(function(r){return (S.realmProgress[r.id]||0) >= r.stages;});
+  {id:'sanctum_rising', name:'Sanctum Rising', file:'assets/audio/sanctum_rising.mp3',
+    condition:'Conquer all 8 realms',
+    check:function(){return false;}},
+
+  // 12 — full codex (all 28 demons bound)
+  {id:'the_rift_between', name:'The Rift Between', file:'assets/audio/the_rift_between.mp3',
+    condition:'Bind all 28 demons',
+    check:function(){
+      for(var i=0;i<ALL_DEMONS.length;i++){if(!(S.collection[ALL_DEMONS[i].name]>0))return false;}
+      return true;
+    }},
+
+  // 13 — TODO: Wire when realm unlocking AND cinematic trigger system exist.
+  // All realms conquered + full codex, plus a one-time cinematic trigger
+  // before this becomes hub ambient. Check shape for the unlock itself:
+  //   var fullCodex = ALL_DEMONS.every(function(d){return (S.collection[d.name]||0)>0;});
+  //   var allRealms = REALMS.every(function(r){return (S.realmProgress[r.id]||0) >= r.stages;});
+  //   return fullCodex && allRealms;
+  // The cinematic playback is separate — when unlocked, fire a one-shot
+  // cinematic via Music.playCinematic('apex'), then the track becomes
+  // selectable hub ambient like any other.
+  {id:'the_apex', name:'The Apex', file:'assets/audio/the_apex.mp3',
+    condition:'Complete everything — all realms, full codex',
+    check:function(){return false;}},
+
+  // ─── REALM TRACKS (7) ───
+  // R1 Shattered Vale is track 06 above — same file, no separate entry.
+  //
+  // All realm tracks below are TODO: Wire when realm unlocking exists (realms
+  // beyond Shattered Vale need to be enterable). Each track plays while the
+  // player is inside its realm — which requires screen-scoped playback logic
+  // that doesn't exist yet either. For now, check() returns false so they
+  // appear locked until both systems ship.
+  //
+  // When ready, the unlock check per realm is:
+  //   return !REALMS.find(function(r){return r.id==='<realm_id>';}).locked;
+  // And the in-realm playback logic (separate from unlock) fires when the
+  // player enters that realm's battle/conquest screen.
+
+  // R2 — Vrath'ax Warfront
+  {id:'vrathax_warfront', name:"Vrath'ax Warfront", file:'assets/audio/vrathax_warfront.mp3',
+    condition:"Enter Vrath'ax Warfront",
+    check:function(){return false;}},
+
+  // R3 — Gilded Pit (unwritten)
+  {id:'gilded_pit', name:'Gilded Pit', file:'assets/audio/gilded_pit.mp3',
+    condition:'Enter Gilded Pit',
+    check:function(){return false;}},
+
+  // R4 — The Stillness (unwritten)
+  {id:'the_stillness', name:'The Stillness', file:'assets/audio/the_stillness.mp3',
+    condition:'Enter The Stillness',
+    check:function(){return false;}},
+
+  // R5 — Mirror Maze (unwritten)
+  {id:'mirror_maze', name:'Mirror Maze', file:'assets/audio/mirror_maze.mp3',
+    condition:'Enter Mirror Maze',
+    check:function(){return false;}},
+
+  // R6 — Crumbling Throne (unwritten)
+  {id:'crumbling_throne', name:'Crumbling Throne', file:'assets/audio/crumbling_throne.mp3',
+    condition:'Enter Crumbling Throne',
+    check:function(){return false;}},
+
+  // R7 — Gorgethorn's Maw (unwritten)
+  {id:'gorgethorn_maw', name:"Gorgethorn's Maw", file:'assets/audio/gorgethorn_maw.mp3',
+    condition:"Enter Gorgethorn's Maw",
+    check:function(){return false;}},
+
+  // R8 — The Void Wastes (unwritten)
+  {id:'void_wastes', name:'The Void Wastes', file:'assets/audio/void_wastes.mp3',
+    condition:'Enter The Void Wastes',
+    check:function(){return false;}}
 ];
 
 var audioA, audioB, active;
@@ -1927,8 +2047,8 @@ function init(){
   if(typeof S === 'undefined' || typeof POOL === 'undefined') return;
   booted = true;
 
-  if(!S.musicUnlocked) S.musicUnlocked = ['rift_walker'];
-  if(!S.musicPlaylist) S.musicPlaylist = ['rift_walker'];
+  if(!S.musicUnlocked) S.musicUnlocked = ['infernum_welcome'];
+  if(!S.musicPlaylist) S.musicPlaylist = ['infernum_welcome'];
   if(typeof S.musicVolume !== 'number') S.musicVolume = 0.7;
   if(typeof S.musicEnabled !== 'boolean') S.musicEnabled = true;
 
