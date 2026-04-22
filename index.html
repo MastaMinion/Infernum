@@ -479,6 +479,98 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .fade-in{animation:fadeIn .4s ease both}
 
 /* ══════════════════════════════════════
+   SPLASH SCREEN — shown every load, dismissed on Enter the Rift
+══════════════════════════════════════ */
+#splash{
+  position:fixed;inset:0;z-index:500;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--bg);
+  overflow:hidden;
+  opacity:1;
+  transition:opacity .7s ease;
+}
+#splash.fading{opacity:0;pointer-events:none;}
+#splash::before{
+  content:'';position:absolute;inset:0;z-index:0;
+  background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
+  opacity:.16;
+}
+#splash::after{
+  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 45%,rgba(124,58,237,.14) 0%,transparent 70%),
+    radial-gradient(ellipse at center,transparent 40%,rgba(6,0,14,.9) 100%);
+}
+#splash-sigils{position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none}
+.splash-inner{
+  position:relative;z-index:3;
+  display:flex;flex-direction:column;align-items:center;
+  padding:40px 24px;
+}
+.splash-mark{
+  font-family:var(--deco);
+  font-size:clamp(2.2rem,9vw,4rem);
+  letter-spacing:.18em;
+  color:var(--purple);
+  text-shadow:0 0 40px rgba(192,132,252,.5),0 0 80px rgba(124,58,237,.3);
+  animation:splashMarkPulse 4s ease-in-out infinite;
+  line-height:1;
+  margin-bottom:8px;
+}
+.splash-mark span{color:var(--crimson)}
+@keyframes splashMarkPulse{
+  0%,100%{text-shadow:0 0 40px rgba(192,132,252,.5),0 0 80px rgba(124,58,237,.3)}
+  50%{text-shadow:0 0 60px rgba(192,132,252,.8),0 0 120px rgba(124,58,237,.5)}
+}
+.splash-sub{
+  font-family:var(--serif);
+  font-size:.62rem;letter-spacing:.45em;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin-bottom:56px;
+}
+.splash-btn{
+  font-family:var(--serif);
+  font-size:.85rem;font-weight:600;letter-spacing:.22em;
+  padding:16px 40px;
+  background:rgba(124,58,237,.12);
+  border:0.5px solid rgba(192,132,252,.45);
+  color:var(--purple);
+  border-radius:4px;
+  cursor:pointer;
+  text-transform:uppercase;
+  transition:all .25s ease;
+  box-shadow:0 0 24px rgba(124,58,237,.18);
+  position:relative;
+  overflow:hidden;
+}
+.splash-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(192,132,252,.25),transparent);
+  transform:translateX(-100%);
+  transition:transform .6s ease;
+}
+.splash-btn:hover{
+  background:rgba(124,58,237,.22);
+  border-color:var(--purple);
+  color:#e9d5ff;
+  box-shadow:0 0 36px rgba(192,132,252,.4);
+  transform:translateY(-1px);
+}
+.splash-btn:hover::before{transform:translateX(100%);}
+.splash-btn:active{transform:translateY(0) scale(.98);}
+.splash-hint{
+  font-family:var(--body);
+  font-size:.6rem;font-style:italic;
+  color:var(--muted);
+  margin-top:20px;
+  opacity:.7;
+  letter-spacing:.05em;
+}
+/* Hide the mini player until splash is dismissed */
+body:not(.game-started) .music-mini{display:none;}
+
+/* ══════════════════════════════════════
    MUSIC — mini player (flex child of #shell)
 ══════════════════════════════════════ */
 .music-mini{
@@ -745,6 +837,17 @@ body{font-family:var(--body);color:var(--text);position:relative}
 </style>
 </head>
 <body>
+
+<!-- ── SPLASH SCREEN (dismissed on Enter the Rift) ── -->
+<div id="splash">
+  <div id="splash-sigils"></div>
+  <div class="splash-inner">
+    <div class="splash-mark">INF<span>E</span>RNUM</div>
+    <div class="splash-sub">Abyssal Sanctum</div>
+    <button class="splash-btn" id="splash-btn" type="button">Enter the Rift</button>
+    <div class="splash-hint">The wound between worlds awaits</div>
+  </div>
+</div>
 
 <div id="global-bg"></div>
 <div id="global-bg-vignette"></div>
@@ -1637,10 +1740,8 @@ function tick(){
   document.getElementById('btn-again').onclick=()=>{closeOverlay();const cost=lastCount===1?getCost(1):getCost(10);if(S.shards>=(cost||0))setTimeout(()=>doPull(lastCount),80);};
   document.getElementById('btn-close-pull').onclick=()=>closeOverlay();
   (function spawnAmbient(){
-    const sigCont=document.getElementById('hub-sigils');
-    if(!sigCont)return;
     const SIGILS=['ᚠ','ᚢ','ᚦ','ᚨ','ᚱ','ᚲ','ᚷ','ᚹ','✦','◈','⬡','✧'];
-    function createSigil(){
+    function createSigil(sigCont){
       const el=document.createElement('div');el.className='sigil';
       el.textContent=SIGILS[Math.floor(Math.random()*SIGILS.length)];
       const sz=Math.random()*14+8;
@@ -1649,7 +1750,7 @@ function tick(){
       sigCont.appendChild(el);
       setTimeout(()=>el.remove(),(dur+3)*1000);
     }
-    function createEmber(){
+    function createEmber(sigCont){
       const el=document.createElement('div');el.className='ember';
       const sz=Math.random()*3+1.5;
       const dur=Math.random()*10+8;
@@ -1657,8 +1758,16 @@ function tick(){
       sigCont.appendChild(el);
       setTimeout(()=>el.remove(),(dur+2)*1000);
     }
-    for(let i=0;i<8;i++){createSigil();createEmber();}
-    setInterval(()=>{createSigil();createEmber();},1200);
+    const hubCont=document.getElementById('hub-sigils');
+    const splashCont=document.getElementById('splash-sigils');
+    function populate(){
+      if(hubCont){createSigil(hubCont);createEmber(hubCont);}
+      if(splashCont&&splashCont.isConnected){createSigil(splashCont);createEmber(splashCont);}
+    }
+    // Initial burst on both containers
+    if(hubCont)for(let i=0;i<8;i++){createSigil(hubCont);createEmber(hubCont);}
+    if(splashCont)for(let i=0;i<8;i++){createSigil(splashCont);createEmber(splashCont);}
+    setInterval(populate,1200);
   })();
 
   renderScrollShelf();renderScrollInfo();
@@ -2067,14 +2176,29 @@ function init(){
   var vol = document.getElementById('msVol');
   if(vol) vol.addEventListener('input', function(e){ setVolume(e.target.value / 100); });
 
-  var unlock = function(){
-    if(audioUnlocked) return;
-    audioUnlocked = true;
-    if(S.musicEnabled && getRotation().length > 0) playCurrent();
-  };
-  document.addEventListener('click', unlock, {once:true, capture:true});
-  document.addEventListener('touchstart', unlock, {once:true, capture:true});
-  document.addEventListener('keydown', unlock, {once:true, capture:true});
+  // Splash screen is the single entry point — clicking "Enter the Rift" starts the game and the music
+  var splashBtn = document.getElementById('splash-btn');
+  var splash = document.getElementById('splash');
+  if(splashBtn && splash){
+    splashBtn.addEventListener('click', function(){
+      audioUnlocked = true;
+      document.body.classList.add('game-started');
+      if(S.musicEnabled && getRotation().length > 0) playCurrent();
+      splash.classList.add('fading');
+      setTimeout(function(){ if(splash.parentNode) splash.parentNode.removeChild(splash); }, 750);
+    }, {once:true});
+  } else {
+    // Fallback: if splash is missing for any reason, revert to old click-anywhere behavior
+    document.body.classList.add('game-started');
+    var unlock = function(){
+      if(audioUnlocked) return;
+      audioUnlocked = true;
+      if(S.musicEnabled && getRotation().length > 0) playCurrent();
+    };
+    document.addEventListener('click', unlock, {once:true, capture:true});
+    document.addEventListener('touchstart', unlock, {once:true, capture:true});
+    document.addEventListener('keydown', unlock, {once:true, capture:true});
+  }
 
   renderTracks();
   updateMiniPlayer();
