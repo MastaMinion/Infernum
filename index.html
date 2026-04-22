@@ -479,7 +479,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .fade-in{animation:fadeIn .4s ease both}
 
 /* ══════════════════════════════════════
-   SPLASH SCREEN — shown every load, dismissed on Enter the Rift
+   SPLASH SCREEN — shown every load, dismissed on Walk the Rift
 ══════════════════════════════════════ */
 #splash{
   position:fixed;inset:0;z-index:500;
@@ -498,7 +498,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
 #splash::after{
   content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
   background:
-    radial-gradient(ellipse 55% 45% at 50% 45%,rgba(124,58,237,.14) 0%,transparent 70%),
+    radial-gradient(ellipse 55% 45% at 50% 45%,rgba(234,88,12,.12) 0%,transparent 70%),
     radial-gradient(ellipse at center,transparent 40%,rgba(6,0,14,.9) 100%);
 }
 #splash-sigils{position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none}
@@ -507,27 +507,20 @@ body{font-family:var(--body);color:var(--text);position:relative}
   display:flex;flex-direction:column;align-items:center;
   padding:40px 24px;
 }
-.splash-mark{
-  font-family:var(--deco);
-  font-size:clamp(2.2rem,9vw,4rem);
-  letter-spacing:.18em;
-  color:var(--purple);
-  text-shadow:0 0 40px rgba(192,132,252,.5),0 0 80px rgba(124,58,237,.3);
-  animation:splashMarkPulse 4s ease-in-out infinite;
-  line-height:1;
-  margin-bottom:8px;
-}
-.splash-mark span{color:var(--crimson)}
-@keyframes splashMarkPulse{
-  0%,100%{text-shadow:0 0 40px rgba(192,132,252,.5),0 0 80px rgba(124,58,237,.3)}
-  50%{text-shadow:0 0 60px rgba(192,132,252,.8),0 0 120px rgba(124,58,237,.5)}
-}
-.splash-sub{
-  font-family:var(--serif);
-  font-size:.62rem;letter-spacing:.45em;
-  color:var(--muted);
-  text-transform:uppercase;
+.splash-logo{
+  width:min(600px,88vw);
+  max-width:100%;
+  height:auto;
+  display:block;
   margin-bottom:56px;
+  user-select:none;
+  -webkit-user-drag:none;
+  animation:splashLogoBreath 4s ease-in-out infinite;
+  filter:drop-shadow(0 0 40px rgba(234,88,12,.35)) drop-shadow(0 0 80px rgba(124,58,237,.18));
+}
+@keyframes splashLogoBreath{
+  0%,100%{filter:drop-shadow(0 0 40px rgba(234,88,12,.35)) drop-shadow(0 0 80px rgba(124,58,237,.18));transform:scale(1);}
+  50%{filter:drop-shadow(0 0 60px rgba(234,88,12,.55)) drop-shadow(0 0 120px rgba(124,58,237,.28));transform:scale(1.015);}
 }
 .splash-btn{
   font-family:var(--serif);
@@ -838,13 +831,12 @@ body:not(.game-started) .music-mini{display:none;}
 </head>
 <body>
 
-<!-- ── SPLASH SCREEN (dismissed on Enter the Rift) ── -->
+<!-- ── SPLASH SCREEN (dismissed on Walk the Rift) ── -->
 <div id="splash">
   <div id="splash-sigils"></div>
   <div class="splash-inner">
-    <div class="splash-mark">INF<span>E</span>RNUM</div>
-    <div class="splash-sub">Abyssal Sanctum</div>
-    <button class="splash-btn" id="splash-btn" type="button">Enter the Rift</button>
+    <img class="splash-logo" src="assets/ui/infernum_logo.png" alt="INFERNUM" />
+    <button class="splash-btn" id="splash-btn" type="button">Walk the Rift</button>
     <div class="splash-hint">The wound between worlds awaits</div>
   </div>
 </div>
@@ -2176,7 +2168,7 @@ function init(){
   var vol = document.getElementById('msVol');
   if(vol) vol.addEventListener('input', function(e){ setVolume(e.target.value / 100); });
 
-  // Splash screen is the single entry point — clicking "Enter the Rift" starts the game and the music
+  // Splash screen is the single entry point — clicking "Walk the Rift" starts the game and the music
   var splashBtn = document.getElementById('splash-btn');
   var splash = document.getElementById('splash');
   if(splashBtn && splash){
