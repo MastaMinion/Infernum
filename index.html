@@ -3,2211 +3,1194 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INFERNUM</title>
+<title>INFERNUM — The Binding</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cinzel+Decorative:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#06000e;--panel:rgba(6,0,14,.88);
-  --purple:#c084fc;--purple2:#7c3aed;--gold:#fbbf24;--gold2:#b45309;
-  --crimson:#f43f5e;--text:#e2d9f3;--muted:#4b2d6b;--border:rgba(124,58,237,.18);
-  --serif:'Cinzel',Georgia,serif;--deco:'Cinzel Decorative',serif;--body:'EB Garamond',Georgia,serif;
-}
-html,body{height:100%;overflow:hidden;background:var(--bg)}
-body{font-family:var(--body);color:var(--text);position:relative}
-
-/* ── GLOBAL BG ── */
-#global-bg{
-  position:fixed;inset:0;z-index:0;
-  background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
-  opacity:.18;pointer-events:none;
-}
-#global-bg-vignette{
-  position:fixed;inset:0;z-index:1;pointer-events:none;
-  background:radial-gradient(ellipse at center,transparent 30%,rgba(6,0,14,.85) 100%);
+:root {
+  --bg: #06000e;
+  --bg-deep: #02000a;
+  --purple: #c084fc;
+  --purple-deep: #7c3aed;
+  --gold: #fbbf24;
+  --gold-deep: #b45309;
+  --crimson: #7f1d1d;
+  --border: rgba(124,58,237,.18);
+  --border-gold: rgba(251,191,36,.32);
+  --serif: 'Cinzel', Georgia, serif;
+  --serif-ornate: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  --body: 'EB Garamond', Georgia, serif;
 }
 
-/* ── LAYOUT ── */
-#shell{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;overflow:hidden}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── TOP BAR ── */
-#topbar{
-  flex-shrink:0;
-  display:flex;justify-content:space-between;align-items:center;
-  padding:10px 16px 8px;
-  background:linear-gradient(to bottom,rgba(6,0,14,.95),transparent);
-  border-bottom:0.5px solid var(--border);
-}
-.logo-mark{
-  font-family:var(--deco);font-size:1.3rem;letter-spacing:.12em;
-  color:var(--purple);
-  text-shadow:0 0 20px rgba(192,132,252,.5);
-}
-.logo-mark span{color:var(--crimson)}
-.logo-sub{font-size:.5rem;letter-spacing:.35em;color:var(--muted);font-family:var(--serif);display:block;margin-top:1px}
-.topbar-right{display:flex;align-items:center;gap:10px}
-#shard-display{
-  display:flex;align-items:center;gap:7px;
-  background:rgba(124,58,237,.1);border:0.5px solid var(--border);
-  border-radius:20px;padding:6px 13px;cursor:pointer;transition:all .2s;
-}
-#shard-display:hover{background:rgba(124,58,237,.2);border-color:rgba(192,132,252,.4)}
-.shard-gem{color:var(--purple);font-size:1rem}
-#shard-count{font-family:var(--serif);font-weight:600;font-size:.9rem;color:var(--purple)}
-.shard-add{font-size:.5rem;color:var(--muted);display:block;text-align:center;margin-top:1px}
-#player-level{
-  font-family:var(--serif);font-size:.7rem;letter-spacing:.1em;
-  color:var(--gold);background:rgba(251,191,36,.08);
-  border:0.5px solid rgba(251,191,36,.3);border-radius:12px;padding:5px 10px;
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: #e5d6f0;
+  font-family: var(--body);
+  overflow: hidden;
+  cursor: default;
 }
 
-/* ── CONTENT AREA ── */
-#content{flex:1;overflow:hidden;position:relative}
-.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none}
-.screen.active{display:block}
+body::selection, ::selection { background: var(--purple-deep); color: var(--gold); }
 
-/* ── BOTTOM NAV ── */
-#bottomnav{
-  flex-shrink:0;
-  display:flex;border-top:0.5px solid var(--border);
-  background:rgba(6,0,14,.96);
-}
-.nav-btn{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:3px;padding:8px 4px 10px;
-  background:none;border:none;cursor:pointer;
-  transition:all .2s;position:relative;
-}
-.nav-btn::after{
-  content:'';position:absolute;top:0;left:20%;right:20%;
-  height:1.5px;background:var(--purple);
-  transform:scaleX(0);transition:transform .2s;border-radius:1px;
-}
-.nav-btn.active::after{transform:scaleX(1)}
-.nav-icon{font-size:1.2rem;transition:transform .2s}
-.nav-btn.active .nav-icon{transform:scale(1.15)}
-.nav-label{
-  font-family:var(--serif);font-size:.45rem;letter-spacing:.18em;
-  color:var(--muted);transition:color .2s;text-transform:uppercase;
-}
-.nav-btn.active .nav-label{color:var(--purple)}
+/* ───────────────────────── Ambient layer ───────────────────────── */
 
-/* ══════════════════════════════════════
-   HUB — THE RIFT WALKER'S SANCTUM
-══════════════════════════════════════ */
-#screen-hub{
-  background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
-  overflow:hidden;
+#ambient {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
 }
-#screen-hub::before{
-  content:'';position:absolute;inset:0;z-index:0;
+
+.ambient-sigil {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: min(140vmin, 1400px);
+  height: min(140vmin, 1400px);
+  transform: translate(-50%, -50%);
+  opacity: .04;
+  animation: sigil-rotate 320s linear infinite;
+}
+
+@keyframes sigil-rotate {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.vignette {
+  position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 60% 50% at 50% 40%,rgba(124,58,237,.12) 0%,transparent 70%),
-    linear-gradient(to bottom,rgba(6,0,14,.7) 0%,rgba(6,0,14,.45) 40%,rgba(6,0,14,.88) 100%);
-  pointer-events:none;
-}
-#screen-hub > *{position:relative;z-index:1}
-#hub-sigils{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.sigil{position:absolute;font-family:serif;color:rgba(192,132,252,.18);animation:sigilDrift linear infinite;user-select:none}
-@keyframes sigilDrift{0%{transform:translateY(0) rotate(0deg);opacity:0}10%{opacity:1}85%{opacity:.4}100%{transform:translateY(-100vh) rotate(180deg);opacity:0}}
-.ember{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(192,132,252,.9),rgba(124,58,237,.4) 50%,transparent);animation:emberRise linear infinite;}
-@keyframes emberRise{0%{transform:translateY(0) translateX(0) scale(1);opacity:0}8%{opacity:1}88%{opacity:.5}100%{transform:translateY(-100vh) translateX(var(--drift,0px)) scale(.2);opacity:0}}
-.sanctum-wrap{display:flex;flex-direction:column;min-height:calc(100vh - 112px);padding-bottom:12px;}
-.rw-identity{text-align:center;padding:16px 20px 8px;}
-.rw-identity-title{font-family:var(--serif);font-size:.52rem;letter-spacing:.45em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
-.rw-identity-name{font-family:var(--deco);font-size:1.4rem;letter-spacing:.12em;color:var(--purple);text-shadow:0 0 30px rgba(192,132,252,.6),0 0 60px rgba(124,58,237,.3);animation:rwPulse 4s ease-in-out infinite;}
-@keyframes rwPulse{0%,100%{text-shadow:0 0 30px rgba(192,132,252,.6),0 0 60px rgba(124,58,237,.3)}50%{text-shadow:0 0 50px rgba(192,132,252,.9),0 0 100px rgba(124,58,237,.5)}}
-.rw-identity-sub{font-family:var(--body);font-size:.62rem;color:var(--muted);font-style:italic;margin-top:2px;}
-.main-rift-wrap{display:flex;flex-direction:column;align-items:center;padding:4px 20px 14px;}
-.main-rift{position:relative;width:min(240px,65vw);height:min(240px,65vw);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-bottom:14px;}
-.rift-ring{position:absolute;border-radius:50%;border:1px solid transparent;animation:riftSpin linear infinite;pointer-events:none;}
-.rift-ring-1{inset:-2px;border-color:rgba(192,132,252,.4) rgba(192,132,252,.1) rgba(192,132,252,.4) rgba(192,132,252,.1);animation-duration:12s;}
-.rift-ring-2{inset:12px;border-color:rgba(124,58,237,.6) transparent rgba(124,58,237,.6) transparent;animation-duration:8s;animation-direction:reverse;}
-.rift-ring-3{inset:26px;border-color:rgba(192,132,252,.2) rgba(192,132,252,.05) rgba(192,132,252,.2) rgba(192,132,252,.05);animation-duration:20s;}
-@keyframes riftSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.rift-core{position:absolute;inset:36px;border-radius:50%;background:radial-gradient(circle at 40% 35%,rgba(192,132,252,.25) 0%,rgba(124,58,237,.15) 35%,rgba(76,29,149,.1) 60%,rgba(6,0,14,.8) 100%);box-shadow:inset 0 0 40px rgba(124,58,237,.3),0 0 50px rgba(124,58,237,.25),0 0 100px rgba(124,58,237,.1);animation:riftBreath 3s ease-in-out infinite;}
-@keyframes riftBreath{0%,100%{box-shadow:inset 0 0 40px rgba(124,58,237,.3),0 0 50px rgba(124,58,237,.25),0 0 100px rgba(124,58,237,.1)}50%{box-shadow:inset 0 0 60px rgba(192,132,252,.5),0 0 80px rgba(124,58,237,.45),0 0 140px rgba(124,58,237,.2)}}
-.rift-inner{position:relative;z-index:2;text-align:center;padding:6px;}
-.rift-banner-label{font-family:var(--serif);font-size:.44rem;letter-spacing:.35em;color:var(--gold);margin-bottom:5px;display:block;text-shadow:0 0 12px rgba(251,191,36,.6);}
-.rift-banner-name{font-family:var(--deco);font-size:.78rem;letter-spacing:.08em;color:#e0e0ff;line-height:1.2;margin-bottom:3px;text-shadow:0 0 20px rgba(224,224,255,.4);}
-.rift-banner-tier{font-family:var(--serif);font-size:.38rem;letter-spacing:.25em;color:#a0a0dd;display:block;margin-bottom:6px;}
-.rift-countdown{font-family:var(--serif);font-size:.72rem;font-weight:600;color:var(--gold);letter-spacing:.06em;text-shadow:0 0 14px rgba(251,191,36,.5);}
-.rift-summon-btns{display:flex;gap:9px;width:100%;max-width:280px;}
-.rift-btn{flex:1;font-family:var(--serif);font-size:.68rem;font-weight:600;letter-spacing:.08em;padding:11px 7px;border-radius:8px;cursor:pointer;transition:all .2s;border:0.5px solid;text-align:center;position:relative;overflow:hidden;}
-.rift-btn:active{transform:scale(.97)}
-.rift-btn:disabled{opacity:.3;cursor:not-allowed}
-.rift-btn-1{background:rgba(124,58,237,.25);border-color:rgba(192,132,252,.45);color:var(--purple);box-shadow:0 0 16px rgba(124,58,237,.2);}
-.rift-btn-1:hover:not(:disabled){background:rgba(124,58,237,.45);border-color:var(--purple);box-shadow:0 0 28px rgba(192,132,252,.4)}
-.rift-btn-10{background:rgba(120,53,15,.25);border-color:rgba(251,191,36,.45);color:var(--gold);box-shadow:0 0 16px rgba(180,83,9,.2);}
-.rift-btn-10:hover:not(:disabled){background:rgba(120,53,15,.45);border-color:var(--gold);box-shadow:0 0 28px rgba(251,191,36,.4)}
-.rb-label{display:block;margin-bottom:2px}
-.rb-cost{display:block;font-size:.52rem;font-weight:400;opacity:.6}
-.sanctum-status{display:flex;align-items:center;gap:0;background:rgba(6,0,14,.65);border-top:0.5px solid rgba(124,58,237,.12);border-bottom:0.5px solid rgba(124,58,237,.12);}
-.sstat{flex:1;padding:9px 6px;text-align:center;border-right:0.5px solid rgba(124,58,237,.08);cursor:pointer;transition:background .2s;position:relative;}
-.sstat:last-child{border-right:none}
-.sstat:hover{background:rgba(124,58,237,.06)}
-.sstat::after{content:'';position:absolute;bottom:0;left:50%;right:50%;height:1.5px;background:var(--purple);transition:all .3s;}
-.sstat:hover::after{left:8%;right:8%}
-.sstat-val{font-family:var(--serif);font-size:.95rem;color:var(--purple);line-height:1;margin-bottom:2px}
-.sstat-label{font-size:.4rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;font-family:var(--serif)}
-.tribute-strip{display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(6,0,14,.5);border-bottom:0.5px solid rgba(74,222,128,.1);}
-.tribute-pulse{width:6px;height:6px;border-radius:50%;background:#4ade80;flex-shrink:0;animation:tributePulse 2.5s ease-in-out infinite;}
-@keyframes tributePulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.4);box-shadow:0 0 8px rgba(74,222,128,.5)}}
-.tribute-body{flex:1}
-.tribute-label{font-size:.42rem;letter-spacing:.25em;color:#1a6030;font-family:var(--serif);text-transform:uppercase;margin-bottom:1px;}
-.tribute-val{font-family:var(--serif);font-size:.78rem;color:#4ade80}
-.tribute-rate{font-size:.45rem;color:#1a4020;font-style:italic;}
-.tribute-collect{font-family:var(--serif);font-size:.52rem;letter-spacing:.06em;padding:5px 11px;border-radius:14px;cursor:pointer;background:rgba(74,222,128,.08);border:0.5px solid rgba(74,222,128,.25);color:#4ade80;transition:all .2s;white-space:nowrap;}
-.tribute-collect:hover{background:rgba(74,222,128,.2)}
-.rift-doors{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px 14px 0;}
-.rift-door{background:rgba(6,0,14,.6);border:0.5px solid rgba(124,58,237,.15);border-radius:10px;padding:12px 10px;cursor:pointer;transition:all .25s;display:flex;align-items:center;gap:9px;position:relative;overflow:hidden;backdrop-filter:blur(6px);}
-.rift-door::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--door-color,var(--purple));box-shadow:0 0 8px var(--door-color,var(--purple));animation:doorGlow 3s ease-in-out infinite;animation-delay:var(--door-delay,0s);}
-@keyframes doorGlow{0%,100%{opacity:.45;box-shadow:0 0 5px var(--door-color,var(--purple))}50%{opacity:1;box-shadow:0 0 14px var(--door-color,var(--purple)),0 0 22px var(--door-color,var(--purple))}}
-.rift-door:hover{background:rgba(124,58,237,.1);border-color:rgba(192,132,252,.3);transform:translateY(-2px);}
-.rift-door:active{transform:scale(.97)}
-.rd-icon{font-size:1.4rem;flex-shrink:0}
-.rd-body{flex:1;min-width:0}
-.rd-name{font-family:var(--serif);font-size:.65rem;letter-spacing:.1em;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rd-badge{display:inline-block;font-size:.38rem;letter-spacing:.08em;padding:2px 6px;border-radius:7px;font-family:var(--serif);}
-@media(min-width:700px){
-  .sanctum-wrap{flex-direction:row;align-items:stretch;min-height:calc(100vh - 112px);padding-bottom:0;}
-  .sanctum-left{width:210px;flex-shrink:0;display:flex;flex-direction:column;border-right:0.5px solid rgba(124,58,237,.12);background:rgba(6,0,14,.45);backdrop-filter:blur(8px);}
-  .sanctum-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
-  .sanctum-right{width:200px;flex-shrink:0;display:flex;flex-direction:column;border-left:0.5px solid rgba(124,58,237,.12);background:rgba(6,0,14,.45);backdrop-filter:blur(8px);padding:12px 10px;gap:7px;}
-  .rw-identity{padding:18px 14px 10px;}
-  .main-rift{width:min(300px,38vw);height:min(300px,38vw);}
-  .rift-summon-btns{max-width:340px;}
-  .sanctum-status{flex-direction:column;border-top:none;border-bottom:none;border-right:none;}
-  .sstat{border-right:none;border-bottom:0.5px solid rgba(124,58,237,.08);}
-  .sstat:last-child{border-bottom:none}
-  .tribute-strip{flex-direction:column;align-items:flex-start;gap:4px;padding:10px 14px;}
-  .rift-doors{grid-template-columns:1fr;gap:6px;padding:0;}
-  .rift-door{padding:10px 8px;}
-  .mobile-only{display:none}
+    radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.6) 100%),
+    radial-gradient(ellipse at center, rgba(124,58,237,.04) 0%, transparent 60%);
+  animation: vignette-breathe 8s ease-in-out infinite;
 }
 
-/* ══════════════════════════════════════
-   SUMMON SCREEN
-══════════════════════════════════════ */
-#screen-summon{background:var(--bg)}
-#screen-summon::before{
-  content:'';position:fixed;inset:0;z-index:0;
-  background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
-  opacity:.18;pointer-events:none;
-}
-#screen-summon > *{position:relative;z-index:1}
-.summon-inner{padding:16px 16px 30px;max-width:520px;margin:0 auto}
-
-/* ══════════════════════════════════════
-   CODEX SCREEN
-══════════════════════════════════════ */
-#screen-codex::before{
-  content:'';position:fixed;inset:0;z-index:0;
-  background:url('assets/ui/codex_bg.jpg') center center/cover no-repeat;
-  opacity:.16;pointer-events:none;
-}
-#screen-codex > *{position:relative;z-index:1}
-.codex-inner{padding:16px 16px 30px}
-.codex-hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px}
-.codex-title{font-family:var(--deco);font-size:.9rem;letter-spacing:.15em;color:var(--purple)}
-#codex-count{font-size:.7rem;color:var(--muted);font-family:var(--serif)}
-.codex-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-@media(min-width:480px){.codex-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(min-width:700px){.codex-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
-.codex-cell{aspect-ratio:2/3;border-radius:8px;overflow:hidden;position:relative;cursor:pointer;transition:transform .2s}
-.codex-cell:hover{transform:translateY(-3px)}
-.codex-cell.unknown{background:#080014;border:0.5px solid rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-.cc-unknown-art{opacity:.1;font-size:2rem}
-.cc-unknown-name{font-size:.45rem;color:#2a1a4a;font-family:var(--serif)}
-
-/* ══════════════════════════════════════
-   REALMS SCREEN
-══════════════════════════════════════ */
-#screen-realms > *{position:relative;z-index:1}
-.realms-inner{padding:16px 16px 30px}
-.section-title{font-family:var(--deco);font-size:.85rem;letter-spacing:.2em;color:var(--purple);margin-bottom:14px}
-.realms-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(min-width:600px){.realms-grid{grid-template-columns:repeat(3,1fr)}}
-.realm-card{
-  background:rgba(6,0,14,.8);border:0.5px solid var(--border);
-  border-radius:10px;padding:14px 12px;cursor:pointer;
-  transition:all .2s;
-}
-.realm-card:hover{border-color:rgba(192,132,252,.4);transform:translateY(-2px)}
-.realm-card.locked{opacity:.45;cursor:not-allowed}
-.realm-icon{font-size:1.8rem;margin-bottom:6px}
-.realm-name{font-family:var(--serif);font-size:.7rem;letter-spacing:.1em;color:var(--text);margin-bottom:3px}
-.realm-progress{font-size:.55rem;color:var(--muted);font-style:italic;margin-bottom:8px}
-.realm-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
-.realm-bar-fill{height:100%;border-radius:2px;background:var(--purple);transition:width .5s}
-.realm-status{
-  display:inline-block;font-size:.45rem;letter-spacing:.1em;
-  padding:2px 8px;border-radius:10px;margin-top:6px;font-family:var(--serif);
+@keyframes vignette-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .82; }
 }
 
-/* ══════════════════════════════════════
-   GARRISON SCREEN
-══════════════════════════════════════ */
-#screen-garrison > *{position:relative;z-index:1}
-.garrison-inner{padding:16px 16px 30px}
-.garrison-summary{
-  background:rgba(6,0,14,.8);border:0.5px solid rgba(74,222,128,.2);
-  border-radius:10px;padding:14px 16px;margin-bottom:16px;
-  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
-}
-.gsumm-label{font-size:.55rem;letter-spacing:.25em;color:#1a6030;font-family:var(--serif);text-transform:uppercase;margin-bottom:4px}
-.gsumm-val{font-family:var(--deco);font-size:1.4rem;color:#4ade80}
-.gsumm-rate{font-size:.6rem;color:#1a6030;font-style:italic}
-.collect-all{
-  font-family:var(--serif);font-size:.7rem;letter-spacing:.12em;
-  padding:10px 20px;border-radius:20px;cursor:pointer;
-  background:rgba(74,222,128,.15);border:0.5px solid rgba(74,222,128,.4);
-  color:#4ade80;transition:all .2s;
-}
-.collect-all:hover{background:rgba(74,222,128,.3)}
-.garrison-slots{display:flex;flex-direction:column;gap:8px}
-.gslot{
-  background:rgba(6,0,14,.8);border:0.5px solid var(--border);
-  border-radius:8px;padding:10px 14px;
-  display:flex;align-items:center;gap:12px;
-}
-.gslot-art{width:44px;height:62px;border-radius:4px;overflow:hidden;flex-shrink:0;background:#0d0018;position:relative}
-.gslot-art video,.gslot-art img{width:100%;height:100%;object-fit:cover}
-.gslot-art-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;opacity:.3}
-.gslot-info{flex:1}
-.gslot-stage{font-size:.55rem;letter-spacing:.2em;color:var(--muted);font-family:var(--serif);text-transform:uppercase;margin-bottom:2px}
-.gslot-demon{font-family:var(--serif);font-size:.75rem;color:var(--text)}
-.gslot-income{font-size:.6rem;color:#4ade80;margin-top:2px;font-style:italic}
-.gslot-collect{
-  font-family:var(--serif);font-size:.6rem;letter-spacing:.08em;
-  padding:6px 12px;border-radius:15px;cursor:pointer;
-  background:rgba(74,222,128,.1);border:0.5px solid rgba(74,222,128,.3);
-  color:#4ade80;transition:all .2s;flex-shrink:0;
-}
-.gslot-collect:hover{background:rgba(74,222,128,.25)}
-.gslot-empty-msg{color:var(--muted);font-size:.65rem;font-style:italic}
-
-/* ══════════════════════════════════════
-   RIFT WALKER SCREEN
-══════════════════════════════════════ */
-#screen-riftwalk > *{position:relative;z-index:1}
-.rw-inner{padding:16px 16px 30px;max-width:520px;margin:0 auto}
-.rw-hero{
-  width:100%;background:rgba(6,0,14,.8);border:0.5px solid rgba(124,58,237,.35);
-  border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;
-}
-.rw-silhouette{font-size:4rem;opacity:.7;display:block;margin-bottom:8px}
-.rw-name{font-family:var(--deco);font-size:.9rem;letter-spacing:.15em;color:var(--purple);margin-bottom:3px}
-.rw-title{font-size:.6rem;color:var(--muted);font-style:italic;letter-spacing:.1em;font-family:var(--serif)}
-.rw-section{margin-bottom:14px}
-.rw-section-title{
-  font-family:var(--serif);font-size:.6rem;letter-spacing:.3em;color:var(--muted);
-  text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;
-  border-bottom:0.5px solid var(--border);
-}
-.rw-gear-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.rw-gear-slot{
-  background:rgba(6,0,14,.7);border:0.5px solid var(--border);
-  border-radius:7px;padding:10px 10px;
-}
-.rw-gear-name{font-family:var(--serif);font-size:.65rem;color:var(--text);margin-bottom:4px}
-.rw-gear-runes{display:flex;gap:4px;flex-wrap:wrap}
-.rune-dot{width:10px;height:10px;border-radius:50%;background:var(--purple);opacity:.8}
-.rune-dot.empty{background:transparent;border:0.5px solid var(--border)}
-.rw-talent-tree{display:flex;gap:8px}
-.talent-branch{
-  flex:1;background:rgba(6,0,14,.7);border:0.5px solid var(--border);
-  border-radius:7px;padding:10px 8px;text-align:center;cursor:pointer;
-  transition:all .2s;
-}
-.talent-branch:hover{border-color:rgba(192,132,252,.4);background:rgba(124,58,237,.1)}
-.talent-branch.active{border-color:var(--purple);background:rgba(124,58,237,.15)}
-.tb-icon{font-size:1.2rem;display:block;margin-bottom:4px}
-.tb-name{font-family:var(--serif);font-size:.6rem;color:var(--text);display:block;margin-bottom:2px}
-.tb-desc{font-size:.5rem;color:var(--muted);line-height:1.4}
-.rw-stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-.rw-stat{
-  background:rgba(6,0,14,.7);border:0.5px solid var(--border);
-  border-radius:6px;padding:8px;text-align:center;
-}
-.rw-stat-val{font-family:var(--serif);font-size:.85rem;color:var(--purple)}
-.rw-stat-label{font-size:.45rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-top:2px}
-.coming-soon-badge{
-  display:inline-block;font-size:.55rem;letter-spacing:.15em;
-  padding:10px 18px;border-radius:6px;font-family:var(--serif);
-  background:rgba(124,58,237,.1);border:0.5px solid var(--border);
-  color:var(--muted);width:100%;text-align:center;margin-top:8px;
+.ember {
+  position: absolute;
+  width: 2px; height: 2px;
+  background: var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--gold), 0 0 12px var(--gold-deep);
+  opacity: 0;
+  animation: ember-rise linear infinite;
 }
 
-/* ══════════════════════════════════════
-   SHARED COMPONENTS
-══════════════════════════════════════ */
-.section-div{
-  text-align:center;margin:18px 0 12px;position:relative;
-}
-.section-div::before{content:'';position:absolute;top:50%;left:0;right:0;height:0.5px;background:var(--border)}
-.section-div span{
-  position:relative;background:var(--bg);
-  padding:0 12px;font-family:var(--serif);font-size:.6rem;color:var(--muted);letter-spacing:.25em;
+@keyframes ember-rise {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: .8; }
+  90% { opacity: .5; }
+  100% { transform: translateY(-110vh) translateX(var(--drift, 40px)); opacity: 0; }
 }
 
-/* Scroll selector */
-.scroll-selector-wrap{margin:0 0 16px}
-.scroll-shelf{display:flex;gap:7px;overflow-x:auto;padding-bottom:5px}
-.scroll-shelf::-webkit-scrollbar{height:2px}
-.scroll-shelf::-webkit-scrollbar-thumb{background:rgba(192,132,252,.3);border-radius:2px}
-.scroll-item{
-  flex-shrink:0;width:68px;background:rgba(10,2,25,.8);
-  border:0.5px solid var(--border);border-radius:8px;
-  padding:8px 5px 6px;text-align:center;cursor:pointer;transition:all .2s;position:relative;
-}
-.scroll-item:hover:not(.locked){border-color:rgba(192,132,252,.4)}
-.scroll-item.active{background:rgba(20,4,50,.9)}
-.scroll-item.locked{opacity:.35;cursor:not-allowed}
-.scroll-icon{font-size:1.3rem;margin-bottom:4px;display:block}
-.scroll-name{font-family:var(--serif);font-size:.42rem;letter-spacing:.06em;line-height:1.3;color:var(--text);margin-bottom:3px}
-.scroll-cap{font-family:var(--serif);font-size:.36rem;letter-spacing:.1em;padding:1px 4px;border-radius:3px;display:inline-block}
-.scroll-cost{font-size:.36rem;color:var(--muted);margin-top:2px;font-family:var(--body);font-style:italic}
-.scroll-lock-icon{position:absolute;top:3px;right:3px;font-size:.5rem;opacity:.5}
-.scroll-info{
-  background:rgba(10,2,25,.7);border:0.5px solid var(--border);
-  border-radius:8px;padding:9px 12px;margin-top:8px;
-}
-.si-name{font-family:var(--serif);font-size:.7rem;letter-spacing:.1em;margin-bottom:3px}
-.si-desc{font-size:.6rem;color:var(--muted);font-style:italic;margin-bottom:7px;line-height:1.4}
-.si-rate-row{display:flex;align-items:center;gap:7px;margin-bottom:3px}
-.si-rate-bar{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
-.si-rate-fill{height:100%;border-radius:2px}
-.si-rate-label{font-size:.52rem;color:var(--muted);width:88px;font-family:sans-serif}
-.si-rate-val{font-size:.52rem;width:30px;text-align:right;font-family:sans-serif}
+/* ───────────────────────── App container ───────────────────────── */
 
-/* Pity bars */
-.pity-section{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
-.pity-bar{background:rgba(255,255,255,.025);border:0.5px solid var(--border);border-radius:7px;padding:9px 13px}
-.pity-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.pity-name{font-size:.65rem;color:var(--muted);letter-spacing:.04em;font-family:var(--serif)}
-.pity-count{font-family:var(--serif);font-size:.75rem}
-.pity-track{height:4px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
-.pity-fill{height:100%;border-radius:3px;transition:width .5s}
-.pity-bar.epic .pity-count{color:var(--purple)}
-.pity-bar.epic .pity-fill{background:linear-gradient(90deg,#4c1d95,var(--purple))}
-.pity-bar.legendary .pity-count{color:var(--crimson)}
-.pity-bar.legendary .pity-fill{background:linear-gradient(90deg,#9f1239,var(--crimson))}
-
-/* Pull buttons */
-.pull-buttons{display:flex;gap:12px;justify-content:center;margin:16px 0}
-.pull-btn{
-  font-family:var(--serif);font-size:.8rem;font-weight:600;
-  letter-spacing:.1em;padding:13px 24px;border-radius:7px;cursor:pointer;
-  transition:all .15s;min-width:150px;text-align:center;
-}
-.pull-btn:active:not(:disabled){transform:scale(.97)}
-.pull-btn-1{
-  background:linear-gradient(135deg,#18003a,#2c0060);
-  color:var(--purple);border:0.5px solid rgba(192,132,252,.35);
-}
-.pull-btn-1:hover:not(:disabled){border-color:rgba(192,132,252,.6);background:linear-gradient(135deg,#25005a,#420090)}
-.pull-btn-10{
-  background:linear-gradient(135deg,#1c0a00,#3c1800);
-  color:var(--gold);border:0.5px solid rgba(251,191,36,.3);
-}
-.pull-btn-10:hover:not(:disabled){border-color:rgba(251,191,36,.55);background:linear-gradient(135deg,#2e1200,#5a2800)}
-.pull-btn:disabled{opacity:.28;cursor:not-allowed}
-.btn-label{display:block}
-.btn-cost{display:block;font-size:.62rem;font-weight:400;opacity:.6;margin-top:2px}
-
-/* ══════════════════════════════════════
-   PULL OVERLAY
-══════════════════════════════════════ */
-#pull-overlay{
-  display:none;position:fixed;inset:0;z-index:300;overflow:hidden;
-  flex-direction:column;align-items:center;justify-content:flex-end;
-  padding-bottom:60px;
-}
-#pull-overlay.active{display:flex}
-#pull-overlay::before{
-  content:'';position:absolute;inset:0;
-  background:#06000e url('assets/ui/summon_scene.jpg') center 60%/cover no-repeat;
-  z-index:0;
-}
-@media(min-aspect-ratio:3/4){
-  #pull-overlay::before{
-    background-image:url('assets/ui/summon_scene_wide.jpg');
-    background-position:center 65%;
-  }
-}
-#pull-overlay::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(to top,rgba(6,0,14,.85) 0%,rgba(6,0,14,.1) 55%,transparent 100%);
-  z-index:1;pointer-events:none;
-}
-#circle-glow{
-  position:absolute;bottom:20%;left:50%;transform:translateX(-50%);
-  width:min(340px,80vw);height:min(340px,80vw);border-radius:50%;
-  background:radial-gradient(circle,rgba(192,132,252,.55) 0%,rgba(124,58,237,.25) 45%,transparent 70%);
-  z-index:2;pointer-events:none;
-  animation:circleBreath 2.4s ease-in-out infinite;
-}
-@media(min-aspect-ratio:3/4){#circle-glow{bottom:22%;width:min(420px,50vw);height:min(420px,50vw)}}
-@keyframes circleBreath{0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.08)}}
-#card-stage{position:absolute;inset:0;z-index:3;pointer-events:none}
-.stage-card{position:absolute;pointer-events:none;transform-origin:center bottom;transform:translate(-50%,-50%) scale(0);opacity:0;will-change:transform,opacity}
-.stage-card.risen{pointer-events:auto}
-#post-pull{z-index:4;position:relative}
-.post-pull{display:none;gap:12px;margin-top:20px;flex-wrap:wrap;justify-content:center}
-.ppbtn{font-family:var(--serif);font-size:.8rem;font-weight:600;letter-spacing:.1em;padding:10px 22px;border-radius:6px;border:0.5px solid;cursor:pointer;transition:all .2s}
-.ppbtn-p{border-color:var(--purple);background:rgba(192,132,252,.1);color:var(--purple)}
-.ppbtn-p:hover{background:rgba(192,132,252,.2)}
-.ppbtn-s{border-color:var(--muted);background:rgba(255,255,255,.02);color:var(--muted)}
-.ppbtn-s:hover{border-color:var(--text);color:var(--text)}
-
-/* Flip card */
-.fc-wrap{perspective:1000px}
-.fc{position:relative;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.4,0,.2,1);width:100%;height:100%;border-radius:9px}
-.fc.flipped{transform:rotateY(180deg)}
-.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:9px;overflow:hidden}
-.fc-back{display:flex;align-items:center;justify-content:center;background:linear-gradient(155deg,#0d0020,#1a0038);border:0.5px solid rgba(192,132,252,.2)}
-.fc-back svg{width:100%;height:100%}
-.fc-front{transform:rotateY(180deg);padding:0}
-
-/* Flash */
-#tier-flash{position:fixed;inset:0;z-index:400;pointer-events:none;opacity:0;transition:opacity .12s}
-
-/* Animations */
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
-.fade-in{animation:fadeIn .4s ease both}
-
-/* ══════════════════════════════════════
-   SPLASH SCREEN — shown every load, dismissed on Walk the Rift
-══════════════════════════════════════ */
-#splash{
-  position:fixed;inset:0;z-index:500;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:var(--bg);
-  overflow:hidden;
-  opacity:1;
-  transition:opacity .7s ease;
-}
-#splash.fading{opacity:0;pointer-events:none;}
-#splash::before{
-  content:'';position:absolute;inset:0;z-index:0;
-  background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
-  opacity:.16;
-}
-#splash::after{
-  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
-  background:
-    radial-gradient(ellipse 55% 45% at 50% 45%,rgba(234,88,12,.12) 0%,transparent 70%),
-    radial-gradient(ellipse at center,transparent 40%,rgba(6,0,14,.9) 100%);
-}
-#splash-sigils{position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none}
-.splash-inner{
-  position:relative;z-index:3;
-  display:flex;flex-direction:column;align-items:center;
-  padding:40px 24px;
-}
-.splash-logo{
-  width:min(600px,88vw);
-  max-width:100%;
-  height:auto;
-  display:block;
-  margin-bottom:56px;
-  user-select:none;
-  -webkit-user-drag:none;
-  animation:splashLogoBreath 4s ease-in-out infinite;
-  filter:drop-shadow(0 0 40px rgba(234,88,12,.35)) drop-shadow(0 0 80px rgba(124,58,237,.18));
-}
-@keyframes splashLogoBreath{
-  0%,100%{filter:drop-shadow(0 0 40px rgba(234,88,12,.35)) drop-shadow(0 0 80px rgba(124,58,237,.18));transform:scale(1);}
-  50%{filter:drop-shadow(0 0 60px rgba(234,88,12,.55)) drop-shadow(0 0 120px rgba(124,58,237,.28));transform:scale(1.015);}
-}
-.splash-btn{
-  font-family:var(--serif);
-  font-size:.85rem;font-weight:600;letter-spacing:.22em;
-  padding:16px 40px;
-  background:rgba(124,58,237,.12);
-  border:0.5px solid rgba(192,132,252,.45);
-  color:var(--purple);
-  border-radius:4px;
-  cursor:pointer;
-  text-transform:uppercase;
-  transition:all .25s ease;
-  box-shadow:0 0 24px rgba(124,58,237,.18);
-  position:relative;
-  overflow:hidden;
-}
-.splash-btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(192,132,252,.25),transparent);
-  transform:translateX(-100%);
-  transition:transform .6s ease;
-}
-.splash-btn:hover{
-  background:rgba(124,58,237,.22);
-  border-color:var(--purple);
-  color:#e9d5ff;
-  box-shadow:0 0 36px rgba(192,132,252,.4);
-  transform:translateY(-1px);
-}
-.splash-btn:hover::before{transform:translateX(100%);}
-.splash-btn:active{transform:translateY(0) scale(.98);}
-.splash-hint{
-  font-family:var(--body);
-  font-size:.6rem;font-style:italic;
-  color:var(--muted);
-  margin-top:20px;
-  opacity:.7;
-  letter-spacing:.05em;
-}
-/* Hide the mini player until splash is dismissed */
-body:not(.game-started) .music-mini{display:none;}
-
-/* ══════════════════════════════════════
-   MUSIC — mini player (flex child of #shell)
-══════════════════════════════════════ */
-.music-mini{
-  flex-shrink:0;
-  height:60px;
-  display:flex;align-items:center;gap:12px;
-  padding:10px 14px;
-  background:linear-gradient(180deg,rgba(6,0,14,.88) 0%,rgba(6,0,14,.98) 100%);
-  border-top:0.5px solid var(--border);
-  user-select:none;
-}
-.mm-tap{
-  flex:1;min-width:0;
-  display:flex;align-items:center;gap:12px;
-  cursor:pointer;
-  border-radius:6px;padding:4px;margin:-4px;
-  transition:background .15s ease;
-}
-.mm-tap:hover{background:rgba(124,58,237,.08);}
-.mm-tap:focus-visible{outline:1px solid var(--purple);outline-offset:2px;}
-.mm-art{
-  width:42px;height:42px;flex-shrink:0;
-  border-radius:6px;
-  background:#1a0a2e;
-  border:0.5px solid rgba(124,58,237,.35);
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;
-}
-.mm-art svg{width:22px;height:22px;}
-.mm-meta{flex:1;min-width:0;}
-.mm-title{
-  font-family:var(--serif);
-  font-size:12px;letter-spacing:.08em;
-  color:#e9d5ff;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.mm-sub{
-  font-size:10px;letter-spacing:.12em;
-  color:var(--muted);
-  margin-top:2px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.mm-btn{
-  width:32px;height:32px;flex-shrink:0;
-  border-radius:50%;
-  background:transparent;
-  border:0.5px solid rgba(124,58,237,.3);
-  color:var(--purple);
-  display:flex;align-items:center;justify-content:center;
-  padding:0;cursor:pointer;
-  transition:background .15s,border-color .15s,color .15s;
-}
-.mm-btn:hover{
-  background:rgba(124,58,237,.12);
-  border-color:rgba(124,58,237,.55);
-  color:var(--gold);
-}
-.mm-btn:active{transform:scale(.94);}
-.mm-btn svg{width:14px;height:14px;}
-
-/* ══════════════════════════════════════
-   MUSIC — full playlist screen
-══════════════════════════════════════ */
-.music-screen{
-  position:fixed;inset:0;
-  background:var(--bg);
-  z-index:200;
-  display:flex;flex-direction:column;
-  transform:translateY(100%);
-  transition:transform .32s cubic-bezier(.2,.8,.2,1);
-  overflow:hidden;
-  pointer-events:none;
-}
-.music-screen.open{transform:translateY(0);pointer-events:auto;}
-.ms-header{
-  height:56px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 18px;
-  border-bottom:0.5px solid var(--border);
-}
-.ms-close{
-  background:transparent;border:none;
-  color:var(--purple);
-  width:32px;height:32px;
-  display:flex;align-items:center;justify-content:center;
-  padding:0;cursor:pointer;border-radius:50%;
-  transition:background .15s;
-}
-.ms-close:hover{background:rgba(124,58,237,.12);}
-.ms-title-bar{
-  font-family:var(--serif);
-  font-size:13px;letter-spacing:.25em;
-  color:var(--gold);
-  font-weight:500;
-  margin:0;
-}
-.ms-mute{
-  width:32px;height:32px;
-  border-radius:50%;
-  background:transparent;
-  border:0.5px solid rgba(124,58,237,.3);
-  color:var(--purple);
-  display:flex;align-items:center;justify-content:center;
-  padding:0;cursor:pointer;
-  transition:border-color .15s,color .15s;
-}
-.ms-mute[aria-pressed="true"]{
-  color:var(--muted);
-  border-color:rgba(74,45,107,.3);
-}
-.ms-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-
-.ms-hero{padding:28px 20px 20px;text-align:center;}
-.ms-art-lg{
-  width:180px;height:180px;
-  margin:0 auto 20px;
-  border-radius:8px;
-  background:radial-gradient(circle at 50% 40%,#2a0f4a 0%,#0a0418 70%);
-  border:0.5px solid rgba(124,58,237,.35);
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;
-}
-.ms-art-lg svg{width:120px;height:120px;}
-.ms-now-title{
-  font-family:var(--serif);
-  font-size:18px;letter-spacing:.12em;
-  color:#e9d5ff;
-  margin-bottom:4px;
-}
-.ms-now-label{font-size:10px;letter-spacing:.2em;color:var(--muted);}
-
-.ms-controls{
-  display:flex;align-items:center;justify-content:center;
-  gap:20px;margin-top:18px;
-}
-.ms-ctrl{
-  width:36px;height:36px;
-  border-radius:50%;
-  background:transparent;
-  border:0.5px solid rgba(124,58,237,.3);
-  color:var(--purple);
-  display:flex;align-items:center;justify-content:center;
-  padding:0;cursor:pointer;
-  transition:all .15s;
-}
-.ms-ctrl:hover{border-color:var(--gold);color:var(--gold);}
-.ms-ctrl:active{transform:scale(.92);}
-.ms-ctrl svg{width:14px;height:14px;}
-.ms-ctrl-play{
-  width:52px;height:52px;
-  background:#1a0a2e;
-  border-color:var(--gold);
-  color:var(--gold);
-}
-.ms-ctrl-play svg{width:18px;height:18px;}
-
-.ms-vol{display:flex;align-items:center;gap:10px;margin-top:20px;padding:0 8px;}
-.ms-vol input[type="range"]{
-  flex:1;
-  -webkit-appearance:none;appearance:none;
-  height:2px;background:rgba(124,58,237,.2);border-radius:1px;
-  outline:none;cursor:pointer;
-}
-.ms-vol input[type="range"]::-webkit-slider-thumb{
-  -webkit-appearance:none;appearance:none;
-  width:10px;height:10px;border-radius:50%;
-  background:var(--gold);border:none;cursor:pointer;
-}
-.ms-vol input[type="range"]::-moz-range-thumb{
-  width:10px;height:10px;border-radius:50%;
-  background:var(--gold);border:none;cursor:pointer;
+#app {
+  position: relative;
+  width: 100%; height: 100vh;
+  z-index: 1;
 }
 
-.ms-list{padding:0 20px 40px;}
-.ms-section{
-  font-family:var(--serif);
-  font-size:10px;letter-spacing:.25em;
-  color:var(--gold);
-  padding:12px 4px;
-  border-top:0.5px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
+.screen {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 900ms ease;
+  padding: 4vh 6vw;
 }
-.ms-section-count{color:var(--muted);letter-spacing:.15em;}
-.ms-track{
-  display:flex;align-items:center;
-  padding:10px 6px;
-  border-radius:4px;
-  margin-bottom:4px;
-  transition:background .15s;
-}
-.ms-track.playing{background:rgba(124,58,237,.06);}
-.ms-track.locked{opacity:.45;}
-.ms-track-indicator{
-  width:3px;height:28px;
-  margin-right:12px;
-  border-radius:1px;
-  background:transparent;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-}
-.ms-track.playing .ms-track-indicator{background:var(--gold);}
-.ms-track.locked .ms-track-indicator svg{width:11px;height:11px;fill:var(--muted);margin-left:-2px;}
-.ms-track-info{flex:1;min-width:0;}
-.ms-track-name{
-  font-family:var(--serif);
-  font-size:13px;letter-spacing:.08em;
-  color:#e9d5ff;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.ms-track.locked .ms-track-name{color:var(--muted);}
-.ms-track-cond{
-  font-size:10px;letter-spacing:.08em;
-  color:var(--muted);
-  margin-top:2px;
-  font-style:italic;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.ms-toggle{
-  width:36px;height:20px;
-  border-radius:10px;
-  background:rgba(124,58,237,.15);
-  border:none;padding:0;
-  position:relative;
-  cursor:pointer;flex-shrink:0;
-  transition:background .18s;
-}
-.ms-toggle::after{
-  content:'';position:absolute;
-  left:2px;top:2px;
-  width:16px;height:16px;
-  border-radius:50%;
-  background:rgba(107,91,122,.6);
-  transition:left .18s,background .18s;
-}
-.ms-toggle.on{background:var(--gold);}
-.ms-toggle.on::after{left:18px;background:var(--bg);}
-.ms-toggle:disabled{cursor:not-allowed;}
 
-/* Unlock toast */
-.music-toast{
-  position:fixed;top:70px;right:16px;
-  background:linear-gradient(135deg,rgba(10,2,25,.95),rgba(28,10,46,.95));
-  border:0.5px solid rgba(251,191,36,.5);
-  border-radius:8px;
-  padding:10px 16px;
-  z-index:350;
-  transform:translateX(calc(100% + 24px));
-  transition:transform .4s cubic-bezier(.2,.8,.2,1);
-  box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 20px rgba(251,191,36,.2);
-  pointer-events:none;
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
 }
-.music-toast.show{transform:translateX(0);}
-.mt-label{
-  font-family:var(--serif);
-  font-size:9px;letter-spacing:.25em;
-  color:var(--gold);
-  margin-bottom:3px;
+
+.step {
+  position: absolute;
+  width: 100%; max-width: 960px;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 2rem;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 900ms ease, transform 900ms ease;
 }
-.mt-name{
-  font-family:var(--serif);
-  font-size:13px;letter-spacing:.08em;
-  color:#e9d5ff;
+
+.step.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ───────────────────────── Shared elements ───────────────────────── */
+
+.step-mark {
+  font-family: var(--serif);
+  font-size: .72rem;
+  letter-spacing: .5em;
+  color: var(--purple);
+  opacity: .5;
+  text-transform: uppercase;
+  margin-bottom: 2.2rem;
+  position: relative;
+}
+
+.step-mark::before, .step-mark::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 3rem;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border));
+}
+
+.step-mark::before { right: calc(100% + 1.2rem); background: linear-gradient(to left, var(--border), transparent); }
+.step-mark::after { left: calc(100% + 1.2rem); }
+
+.prompt {
+  font-family: var(--serif-ornate);
+  font-weight: 400;
+  font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+  letter-spacing: .08em;
+  color: #f5e8d0;
+  text-align: center;
+  margin-bottom: .6rem;
+  text-shadow: 0 0 24px rgba(124,58,237,.2);
+}
+
+.flavor {
+  font-family: var(--body);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: rgba(229, 214, 240, .55);
+  text-align: center;
+  margin-bottom: 3rem;
+  max-width: 32em;
+  line-height: 1.7;
+}
+
+.btn-advance {
+  margin-top: 3rem;
+  font-family: var(--serif);
+  font-size: .82rem;
+  letter-spacing: .42em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: transparent;
+  border: 1px solid var(--border-gold);
+  padding: 1rem 2.8rem;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 600ms ease, background 300ms ease, border-color 300ms ease, letter-spacing 400ms ease, color 300ms ease;
+  position: relative;
+}
+
+.btn-advance::before, .btn-advance::after {
+  content: '✦';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .6rem;
+  color: var(--gold-deep);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.btn-advance::before { left: .9rem; }
+.btn-advance::after { right: .9rem; }
+
+.btn-advance.ready {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.btn-advance:hover {
+  background: rgba(251,191,36,.06);
+  border-color: var(--gold);
+  color: #fef3c7;
+  letter-spacing: .48em;
+}
+
+.btn-advance:hover::before, .btn-advance:hover::after { opacity: .7; }
+
+/* ───────────────────────── Step 1: Name ───────────────────────── */
+
+.name-field {
+  width: 100%;
+  max-width: 28rem;
+  text-align: center;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--gold);
+  font-family: var(--serif);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 500;
+  letter-spacing: .14em;
+  padding: .8rem 0;
+  outline: none;
+  caret-color: var(--gold);
+  text-shadow: 0 0 18px rgba(251,191,36,.2);
+  transition: border-color 500ms ease, text-shadow 500ms ease;
+}
+
+.name-field::placeholder {
+  color: rgba(229,214,240,.22);
+  font-style: italic;
+  letter-spacing: .08em;
+  font-weight: 400;
+}
+
+.name-field:focus {
+  border-color: var(--gold-deep);
+  text-shadow: 0 0 32px rgba(251,191,36,.35);
+}
+
+.name-field.has-value {
+  border-color: var(--gold);
+}
+
+/* ───────────────────────── Step 2: Titles ───────────────────────── */
+
+.title-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  width: 100%;
+  max-width: 900px;
+}
+
+.title-card {
+  padding: 1.6rem 1.2rem;
+  background: linear-gradient(180deg, rgba(124,58,237,.03), rgba(124,58,237,.01));
+  border: 1px solid var(--border);
+  cursor: pointer;
+  text-align: center;
+  transition: all 500ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.title-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(192,132,252,.08) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+
+.title-card:hover::before { opacity: 1; }
+
+.title-card:hover {
+  border-color: rgba(192,132,252,.5);
+  transform: translateY(-2px);
+}
+
+.title-card.selected {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(251,191,36,.06), rgba(251,191,36,.02));
+}
+
+.title-card.selected::before {
+  background: radial-gradient(ellipse at center, rgba(251,191,36,.12) 0%, transparent 70%);
+  opacity: 1;
+}
+
+.title-name {
+  font-family: var(--serif-ornate);
+  font-weight: 400;
+  font-size: 1.25rem;
+  letter-spacing: .14em;
+  color: #f5e8d0;
+  margin-bottom: .6rem;
+  position: relative;
+  transition: color 400ms ease, text-shadow 400ms ease;
+}
+
+.title-card:hover .title-name { color: #fff; text-shadow: 0 0 16px rgba(192,132,252,.4); }
+.title-card.selected .title-name { color: var(--gold); text-shadow: 0 0 20px rgba(251,191,36,.5); }
+
+.title-flavor {
+  font-family: var(--body);
+  font-style: italic;
+  font-size: .92rem;
+  color: rgba(229,214,240,.5);
+  line-height: 1.55;
+  position: relative;
+}
+
+/* ───────────────────────── Step 3: Sigils ───────────────────────── */
+
+.sigil-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+  width: 100%;
+  max-width: 640px;
+}
+
+.sigil-slot {
+  aspect-ratio: 1 / 1;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+  background: radial-gradient(circle at center, rgba(124,58,237,.04), transparent 65%);
+  cursor: pointer;
+  position: relative;
+  transition: all 500ms ease;
+  overflow: hidden;
+}
+
+.sigil-slot::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle at center, rgba(192,132,252,.25) 0%, transparent 55%);
+  opacity: 0;
+  transition: opacity 600ms ease;
+  pointer-events: none;
+}
+
+.sigil-slot:hover::before { opacity: 1; }
+
+.sigil-slot:hover {
+  border-color: rgba(192,132,252,.6);
+}
+
+.sigil-slot.selected {
+  border-color: var(--gold);
+  background: radial-gradient(circle at center, rgba(251,191,36,.1), transparent 65%);
+}
+
+.sigil-slot.selected::before {
+  background: radial-gradient(circle at center, rgba(251,191,36,.28) 0%, transparent 55%);
+  opacity: 1;
+}
+
+.sigil-slot svg {
+  width: 62%;
+  height: 62%;
+  stroke: rgba(229,214,240,.75);
+  fill: none;
+  stroke-width: 1.2;
+  position: relative;
+  z-index: 1;
+  animation: sigil-breathe 6s ease-in-out infinite;
+  transition: stroke 500ms ease, filter 500ms ease;
+}
+
+@keyframes sigil-breathe {
+  0%, 100% { opacity: .75; }
+  50% { opacity: 1; }
+}
+
+.sigil-slot:hover svg {
+  stroke: var(--purple);
+  filter: drop-shadow(0 0 8px rgba(192,132,252,.6));
+}
+
+.sigil-slot.selected svg {
+  stroke: var(--gold);
+  filter: drop-shadow(0 0 10px rgba(251,191,36,.6));
+}
+
+.sigil-name {
+  position: absolute;
+  bottom: .45rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--serif);
+  font-size: .6rem;
+  letter-spacing: .32em;
+  color: rgba(229,214,240,.4);
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  transition: color 400ms ease;
+}
+
+.sigil-slot:hover .sigil-name { color: var(--purple); }
+.sigil-slot.selected .sigil-name { color: var(--gold); }
+
+/* ───────────────────────── Step 4: Cinematic ───────────────────────── */
+
+#step-4 {
+  max-width: none;
+  padding: 0;
+}
+
+.cinematic-dim {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center bottom, rgba(127,29,29,.18) 0%, var(--bg-deep) 70%);
+  opacity: 0;
+  transition: opacity 1500ms ease;
+  pointer-events: none;
+}
+
+.cinematic-dim.active { opacity: 1; }
+
+.scroll-container {
+  position: absolute;
+  left: 50%; bottom: 0;
+  transform: translate(-50%, 100vh) rotate(-2deg);
+  width: min(380px, 62vw);
+  transition: transform 2200ms cubic-bezier(.22, 1, .36, 1);
+  filter: drop-shadow(0 0 28px rgba(251,191,36,.18)) drop-shadow(0 0 60px rgba(127,29,29,.25));
+}
+
+.scroll-container.active {
+  transform: translate(-50%, -28vh) rotate(1deg);
+}
+
+.scroll-container svg { width: 100%; height: auto; display: block; }
+
+.narrator {
+  position: absolute;
+  left: 50%;
+  bottom: 16vh;
+  transform: translateX(-50%);
+  font-family: var(--body);
+  font-style: italic;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  color: rgba(245,232,208,.88);
+  text-align: center;
+  letter-spacing: .06em;
+  line-height: 1.8;
+  max-width: 36em;
+  opacity: 0;
+  transition: opacity 1400ms ease;
+  text-shadow: 0 0 20px rgba(0,0,0,.8), 0 0 40px rgba(127,29,29,.3);
+}
+
+.narrator.active { opacity: 1; }
+
+.narrator-line-1 {
+  display: block;
+  font-family: var(--serif-ornate);
+  font-size: .78em;
+  letter-spacing: .18em;
+  color: var(--gold);
+  text-transform: uppercase;
+  font-style: normal;
+  margin-bottom: .8rem;
+  opacity: 0;
+  transition: opacity 1200ms ease 800ms;
+}
+
+.narrator.active .narrator-line-1 { opacity: 1; }
+
+.enter-rift {
+  position: absolute;
+  left: 50%;
+  bottom: 6vh;
+  transform: translateX(-50%);
+  font-family: var(--serif);
+  font-size: .85rem;
+  letter-spacing: .5em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: transparent;
+  border: 1px solid var(--border-gold);
+  padding: 1.1rem 3.2rem;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1200ms ease 2600ms, background 300ms ease, letter-spacing 400ms ease, border-color 300ms ease;
+}
+
+.enter-rift.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.enter-rift:hover {
+  background: rgba(251,191,36,.08);
+  border-color: var(--gold);
+  letter-spacing: .58em;
+}
+
+/* ───────────────────────── Hub placeholder ───────────────────────── */
+
+#hub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.hub-title {
+  font-family: var(--serif-ornate);
+  font-weight: 900;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  letter-spacing: .28em;
+  color: var(--gold);
+  text-shadow: 0 0 32px rgba(251,191,36,.4);
+}
+
+.hub-sub {
+  font-family: var(--body);
+  font-style: italic;
+  color: rgba(229,214,240,.55);
+  margin-bottom: 1rem;
+}
+
+.hub-card {
+  border: 1px solid var(--border);
+  padding: 2rem 3rem;
+  background: linear-gradient(180deg, rgba(124,58,237,.04), rgba(124,58,237,.01));
+  text-align: center;
+  min-width: 320px;
+}
+
+.hub-card .row { margin: .4rem 0; }
+.hub-card .label {
+  font-family: var(--serif);
+  font-size: .68rem;
+  letter-spacing: .32em;
+  color: var(--purple);
+  text-transform: uppercase;
+  opacity: .7;
+}
+.hub-card .value {
+  font-family: var(--serif-ornate);
+  font-size: 1.1rem;
+  letter-spacing: .1em;
+  color: #f5e8d0;
+  margin-top: .3rem;
+}
+
+.hub-card .hub-sigil {
+  width: 90px; height: 90px;
+  margin: 1.2rem auto .4rem;
+}
+.hub-card .hub-sigil svg {
+  width: 100%; height: 100%;
+  stroke: var(--gold);
+  fill: none;
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 12px rgba(251,191,36,.5));
+}
+
+.reset-link {
+  margin-top: 1.6rem;
+  font-family: var(--serif);
+  font-size: .62rem;
+  letter-spacing: .32em;
+  color: rgba(229,214,240,.3);
+  text-transform: uppercase;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: color 300ms ease;
+}
+.reset-link:hover { color: var(--crimson); }
+
+/* ───────────────────────── Boot fade ───────────────────────── */
+
+#boot-veil {
+  position: fixed; inset: 0;
+  background: #000;
+  z-index: 10;
+  transition: opacity 1600ms ease 400ms;
+  pointer-events: none;
+}
+
+body.ready #boot-veil { opacity: 0; }
+
+/* ───────────────────────── Responsive ───────────────────────── */
+
+@media (max-width: 640px) {
+  .title-grid { grid-template-columns: repeat(2, 1fr); }
+  .sigil-grid { grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 420px; }
+  .step-mark::before, .step-mark::after { width: 1.6rem; }
+  .narrator { bottom: 12vh; }
+  .scroll-container.active { transform: translate(-50%, -22vh) rotate(1deg); }
 }
 </style>
 </head>
+
 <body>
 
-<!-- ── SPLASH SCREEN (dismissed on Walk the Rift) ── -->
-<div id="splash">
-  <div id="splash-sigils"></div>
-  <div class="splash-inner">
-    <img class="splash-logo" src="assets/ui/infernum_logo.png" alt="INFERNUM" />
-    <button class="splash-btn" id="splash-btn" type="button">Walk the Rift</button>
-    <div class="splash-hint">The wound between worlds awaits</div>
-  </div>
+<!-- Boot veil - fades out after load -->
+<div id="boot-veil"></div>
+
+<!-- Ambient background layer -->
+<div id="ambient">
+  <svg class="ambient-sigil" viewBox="-200 -200 400 400" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="var(--purple)" fill="none" stroke-width=".8">
+      <circle r="180"/>
+      <circle r="140"/>
+      <circle r="100"/>
+      <polygon points="0,-150 142.65,46.35 88.17,121.35 -88.17,121.35 -142.65,46.35" />
+      <polygon points="0,150 -142.65,-46.35 -88.17,-121.35 88.17,-121.35 142.65,-46.35" />
+      <!-- rune marks -->
+      <g stroke-width=".6" opacity=".6">
+        <line x1="-180" y1="0" x2="-200" y2="0"/>
+        <line x1="180" y1="0" x2="200" y2="0"/>
+        <line x1="0" y1="-180" x2="0" y2="-200"/>
+        <line x1="0" y1="180" x2="0" y2="200"/>
+      </g>
+    </g>
+  </svg>
+  <div class="vignette"></div>
+  <!-- embers injected by JS -->
 </div>
 
-<div id="global-bg"></div>
-<div id="global-bg-vignette"></div>
-<div id="tier-flash"></div>
+<!-- App -->
+<div id="app">
 
-<!-- ── PULL OVERLAY ── -->
-<div id="pull-overlay">
-  <div id="circle-glow"></div>
-  <div id="card-stage"></div>
-  <div id="pull-container"></div>
-  <div id="post-pull" class="post-pull">
-    <button class="ppbtn ppbtn-p" id="btn-again">◆ Summon Again</button>
-    <button class="ppbtn ppbtn-s" id="btn-close-pull">Close</button>
-  </div>
-</div>
+  <!-- ═════════════ CHARACTER CREATION ═════════════ -->
+  <div id="creation" class="screen">
 
-<!-- ── SHELL ── -->
-<div id="shell">
-  <!-- TOP BAR -->
-  <div id="topbar">
-    <div>
-      <div class="logo-mark">INF<span>E</span>RNUM</div>
-      <span class="logo-sub">ABYSSAL SANCTUM</span>
+    <!-- STEP 1 — NAME -->
+    <div class="step" id="step-1">
+      <div class="step-mark">I · The Naming</div>
+      <h1 class="prompt">Speak your name, Rift Walker</h1>
+      <p class="flavor">The rift will remember what you call yourself. Choose carefully — this name is bound to every demon you will ever summon.</p>
+      <input
+        type="text"
+        class="name-field"
+        id="name-input"
+        placeholder="enter your name"
+        maxlength="24"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="btn-advance" id="advance-1" data-step="1">Proceed</button>
     </div>
-    <div class="topbar-right">
-      <div id="shard-display" onclick="addDemoShards()">
-        <span class="shard-gem">◆</span>
-        <div>
-          <div id="shard-count">1,200</div>
-          <span class="shard-add">+ Add Demo</span>
+
+    <!-- STEP 2 — TITLE -->
+    <div class="step" id="step-2">
+      <div class="step-mark">II · The Title</div>
+      <h1 class="prompt">What are you, truly?</h1>
+      <p class="flavor">Every Rift Walker carries a wound that brought them here. The one you name below is the one the demons will see first.</p>
+      <div class="title-grid" id="title-grid">
+        <div class="title-card" data-title="The Seeker">
+          <div class="title-name">The Seeker</div>
+          <div class="title-flavor">Drawn by the hum of things unseen.</div>
+        </div>
+        <div class="title-card" data-title="The Broken">
+          <div class="title-name">The Broken</div>
+          <div class="title-flavor">Shattered once. Now you sharpen the pieces.</div>
+        </div>
+        <div class="title-card" data-title="The Hollow">
+          <div class="title-name">The Hollow</div>
+          <div class="title-flavor">Empty enough that the rift finally spoke back.</div>
+        </div>
+        <div class="title-card" data-title="The First">
+          <div class="title-name">The First</div>
+          <div class="title-flavor">Before the others. Before the warning.</div>
+        </div>
+        <div class="title-card" data-title="The Unnamed">
+          <div class="title-name">The Unnamed</div>
+          <div class="title-flavor">Your name was taken. You came to take it back.</div>
+        </div>
+        <div class="title-card" data-title="The Bound">
+          <div class="title-name">The Bound</div>
+          <div class="title-flavor">Tethered to something older than regret.</div>
         </div>
       </div>
-      <div id="player-level">LVL 1</div>
+      <button class="btn-advance" id="advance-2" data-step="2">Proceed</button>
     </div>
-  </div>
 
-  <!-- CONTENT -->
-  <div id="content">
-
-    <!-- HUB -->
-    <div id="screen-hub" class="screen active">
-      <div id="hub-sigils"></div>
-      <div class="sanctum-wrap">
-
-        <!-- DESKTOP LEFT: identity + stats + tribute -->
-        <div class="sanctum-left">
-          <div class="rw-identity">
-            <div class="rw-identity-title">You are</div>
-            <div class="rw-identity-name">Rift Walker</div>
-            <div class="rw-identity-sub">The wound between worlds</div>
-          </div>
-          <div class="sanctum-status">
-            <div class="sstat" onclick="switchScreen('codex')">
-              <div class="sstat-val" id="stat-bound">0</div>
-              <div class="sstat-label">Bound</div>
-            </div>
-            <div class="sstat" onclick="switchScreen('realms')">
-              <div class="sstat-val" id="stat-stages">0</div>
-              <div class="sstat-label">Conquered</div>
-            </div>
-            <div class="sstat" onclick="switchScreen('garrison')">
-              <div class="sstat-val" id="stat-garrison">0</div>
-              <div class="sstat-label">Garrisons</div>
-            </div>
-            <div class="sstat">
-              <div class="sstat-val">1</div>
-              <div class="sstat-label">RW Level</div>
-            </div>
-          </div>
-          <div class="tribute-strip">
-            <div class="tribute-pulse"></div>
-            <div class="tribute-body">
-              <div class="tribute-label">Tribute flowing in</div>
-              <div class="tribute-val" id="hub-income">◆ 0</div>
-              <div class="tribute-rate" id="hub-rate">No garrisons active</div>
-            </div>
-            <button class="tribute-collect" onclick="collectAll()">Collect</button>
-          </div>
-        </div>
-
-        <!-- CENTER: The active rift portal -->
-        <div class="sanctum-center">
-          <div class="main-rift-wrap">
-            <div class="main-rift" onclick="switchScreen('summon')">
-              <div class="rift-ring rift-ring-1"></div>
-              <div class="rift-ring rift-ring-2"></div>
-              <div class="rift-ring rift-ring-3"></div>
-              <div class="rift-core"></div>
-              <div class="rift-inner">
-                <span class="rift-banner-label">✦ OPEN RIFT · VOID GATE ✦</span>
-                <div class="rift-banner-name">The Unnamed<br>One</div>
-                <span class="rift-banner-tier">✦ VOID PRIMORDIAL ✦</span>
-                <div class="rift-countdown" id="hub-countdown">—</div>
-              </div>
-            </div>
-            <div class="rift-summon-btns">
-              <button class="rift-btn rift-btn-1" id="hub-pull-1" onclick="doPull(1)">
-                <span class="rb-label">Summon ×1</span>
-                <span class="rb-cost">◆ 800</span>
-              </button>
-              <button class="rift-btn rift-btn-10" id="hub-pull-10" onclick="doPull(10)">
-                <span class="rb-label">Summon ×10</span>
-                <span class="rb-cost">◆ 7,200</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- RIGHT / MOBILE BOTTOM: Rift doors -->
-        <div class="sanctum-right">
-          <div class="rift-doors">
-            <div class="rift-door" style="--door-color:#f43f5e;--door-delay:0s" onclick="switchScreen('realms')">
-              <div class="rd-icon">⚔</div>
-              <div class="rd-body">
-                <div class="rd-name">Realms</div>
-                <span class="rd-badge" style="background:rgba(244,63,94,.1);color:#f43f5e;border:0.5px solid rgba(244,63,94,.3)">0 / 8</span>
-              </div>
-            </div>
-            <div class="rift-door" style="--door-color:#60a5fa;--door-delay:.5s" onclick="switchScreen('codex')">
-              <div class="rd-icon">📖</div>
-              <div class="rd-body">
-                <div class="rd-name">Codex</div>
-                <span class="rd-badge" id="codex-badge" style="background:rgba(96,165,250,.1);color:#60a5fa;border:0.5px solid rgba(96,165,250,.3)">0 / 28</span>
-              </div>
-            </div>
-            <div class="rift-door" style="--door-color:#4ade80;--door-delay:1s" onclick="switchScreen('garrison')">
-              <div class="rd-icon">⚑</div>
-              <div class="rd-body">
-                <div class="rd-name">Garrison</div>
-                <span class="rd-badge" style="background:rgba(74,222,128,.1);color:#4ade80;border:0.5px solid rgba(74,222,128,.3)">0 ◆/hr</span>
-              </div>
-            </div>
-            <div class="rift-door" style="--door-color:#fbbf24;--door-delay:1.5s" onclick="switchScreen('riftwalk')">
-              <div class="rd-icon">🌀</div>
-              <div class="rd-body">
-                <div class="rd-name">Rift Walker</div>
-                <span class="rd-badge" style="background:rgba(251,191,36,.1);color:#fbbf24;border:0.5px solid rgba(251,191,36,.3)">LVL 1</span>
-              </div>
-            </div>
-            <div class="rift-door" style="--door-color:#c084fc;--door-delay:2s" onclick="switchScreen('summon')">
-              <div class="rd-icon">📜</div>
-              <div class="rd-body">
-                <div class="rd-name">Summons</div>
-                <span class="rd-badge" style="background:rgba(192,132,252,.1);color:#c084fc;border:0.5px solid rgba(192,132,252,.3)">ACTIVE</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
+    <!-- STEP 3 — SIGIL -->
+    <div class="step" id="step-3">
+      <div class="step-mark">III · The Sigil</div>
+      <h1 class="prompt">Mark yourself</h1>
+      <p class="flavor">This mark will burn into the back of every card you draw and into the stone of your sanctum floor. Choose the shape your soul already knows.</p>
+      <div class="sigil-grid" id="sigil-grid">
+        <!-- sigils injected via JS -->
       </div>
+      <button class="btn-advance" id="advance-3" data-step="3">Proceed</button>
     </div>
 
-    <!-- SUMMON -->
-    <div id="screen-summon" class="screen">
-      <div class="summon-inner">
-        <div class="section-div"><span>CHOOSE SCROLL</span></div>
-        <div class="scroll-selector-wrap">
-          <div class="scroll-shelf" id="scroll-shelf"></div>
-          <div class="scroll-info" id="scroll-info"></div>
-        </div>
-        <div class="section-div"><span>PITY TRACKER</span></div>
-        <div class="pity-section">
-          <div class="pity-bar epic">
-            <div class="pity-header">
-              <span class="pity-name">Epic Pity — Greater Demon+ at 40</span>
-              <span class="pity-count" id="epic-count">0 / 40</span>
-            </div>
-            <div class="pity-track"><div class="pity-fill" id="epic-fill" style="width:0%"></div></div>
-          </div>
-          <div class="pity-bar legendary">
-            <div class="pity-header">
-              <span class="pity-name">Legendary Pity — Archdemon+ at 70</span>
-              <span class="pity-count" id="leg-count">0 / 70</span>
-            </div>
-            <div class="pity-track"><div class="pity-fill" id="leg-fill" style="width:0%"></div></div>
-          </div>
-        </div>
-        <div class="pull-buttons">
-          <button class="pull-btn pull-btn-1" id="btn-pull-1" onclick="doPull(1)">
-            <span class="btn-label">Summon ×1</span>
-            <span class="btn-cost" id="cost-1-label">◆ 800</span>
-          </button>
-          <button class="pull-btn pull-btn-10" id="btn-pull-10" onclick="doPull(10)">
-            <span class="btn-label">Summon ×10</span>
-            <span class="btn-cost" id="cost-10-label">◆ 7,200</span>
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- STEP 4 — CINEMATIC -->
+    <div class="step" id="step-4">
+      <div class="cinematic-dim" id="cinematic-dim"></div>
 
-    <!-- CODEX -->
-    <div id="screen-codex" class="screen">
-      <div class="codex-inner">
-        <div class="codex-hd">
-          <div class="codex-title">CODEX INFERNUM</div>
-          <div id="codex-count">0 / 28 demons bound</div>
-        </div>
-        <div class="codex-grid" id="codex-grid"></div>
-      </div>
-    </div>
+      <div class="scroll-container" id="scroll-container">
+        <svg viewBox="0 0 300 420" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="parchment" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#d4b896"/>
+              <stop offset="40%" stop-color="#c9a876"/>
+              <stop offset="100%" stop-color="#8b6b3d"/>
+            </linearGradient>
+            <linearGradient id="parchment-shade" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#000" stop-opacity=".35"/>
+              <stop offset="10%" stop-color="#000" stop-opacity="0"/>
+              <stop offset="90%" stop-color="#000" stop-opacity="0"/>
+              <stop offset="100%" stop-color="#000" stop-opacity=".35"/>
+            </linearGradient>
+            <radialGradient id="wax" cx=".5" cy=".4" r=".6">
+              <stop offset="0%" stop-color="#b91c1c"/>
+              <stop offset="60%" stop-color="#7f1d1d"/>
+              <stop offset="100%" stop-color="#450a0a"/>
+            </radialGradient>
+            <filter id="wax-glow">
+              <feGaussianBlur stdDeviation="1.2" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
 
-    <!-- REALMS -->
-    <div id="screen-realms" class="screen">
-      <div class="realms-inner">
-        <div class="section-title">Realm Conquest</div>
-        <div class="realms-grid" id="realms-grid"></div>
-      </div>
-    </div>
+          <!-- Top rod -->
+          <rect x="20" y="40" width="260" height="20" rx="3" fill="#3a2817"/>
+          <rect x="12" y="36" width="14" height="28" rx="2" fill="#2a1a0c"/>
+          <rect x="274" y="36" width="14" height="28" rx="2" fill="#2a1a0c"/>
+          <ellipse cx="19" cy="50" rx="4" ry="8" fill="#1a0f05"/>
+          <ellipse cx="281" cy="50" rx="4" ry="8" fill="#1a0f05"/>
 
-    <!-- GARRISON -->
-    <div id="screen-garrison" class="screen">
-      <div class="garrison-inner">
-        <div class="garrison-summary">
-          <div>
-            <div class="gsumm-label">Accumulated Income</div>
-            <div class="gsumm-val" id="garrison-total">◆ 0</div>
-            <div class="gsumm-rate" id="garrison-rate-label">0 ◆/hr from 0 garrisons</div>
-          </div>
-          <button class="collect-all" onclick="collectAll()">Collect All</button>
-        </div>
-        <div class="garrison-slots" id="garrison-slots"></div>
-      </div>
-    </div>
+          <!-- Parchment body -->
+          <path d="M 30 60 L 270 60 L 268 360 L 32 360 Z" fill="url(#parchment)"/>
+          <path d="M 30 60 L 270 60 L 268 360 L 32 360 Z" fill="url(#parchment-shade)"/>
 
-    <!-- RIFT WALKER -->
-    <div id="screen-riftwalk" class="screen">
-      <div class="rw-inner">
-        <div class="rw-hero">
-          <span class="rw-silhouette">🌀</span>
-          <div class="rw-name">Rift Walker</div>
-          <div class="rw-title">The wound between worlds</div>
-        </div>
-        <div class="rw-section">
-          <div class="rw-section-title">Stats</div>
-          <div class="rw-stats-grid">
-            ${[['ATK','4,200'],['DEF','3,100'],['PWR','3,800'],['HP','28,000'],['SPD','12'],['CRIT','15%']].map(([l,v])=>`<div class="rw-stat"><div class="rw-stat-val">${v}</div><div class="rw-stat-label">${l}</div></div>`).join('')}
-          </div>
-        </div>
-        <div class="rw-section">
-          <div class="rw-section-title">Gear Slots</div>
-          <div class="rw-gear-grid" id="rw-gear"></div>
-        </div>
-        <div class="rw-section">
-          <div class="rw-section-title">Talent Tree</div>
-          <div class="rw-talent-tree">
-            ${[['🔗','Binder','Bonds cost less · demons act sooner'],['🛡','Warden','Rune power +25%'],['✦','Void-Touched','IE gen +15%']].map(([ic,nm,ds],i)=>`<div class="talent-branch${i===0?' active':''}"><span class="tb-icon">${ic}</span><span class="tb-name">${nm}</span><span class="tb-desc">${ds}</span></div>`).join('')}
-          </div>
-        </div>
-        <div class="coming-soon-badge">⚔ Full gear & rune system — coming with battle system</div>
-      </div>
-    </div>
+          <!-- Parchment texture lines -->
+          <g stroke="#6b4f2a" stroke-width=".3" opacity=".4">
+            <line x1="48" y1="110" x2="252" y2="112"/>
+            <line x1="54" y1="150" x2="248" y2="148"/>
+            <line x1="46" y1="190" x2="254" y2="192"/>
+            <line x1="50" y1="230" x2="250" y2="228"/>
+            <line x1="44" y1="270" x2="256" y2="272"/>
+          </g>
 
-  </div><!-- /content -->
+          <!-- "WHISPER SCROLL" text -->
+          <text x="150" y="98" text-anchor="middle"
+                font-family="Cinzel Decorative, serif"
+                font-size="11" font-weight="700"
+                fill="#3a2817"
+                letter-spacing="3">WHISPER SCROLL</text>
+          <line x1="80" y1="108" x2="220" y2="108" stroke="#6b4f2a" stroke-width=".6"/>
 
-  <!-- MINI MUSIC PLAYER (sits directly above bottom nav) -->
-  <div class="music-mini" id="musicMini">
-    <div class="mm-tap" role="button" tabindex="0" aria-label="Open music player" onclick="Music.openScreen()">
-      <div class="mm-art" id="mmArt">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" stroke="var(--gold)" stroke-width="1" opacity=".6"/>
-          <path d="M12 3 L13.5 10.5 L21 12 L13.5 13.5 L12 21 L10.5 13.5 L3 12 L10.5 10.5 Z" fill="var(--purple)" opacity=".7"/>
+          <!-- Arcane marks -->
+          <g fill="#3a2817" opacity=".7">
+            <circle cx="150" cy="170" r="2"/>
+            <circle cx="120" cy="200" r="1.5"/>
+            <circle cx="180" cy="200" r="1.5"/>
+            <path d="M 110 230 Q 150 210 190 230" stroke="#3a2817" stroke-width=".6" fill="none"/>
+            <path d="M 120 250 L 150 240 L 180 250" stroke="#3a2817" stroke-width=".6" fill="none"/>
+          </g>
+
+          <!-- Wax seal with chosen sigil -->
+          <g filter="url(#wax-glow)">
+            <circle cx="150" cy="310" r="38" fill="url(#wax)"/>
+            <circle cx="150" cy="310" r="38" fill="none" stroke="#2d0606" stroke-width="1" opacity=".6"/>
+            <!-- wax drip artifacts -->
+            <ellipse cx="130" cy="348" rx="4" ry="7" fill="#7f1d1d" opacity=".7"/>
+            <ellipse cx="170" cy="346" rx="3" ry="5" fill="#7f1d1d" opacity=".6"/>
+            <!-- sigil stamped in -->
+            <g id="seal-sigil-target" transform="translate(150 310) scale(.28)">
+              <!-- sigil SVG injected here at runtime -->
+            </g>
+          </g>
+
+          <!-- Bottom rod -->
+          <rect x="20" y="360" width="260" height="20" rx="3" fill="#3a2817"/>
+          <rect x="12" y="356" width="14" height="28" rx="2" fill="#2a1a0c"/>
+          <rect x="274" y="356" width="14" height="28" rx="2" fill="#2a1a0c"/>
+          <ellipse cx="19" cy="370" rx="4" ry="8" fill="#1a0f05"/>
+          <ellipse cx="281" cy="370" rx="4" ry="8" fill="#1a0f05"/>
         </svg>
       </div>
-      <div class="mm-meta">
-        <div class="mm-title" id="mmTitle">—</div>
-        <div class="mm-sub" id="mmSub">LOADING</div>
-      </div>
-    </div>
-    <button class="mm-btn" id="mmPlay" aria-label="Play or pause" onclick="Music.toggle()">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5 L19 12 L7 19 Z"/></svg>
-    </button>
-    <button class="mm-btn" id="mmSkip" aria-label="Skip to next track" onclick="Music.next()">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 4 L16 12 L5 20 Z"/><rect x="17" y="4" width="2" height="16" rx="1"/></svg>
-    </button>
-  </div>
 
-  <!-- BOTTOM NAV -->
-  <div id="bottomnav">
-    <button class="nav-btn active" data-screen="hub" onclick="switchScreen('hub',this)">
-      <span class="nav-icon">🏛</span><span class="nav-label">Sanctum</span>
-    </button>
-    <button class="nav-btn" data-screen="summon" onclick="switchScreen('summon',this)">
-      <span class="nav-icon">📜</span><span class="nav-label">Summon</span>
-    </button>
-    <button class="nav-btn" data-screen="realms" onclick="switchScreen('realms',this)">
-      <span class="nav-icon">⚔</span><span class="nav-label">Realms</span>
-    </button>
-    <button class="nav-btn" data-screen="codex" onclick="switchScreen('codex',this)">
-      <span class="nav-icon">📖</span><span class="nav-label">Codex</span>
-    </button>
-    <button class="nav-btn" data-screen="garrison" onclick="switchScreen('garrison',this)">
-      <span class="nav-icon">⚑</span><span class="nav-label">Garrison</span>
-    </button>
-    <button class="nav-btn" data-screen="riftwalk" onclick="switchScreen('riftwalk',this)">
-      <span class="nav-icon">🌀</span><span class="nav-label">Rift Walker</span>
-    </button>
-  </div>
-</div><!-- /shell -->
-
-<!-- FULL PLAYLIST SCREEN -->
-<div class="music-screen" id="musicScreen" aria-hidden="true">
-  <div class="ms-header">
-    <button class="ms-close" aria-label="Close" onclick="Music.closeScreen()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 10l5 5 5-5z"/></svg>
-    </button>
-    <h2 class="ms-title-bar">MUSIC</h2>
-    <button class="ms-mute" id="msMute" aria-label="Mute" aria-pressed="false" onclick="Music.toggleMute()">
-      <svg class="ms-mute-on" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-      <svg class="ms-mute-off" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
-    </button>
-  </div>
-
-  <div class="ms-body">
-    <div class="ms-hero">
-      <div class="ms-art-lg" id="msArtLg">
-        <svg viewBox="0 0 120 120" fill="none" aria-hidden="true">
-          <circle cx="60" cy="60" r="54" stroke="var(--gold)" stroke-width=".8" opacity=".5"/>
-          <circle cx="60" cy="60" r="40" stroke="var(--purple)" stroke-width=".5" opacity=".4"/>
-          <path d="M60 12 L66 54 L108 60 L66 66 L60 108 L54 66 L12 60 L54 54 Z" fill="var(--purple)" opacity=".65"/>
-          <circle cx="60" cy="60" r="6" fill="var(--gold)" opacity=".8"/>
-        </svg>
-      </div>
-      <div class="ms-now-title" id="msNowTitle">—</div>
-      <div class="ms-now-label">NOW PLAYING</div>
-
-      <div class="ms-controls">
-        <button class="ms-ctrl" aria-label="Previous" onclick="Music.prev()">
-          <svg viewBox="0 0 24 24" fill="currentColor" style="transform:scaleX(-1);" aria-hidden="true"><path d="M5 4 L16 12 L5 20 Z"/><rect x="17" y="4" width="2" height="16" rx="1"/></svg>
-        </button>
-        <button class="ms-ctrl ms-ctrl-play" id="msPlay" aria-label="Play or pause" onclick="Music.toggle()">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5 L19 12 L7 19 Z"/></svg>
-        </button>
-        <button class="ms-ctrl" aria-label="Next" onclick="Music.next()">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 4 L16 12 L5 20 Z"/><rect x="17" y="4" width="2" height="16" rx="1"/></svg>
-        </button>
+      <div class="narrator" id="narrator">
+        <span class="narrator-line-1">The Binding is Complete</span>
+        <span>“Your first scroll. The rift is waiting.”</span>
       </div>
 
-      <div class="ms-vol">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="#6b5b7a" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/></svg>
-        <input type="range" id="msVol" min="0" max="100" value="70" aria-label="Volume"/>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--purple)" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-      </div>
+      <button class="enter-rift" id="enter-rift">Enter the Rift</button>
     </div>
 
-    <div class="ms-list">
-      <div class="ms-section">
-        <span>ROTATION</span>
-        <span class="ms-section-count" id="msBoundCount">—</span>
-      </div>
-      <div id="msTracks"></div>
-    </div>
   </div>
+
+  <!-- ═════════════ HUB (placeholder — your real hub goes here) ═════════════ -->
+  <div id="hub" class="screen">
+    <h1 class="hub-title">SANCTUM</h1>
+    <p class="hub-sub">The rift has opened for you.</p>
+    <div class="hub-card" id="hub-card"></div>
+    <button class="reset-link" id="reset-link">⟲ Unbind Character</button>
+  </div>
+
 </div>
 
-<script>
-// ═══════════════════════════════════════════
-// DEMON CARD CLASS (inline)
-// ═══════════════════════════════════════════
-</script>
-<script>
-(function(global){'use strict';
-var TIER_SLUGS=[null,'shade','imp','fiend','greater','archdemon','sinlord','void'];
-var ASPECT=504/360;
-function scaleName(w){return 9+(w-180)/45}
-function scaleTier(w){return 7+(w-180)/90}
-function DemonCard(demon,options){
-  if(!(this instanceof DemonCard))return new DemonCard(demon,options);
-  if(!demon)throw new Error('DemonCard: demon required');
-  options=options||{};
-  this.demon=demon;
-  this.opts={width:options.width!=null?options.width:180,showName:options.showName!==false,showTier:options.showTier!==false,showCount:options.showCount!==false,animate:options.animate!==false,clickable:options.clickable===true,onClick:typeof options.onClick==='function'?options.onClick:null};
-  this._onClick=null;this._onVideoError=null;this.el=this._build();
-}
-DemonCard.prototype._build=function(){
-  var d=this.demon,o=this.opts,w=o.width,h=Math.round(w*ASPECT),color=d.color||'#fff';
-  var slug=TIER_SLUGS[d.tier]||'shade';
-  var root=document.createElement('div');root.className='demon-card';
-  root.setAttribute('data-demon-id',d.id||'');root.setAttribute('data-tier',String(d.tier));
-  applyStyles(root,{width:w+'px',height:h+'px',position:'relative',borderRadius:'6px',overflow:'hidden',cursor:o.clickable?'pointer':'default',transform:'translateZ(0)'});
-  var video=document.createElement('video');
-  video.src='assets/demons/'+d.id+'_card.mp4';video.muted=true;video.loop=true;video.playsInline=true;
-  video.setAttribute('playsinline','');video.setAttribute('webkit-playsinline','');video.setAttribute('disablepictureinpicture','');
-  if(o.animate){video.autoplay=true;var pp=video.play();if(pp&&typeof pp.catch==='function')pp.catch(function(){});}
-  else{video.autoplay=false;video.pause();}
-  applyStyles(video,{width:'100%',height:'100%',objectFit:'cover',display:'block'});
-  var self=this;
-  this._onVideoError=function(){if(video.parentNode)video.parentNode.replaceChild(self._buildFallback(w,h,color,d.name),video);};
-  video.addEventListener('error',this._onVideoError);this._video=video;root.appendChild(video);
-  var tierBorderSlugs=['shade','imp','fiend','greater','archdemon','sinlord','void'];
-  var borderSlug=tierBorderSlugs[(d.tier-1)]||'shade';
-  var border=document.createElement('img');border.src='assets/borders/infernum_border_'+borderSlug+'.png';border.alt='';
-  applyStyles(border,{position:'absolute',top:'0',left:'0',right:'0',bottom:'0',width:'100%',height:'100%',objectFit:'fill',pointerEvents:'none',zIndex:'2'});
-  border.addEventListener('error',function(){root.style.outline='2px solid '+color;root.style.boxShadow='inset 0 0 0 1px '+color+'90,0 0 18px '+color+'60';border.style.display='none';});
-  root.appendChild(border);
-  if(o.showCount&&d.count&&d.count>1){var badge=document.createElement('div');badge.className='card-count-badge';badge.textContent='×'+d.count;applyStyles(badge,{position:'absolute',top:'4px',left:'4px',background:'rgba(6,0,14,.85)',border:'0.5px solid '+color,borderRadius:'4px',padding:'2px 5px',fontFamily:'sans-serif',fontSize:'8px',color:color,letterSpacing:'1px',lineHeight:'1',pointerEvents:'none',zIndex:'3'});root.appendChild(badge);}
-  if(o.showName||o.showTier){var bar=document.createElement('div');applyStyles(bar,{position:'absolute',bottom:'0',left:'0',right:'0',background:'linear-gradient(to top,rgba(6,0,14,.9) 0%,transparent 100%)',padding:'12px 6px 5px',textAlign:'center',pointerEvents:'none',zIndex:'3'});
-  if(o.showName&&d.name){var nameEl=document.createElement('div');nameEl.textContent=d.name;applyStyles(nameEl,{fontFamily:"'Cinzel',Georgia,serif",fontSize:scaleName(w).toFixed(2)+'px',color:color,letterSpacing:'1px',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'});bar.appendChild(nameEl);}
-  if(o.showTier&&d.tierName){var tierEl=document.createElement('div');tierEl.textContent=d.tierName;applyStyles(tierEl,{fontFamily:'sans-serif',fontSize:scaleTier(w).toFixed(2)+'px',color:color,opacity:'0.7',letterSpacing:'2px',textTransform:'uppercase'});bar.appendChild(tierEl);}
-  root.appendChild(bar);}
-  if(o.clickable&&o.onClick){this._onClick=function(e){o.onClick(self.demon,e);};root.addEventListener('click',this._onClick);}
-  return root;
-};
-DemonCard.prototype._buildFallback=function(w,h,color,name){var wrap=document.createElement('div');applyStyles(wrap,{width:'100%',height:'100%',position:'relative',background:'#0a0410',display:'block'});var tint=document.createElement('div');applyStyles(tint,{position:'absolute',top:'0',left:'0',right:'0',bottom:'0',background:color,opacity:'0.15'});wrap.appendChild(tint);var initial=document.createElement('div');initial.textContent=(name&&name.charAt(0).toUpperCase())||'?';applyStyles(initial,{position:'absolute',top:'0',left:'0',right:'0',bottom:'0',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Cinzel',Georgia,serif",fontSize:Math.round(w*0.4)+'px',color:color,opacity:'0.6',lineHeight:'1',userSelect:'none'});wrap.appendChild(initial);return wrap;};
-DemonCard.prototype.destroy=function(){if(this._onClick&&this.el){this.el.removeEventListener('click',this._onClick);this._onClick=null;}if(this._video){if(this._onVideoError){this._video.removeEventListener('error',this._onVideoError);this._onVideoError=null;}try{this._video.pause();this._video.removeAttribute('src');this._video.load();}catch(e){}this._video=null;}if(this.el&&this.el.parentNode)this.el.parentNode.removeChild(this.el);};
-function applyStyles(el,styles){for(var k in styles)if(Object.prototype.hasOwnProperty.call(styles,k))el.style[k]=styles[k];}
-global.DemonCard=DemonCard;
-})(typeof window!=='undefined'?window:this);
-</script>
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- Sigil library — six occult SVG paths                     -->
+<!-- ════════════════════════════════════════════════════════ -->
+<template id="sigil-library">
+
+  <!-- 1 · THE RIFT — vertical tear with arcs -->
+  <svg data-sigil="rift" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle r="44" stroke-dasharray="2 3" />
+    <path d="M 0 -38 L -3 -20 L 2 -8 L -2 4 L 3 18 L 0 38" stroke-linecap="round"/>
+    <path d="M -28 -18 Q -14 0 -28 18" />
+    <path d="M 28 -18 Q 14 0 28 18" />
+    <path d="M 0 -4 L -4 0 L 0 4 L 4 0 Z" fill="currentColor" stroke="none"/>
+  </svg>
+
+  <!-- 2 · THE OUROBOROS — serpent circle -->
+  <svg data-sigil="ouroboros" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M 0 -36
+             A 36 36 0 1 1 -12 -34
+             L -10 -30
+             L -16 -28
+             L -8 -26
+             L -14 -22"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- scales -->
+    <path d="M 36 0 Q 32 -6 36 -12" />
+    <path d="M 32 14 Q 28 8 32 2" />
+    <path d="M 20 28 Q 18 22 22 18" />
+    <path d="M -2 36 Q -6 32 -2 28" />
+    <path d="M -24 26 Q -22 22 -26 20" />
+    <path d="M -36 6 Q -32 4 -34 0" />
+    <path d="M -32 -16 Q -28 -14 -30 -18" />
+    <path d="M -18 -30 Q -14 -28 -16 -32" />
+    <!-- eye -->
+    <circle cx="-8" cy="-30" r="1.5" fill="currentColor" stroke="none"/>
+  </svg>
+
+  <!-- 3 · THE WATCHER — all-seeing eye in triangle -->
+  <svg data-sigil="watcher" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="0,-38 38,28 -38,28" stroke-linejoin="round"/>
+    <path d="M -22 4 Q 0 -14 22 4 Q 0 22 -22 4 Z" />
+    <circle r="7"/>
+    <circle r="3" fill="currentColor" stroke="none"/>
+    <!-- rays -->
+    <g stroke-width=".8">
+      <line x1="0" y1="-44" x2="0" y2="-50"/>
+      <line x1="-42" y1="-6" x2="-48" y2="-10"/>
+      <line x1="42" y1="-6" x2="48" y2="-10"/>
+      <line x1="-28" y1="38" x2="-34" y2="44"/>
+      <line x1="28" y1="38" x2="34" y2="44"/>
+    </g>
+  </svg>
+
+  <!-- 4 · THE DESCENT — inverted pentagram -->
+  <svg data-sigil="descent" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle r="42"/>
+    <circle r="36" stroke-dasharray="1 2"/>
+    <polygon points="0,32 -30.4,-9.9 18.8,25.9 -18.8,25.9 30.4,-9.9" stroke-linejoin="round"/>
+    <g fill="currentColor" stroke="none">
+      <circle cx="0" cy="32" r="1.4"/>
+      <circle cx="-30.4" cy="-9.9" r="1.4"/>
+      <circle cx="30.4" cy="-9.9" r="1.4"/>
+      <circle cx="-18.8" cy="25.9" r="1.4"/>
+      <circle cx="18.8" cy="25.9" r="1.4"/>
+    </g>
+  </svg>
+
+  <!-- 5 · THE HOLLOW — concentric broken circles with pierce -->
+  <svg data-sigil="hollow" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle r="42" stroke-dasharray="8 4"/>
+    <circle r="30" stroke-dasharray="4 3"/>
+    <circle r="18" stroke-dasharray="2 2"/>
+    <circle r="3" fill="currentColor" stroke="none"/>
+    <line x1="0" y1="-46" x2="0" y2="46" stroke-linecap="round"/>
+    <line x1="-46" y1="0" x2="46" y2="0" stroke-linecap="round" opacity=".4"/>
+    <circle cx="0" cy="-46" r="2" fill="currentColor" stroke="none"/>
+  </svg>
+
+  <!-- 6 · THE HORNED — ram horns with crescents -->
+  <svg data-sigil="horned" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+    <line x1="0" y1="-40" x2="0" y2="32" stroke-linecap="round"/>
+    <path d="M 0 -20 Q -24 -14 -30 2 Q -32 18 -22 22 Q -14 20 -18 12" stroke-linejoin="round"/>
+    <path d="M 0 -20 Q 24 -14 30 2 Q 32 18 22 22 Q 14 20 18 12" stroke-linejoin="round"/>
+    <path d="M -30 -8 A 6 6 0 0 1 -22 -14" />
+    <path d="M 30 -8 A 6 6 0 0 0 22 -14" />
+    <polygon points="0,32 -10,18 10,18" stroke-linejoin="round"/>
+    <circle cx="0" cy="-40" r="2" fill="currentColor" stroke="none"/>
+  </svg>
+
+</template>
 
 <script>
-// ═══════════════════════════════════════════
-// GAME DATA
-// ═══════════════════════════════════════════
-const TIERS=[
-  {id:'shade',         name:'Shade',          label:'Common',    color:'#888888',bg:'#111111',idx:0},
-  {id:'imp',           name:'Imp',            label:'Uncommon',  color:'#14b8a6',bg:'#042f2e',idx:1},
-  {id:'fiend',         name:'Fiend',          label:'Rare',      color:'#60a5fa',bg:'#0c1a40',idx:2},
-  {id:'greater_demon', name:'Greater Demon',  label:'Epic',      color:'#c084fc',bg:'#1e0840',idx:3},
-  {id:'archdemon',     name:'Archdemon',      label:'Legendary', color:'#f43f5e',bg:'#300010',idx:4},
-  {id:'sin_lord',      name:'Sin Lord',       label:'Mythic',    color:'#fbbf24',bg:'#1c0a00',idx:5},
-  {id:'void_primordial',name:'Void Primordial',label:'Abyssal',  color:'#e0e0ff',bg:'#09000f',idx:6},
-];
-const PROBS=[0.454,0.270,0.150,0.080,0.035,0.010,0.001];
-const POOL={
-  shade:          ['Mournveil','Ashwhisper','Gravecoil','Hollowborn','Duskfang'],
-  imp:            ['Skrix','Thornprick','Vexmaw','Grimble'],
-  fiend:          ['Gorrath the Flayed','Skaryn Bonecleave','Vael the Hollow','Morkhex'],
-  greater_demon:  ["Vor'aneth","Shael'dis",'Krazmoth the Undying'],
-  archdemon:      ["Bal'zeth",'Xerathos','Malvekis the Sundered'],
-  sin_lord:       ["Vrath'ax",'Avara','Luxiel',"Gorm'than",'Envar','Vainglory','Gorgethorn'],
-  void_primordial:['The Unnamed One','Null-That-Speaks'],
-};
-const ALL_DEMONS=[];
-for(const t of TIERS) for(const n of POOL[t.id]) ALL_DEMONS.push({name:n,tier:t});
-ALL_DEMONS.sort((a,b)=>b.tier.idx-a.tier.idx||a.name.localeCompare(b.name));
+/* ════════════════════════════════════════════════════════ */
+/*  INFERNUM — Character Creation Ritual                    */
+/* ════════════════════════════════════════════════════════ */
 
-const DEMON_IDS={
-  'Mournveil':'mournveil','Ashwhisper':'ashwhisper','Gravecoil':'gravecoil',
-  'Hollowborn':'hollowborn','Duskfang':'duskfang',
-  'Skrix':'skrix','Thornprick':'thornprick','Vexmaw':'vexmaw','Grimble':'grimble',
-  'Gorrath the Flayed':'gorrath','Skaryn Bonecleave':'skaryn',
-  'Vael the Hollow':'vael','Morkhex':'morkhex',
-  "Vor'aneth":'voraneth',"Shael'dis":'shaeldis','Krazmoth the Undying':'krazmoth',
-  "Bal'zeth":'balzeth','Xerathos':'xerathos','Malvekis the Sundered':'malvekis',
-  "Vrath'ax":'vrathax','Avara':'avara','Luxiel':'luxiel',
-  "Gorm'than":'gormthan','Envar':'envar','Vainglory':'vainglory','Gorgethorn':'gorgethorn',
-  'The Unnamed One':'the_unnamed_one','Null-That-Speaks':'null_that_speaks',
-};
-const TIER_BORDER_SLUGS=['shade','imp','fiend','greater','archdemon','sinlord','void'];
+const LS_KEY = 'inf_hub';
 
-const SCROLLS=[
-  {id:'whisper',name:'Whisper Scroll',icon:'📜',iconImg:'assets/ui/scroll_whisper.jpg',color:'#888780',capLabel:'UNCOMMON',capColor:'#14b8a6',cost:'Free',locked:false,desc:'Given freely.',probs:[0.75,0.25,0,0,0,0,0],pity:{},rates:[{label:'Shade',pct:75,color:'#888780'},{label:'Imp',pct:25,color:'#14b8a6'}]},
-  {id:'twilight',name:'Twilight Scroll',icon:'🌒',iconImg:'assets/ui/scroll_twilight.jpg',color:'#60a5fa',capLabel:'RARE',capColor:'#60a5fa',cost:'300 ◆',locked:false,desc:'Standard issue.',probs:[0.45,0.30,0.25,0,0,0,0],pity:{},rates:[{label:'Shade',pct:45,color:'#888780'},{label:'Imp',pct:30,color:'#14b8a6'},{label:'Fiend',pct:25,color:'#60a5fa'}]},
-  {id:'infernal',name:'Infernal Scroll',icon:'🔥',iconImg:'assets/ui/scroll_infernal.jpg',color:'#c084fc',capLabel:'EPIC',capColor:'#c084fc',cost:'800 ◆',locked:false,desc:'Greater Demon contracts.',probs:[0,0.30,0.45,0.25,0,0,0],pity:{epic:40},rates:[{label:'Imp',pct:30,color:'#14b8a6'},{label:'Fiend',pct:45,color:'#60a5fa'},{label:'Greater Demon',pct:25,color:'#c084fc'}]},
-  {id:'bloodpact',name:'Blood Pact',icon:'🩸',iconImg:'assets/ui/scroll_bloodpact.jpg',color:'#f43f5e',capLabel:'LEGENDARY',capColor:'#f43f5e',cost:'2,400 ◆',locked:false,desc:'An Archdemon will be furious.',probs:[0,0,0.20,0.55,0.25,0,0],pity:{leg:70},rates:[{label:'Fiend',pct:20,color:'#60a5fa'},{label:'Greater Demon',pct:55,color:'#c084fc'},{label:'Archdemon',pct:25,color:'#f43f5e'}]},
-  {id:'sincodex',name:'Sin Codex',icon:'⭐',iconImg:'assets/ui/scroll_sincodex.jpg',color:'#fbbf24',capLabel:'MYTHIC',capColor:'#fbbf24',cost:'Sin Essence',locked:true,lockHint:'Conquer a Sin Realm',desc:'Cannot be purchased.',probs:[0,0,0,0.25,0.50,0.25,0],pity:{mythic:90},rates:[{label:'Greater Demon',pct:25,color:'#c084fc'},{label:'Archdemon',pct:50,color:'#f43f5e'},{label:'Sin Lord',pct:25,color:'#fbbf24'}]},
-  {id:'realmrift',name:'Realm Rift',icon:'🌀',iconImg:'assets/ui/scroll_realmrift.jpg',color:'#2dd4bf',capLabel:'REALM',capColor:'#2dd4bf',cost:'Realm Essence',locked:true,lockHint:'Conquer a realm first',desc:'Realm-native demons only.',probs:[0,0,0.45,0.35,0.20,0,0],pity:{},rates:[{label:'Native Common',pct:45,color:'#888780'},{label:'Native Rare',pct:35,color:'#60a5fa'},{label:'Native Epic+',pct:20,color:'#f43f5e'}]},
-  {id:'voidtear',name:'Void Tear',icon:'◈',iconImg:'assets/ui/scroll_voidtear.jpg',color:'#e0e0ff',capLabel:'ABYSSAL',capColor:'#e0e0ff',cost:'Void Echoes',locked:true,lockHint:'Defeat a Void Primordial',desc:'It screams when held.',probs:[0,0,0,0,0.20,0.50,0.30],pity:{abyssal:200},rates:[{label:'Archdemon',pct:20,color:'#f43f5e'},{label:'Sin Lord',pct:50,color:'#fbbf24'},{label:'Void Primordial',pct:30,color:'#e0e0ff'}]},
-  {id:'event',name:'Event Scroll',icon:'⚡',iconImg:'assets/ui/scroll_event.jpg',color:'#fb923c',capLabel:'EVENT',capColor:'#fb923c',cost:'Event Currency',locked:true,lockHint:'Active during Rift events',desc:'Limited time only.',probs:[0,0,0.30,0.30,0.20,0.15,0.05],pity:{epic:40},rates:[{label:'Event Common',pct:30,color:'#888780'},{label:'Event Rare/Epic',pct:50,color:'#c084fc'},{label:'Event Exclusive',pct:20,color:'#fb923c'}]},
+// ── State ──────────────────────────────────────────────
+const S = loadState();
+function loadState() {
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+function saveState() {
+  localStorage.setItem(LS_KEY, JSON.stringify(S));
+}
+
+// ── Sigil data ─────────────────────────────────────────
+const SIGILS = [
+  { id: 'rift',       label: 'The Rift' },
+  { id: 'ouroboros',  label: 'The Serpent' },
+  { id: 'watcher',    label: 'The Watcher' },
+  { id: 'descent',    label: 'The Descent' },
+  { id: 'hollow',     label: 'The Hollow' },
+  { id: 'horned',     label: 'The Horned' },
 ];
 
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
-let S={
-  shards:1200,epicPity:0,legPity:0,scrollPity:{},
-  collection:{},garrison:{},garrisonAccum:0,
-  bannerExpiry:null,activeScroll:'infernal',level:1,
-  realmProgress:{},
-  musicUnlocked:['infernum_welcome'],musicPlaylist:['infernum_welcome'],
-  musicVolume:0.7,musicEnabled:true,
+function getSigilSvg(id) {
+  const lib = document.getElementById('sigil-library');
+  const src = lib.content.querySelector(`[data-sigil="${id}"]`);
+  return src ? src.cloneNode(true) : null;
+}
+
+// ── Ember particles ────────────────────────────────────
+function seedEmbers(n = 14) {
+  const ambient = document.getElementById('ambient');
+  for (let i = 0; i < n; i++) {
+    const e = document.createElement('div');
+    e.className = 'ember';
+    e.style.left = (Math.random() * 100) + '%';
+    e.style.top = (100 + Math.random() * 20) + '%';
+    e.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+    const dur = 12 + Math.random() * 18;
+    const delay = Math.random() * dur;
+    e.style.animationDuration = dur + 's';
+    e.style.animationDelay = '-' + delay + 's';
+    ambient.appendChild(e);
+  }
+}
+
+// ── Ritual flow state ──────────────────────────────────
+const ritual = {
+  name: '',
+  title: '',
+  sigil: '',
 };
-let lastCount=1;
-let garrisonInterval=null;
 
-const GARRISON_RATES=[10,25,60,150,400,1200,5000];
+let currentStep = 0;
 
-const REALMS=[
-  {id:'vale',name:'Shattered Vale',icon:'⚔',color:'#60a5fa',stages:13,conquered:0,locked:false},
-  {id:'void',name:'The Void Wastes',icon:'◈',color:'#e0e0ff',stages:13,conquered:0,locked:true},
-  {id:'wrath',name:"Vrath'ax Warfront",icon:'🔥',color:'#f43f5e',stages:13,conquered:0,locked:true},
-  {id:'greed',name:'Gilded Pit',icon:'⭐',color:'#fbbf24',stages:13,conquered:0,locked:true},
-  {id:'sloth',name:'The Stillness',icon:'💤',color:'#6366f1',stages:13,conquered:0,locked:true},
-  {id:'envy',name:'Mirror Maze',icon:'🪞',color:'#2dd4bf',stages:13,conquered:0,locked:true},
-  {id:'pride',name:'Crumbling Throne',icon:'👑',color:'#fde68a',stages:13,conquered:0,locked:true},
-  {id:'glut',name:"Gorgethorn's Maw",icon:'💀',color:'#a78bfa',stages:13,conquered:0,locked:true},
-];
-
-function save(){localStorage.setItem('inf_hub',JSON.stringify(S))}
-function load(){
-  try{const d=localStorage.getItem('inf_hub');if(d)S=Object.assign(S,JSON.parse(d));}catch(e){}
-  if(!S.bannerExpiry){S.bannerExpiry=Date.now()+((2*24+14)*3600+33*60)*1000;save();}
-  // Backfill realm progress for existing saves
-  if(!S.realmProgress)S.realmProgress={};
-  // Backfill music state for existing saves
-  if(!S.musicUnlocked)S.musicUnlocked=['infernum_welcome'];
-  if(!S.musicPlaylist)S.musicPlaylist=['infernum_welcome'];
-  // Quietly add welcome track to existing saves that predate it (no toast — it's a default, not an achievement)
-  if(S.musicUnlocked.indexOf('infernum_welcome')===-1){
-    S.musicUnlocked.unshift('infernum_welcome');
-    if(S.musicPlaylist.indexOf('infernum_welcome')===-1)S.musicPlaylist.unshift('infernum_welcome');
-  }
-  if(typeof S.musicVolume!=='number')S.musicVolume=0.7;
-  if(typeof S.musicEnabled!=='boolean')S.musicEnabled=true;
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  setTimeout(() => {
+    const next = document.getElementById('step-' + n);
+    if (next) next.classList.add('active');
+    currentStep = n;
+  }, n === 1 ? 200 : 950); // first step opens faster
 }
 
-// ═══════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════
-function switchScreen(name, btnEl){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('screen-'+name).classList.add('active');
-  if(btnEl) btnEl.classList.add('active');
-  else{
-    const navBtn=document.querySelector(`.nav-btn[data-screen="${name}"]`);
-    if(navBtn) navBtn.classList.add('active');
-  }
-  if(name==='codex') renderCodex();
-  if(name==='realms') renderRealms();
-  if(name==='garrison') renderGarrison();
-  if(name==='summon'){renderScrollShelf();renderScrollInfo();}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  setTimeout(() => {
+    const next = document.getElementById(id);
+    if (next) next.classList.add('active');
+  }, 100);
 }
 
-// ═══════════════════════════════════════════
-// GACHA LOGIC
-// ═══════════════════════════════════════════
-function getActiveScroll(){return SCROLLS.find(s=>s.id===S.activeScroll)||SCROLLS[2]}
+// ── Step 1 · Name ──────────────────────────────────────
+function initStep1() {
+  const input = document.getElementById('name-input');
+  const advance = document.getElementById('advance-1');
 
-function rollTierForScroll(scroll){
-  const p=S.scrollPity[scroll.id]||{pulls:0};
-  p.pulls=(p.pulls||0)+1;
-  if(scroll.pity.epic&&p.pulls>=scroll.pity.epic){const ti=scroll.probs.findIndex((v,i)=>i>=3&&v>0);if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}}
-  if(scroll.pity.leg&&p.pulls>=scroll.pity.leg){const ti=scroll.probs.findIndex((v,i)=>i>=4&&v>0);if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}}
-  if(scroll.pity.mythic&&p.pulls>=scroll.pity.mythic){const ti=scroll.probs.findIndex((v,i)=>i>=5&&v>0);if(ti>=0){p.pulls=0;S.scrollPity[scroll.id]=p;return ti;}}
-  if(scroll.pity.abyssal&&p.pulls>=scroll.pity.abyssal){p.pulls=0;S.scrollPity[scroll.id]=p;return 6;}
-  const r=Math.random();let c=0;
-  for(let i=0;i<scroll.probs.length;i++){c+=scroll.probs[i];if(r<=c&&scroll.probs[i]>0){if(i>=3)p.pulls=0;S.scrollPity[scroll.id]=p;return i;}}
-  S.scrollPity[scroll.id]=p;
-  return scroll.probs.findIndex(v=>v>0);
-}
-
-function pullOne(){
-  const scroll=getActiveScroll();
-  const ti=rollTierForScroll(scroll);
-  S.epicPity++;S.legPity++;
-  if(ti>=3)S.epicPity=0;if(ti>=4)S.legPity=0;
-  const tier=TIERS[ti];
-  const pool=POOL[tier.id];
-  const name=pool[Math.floor(Math.random()*pool.length)];
-  S.collection[name]=(S.collection[name]||0)+1;
-  return{tier,name,ti};
-}
-
-function getCost(count){
-  const sc=getActiveScroll();
-  const base={whisper:0,twilight:300,infernal:800,bloodpact:2400}[sc.id];
-  if(base===undefined)return null;
-  return count===1?base:Math.floor(base*count*0.9);
-}
-
-function doPull(count){
-  const scroll=getActiveScroll();
-  if(scroll.locked)return;
-  const cost=getCost(count);
-  if(cost===null)return;
-  if(cost>0&&S.shards<cost)return;
-  lastCount=count;
-  if(cost>0)S.shards-=cost;
-  const results=[];
-  for(let i=0;i<count;i++)results.push(pullOne());
-  save();updateUI();
-  if(window.Music) Music.checkUnlocks();
-  showOverlay(results);
-}
-
-// ═══════════════════════════════════════════
-// PULL OVERLAY
-// ═══════════════════════════════════════════
-const CARD_BACK=`<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="150" fill="#0d0020" rx="7"/><rect x="4" y="4" width="92" height="142" fill="none" stroke="#c084fc" stroke-width="0.6" rx="5" opacity="0.35"/><circle cx="50" cy="75" r="32" fill="none" stroke="#c084fc" stroke-width="0.55" opacity="0.45"/><polygon points="50,46 70,62 63,86 37,86 30,62" fill="none" stroke="#c084fc" stroke-width="0.65" opacity="0.5"/><circle cx="50" cy="75" r="6" fill="none" stroke="#c084fc" stroke-width="0.9" opacity="0.6"/><circle cx="50" cy="75" r="2" fill="#c084fc" opacity="0.35"/><text x="50" y="137" text-anchor="middle" font-size="7" fill="#c084fc" opacity="0.4" letter-spacing="3" font-family="serif">INFERNUM</text></svg>`;
-
-function showOverlay(results){
-  const ov=document.getElementById('pull-overlay');
-  const stage=document.getElementById('card-stage');
-  const pp=document.getElementById('post-pull');
-  const isSingle=results.length===1;
-  ov.style.display='flex';pp.style.display='none';
-  if(stage._videos)stage._videos.forEach(v=>{try{v.pause();v.removeAttribute('src');v.load();}catch(e){}});
-  stage._videos=[];stage.innerHTML='';
-  const CW=isSingle?Math.min(210,window.innerWidth*0.62):Math.min(108,(window.innerWidth-56)/5.2);
-  const CH=CW*(3/2);
-  const OX=window.innerWidth/2;
-  const OY=window.innerHeight*0.73;
-  function getDestinations(count){
-    if(count===1)return[{x:OX,y:OY-window.innerHeight*0.32,rot:0}];
-    const positions=[];
-    for(let row=0;row<2;row++){
-      for(let col=0;col<5;col++){
-        const xSpacing=(window.innerWidth-40)/5;
-        const x=20+xSpacing*col+xSpacing/2;
-        const y=row===0?OY-window.innerHeight*0.42-CH*0.1:OY-window.innerHeight*0.18;
-        positions.push({x,y,rot:(col-2)*3});
-      }
-    }
-    return positions;
-  }
-  const destinations=getDestinations(results.length);
-  results.forEach((r,i)=>{
-    const wrap=buildCardEl(r,i,isSingle,stage._videos);
-    wrap.style.cssText=`position:absolute;width:${CW}px;height:${CH}px;left:${OX}px;top:${OY}px;transform:translate(-50%,-50%) scale(0) rotate(0deg);opacity:0;transition:none;pointer-events:none;z-index:${10+i};`;
-    stage.appendChild(wrap);
-    const delay=isSingle?300:300+i*120;
-    setTimeout(()=>{
-      const dest=destinations[i];
-      wrap.style.transition='transform 0.8s cubic-bezier(0.22,1,0.36,1),opacity 0.4s ease-out,left 0.8s cubic-bezier(0.22,1,0.36,1),top 0.8s cubic-bezier(0.22,1,0.36,1)';
-      wrap.style.left=`${dest.x}px`;wrap.style.top=`${dest.y}px`;
-      wrap.style.transform=`translate(-50%,-50%) scale(1) rotate(${dest.rot}deg)`;
-      wrap.style.opacity='1';wrap.classList.add('risen');wrap.style.pointerEvents='auto';
-      setTimeout(()=>flip(i,r),isSingle?750:650);
-    },delay);
+  input.addEventListener('input', () => {
+    const v = input.value.trim();
+    ritual.name = v;
+    input.classList.toggle('has-value', v.length > 0);
+    advance.classList.toggle('ready', v.length >= 2);
   });
-  const total=isSingle?300+750+800:300+(results.length-1)*120+650+800;
-  setTimeout(()=>{pp.style.display='flex'},total);
-}
 
-function buildCardEl(r,i,isSingle,videoPool){
-  const t=r.tier;
-  const demonId=DEMON_IDS[r.name]||r.name.toLowerCase().replace(/['\s]/g,'_').replace(/[^a-z0-9_]/g,'');
-  const fcWrap=document.createElement('div');
-  fcWrap.className='fc-wrap';fcWrap.style.cssText='width:100%;height:100%;';
-  const fc=document.createElement('div');fc.className='fc';fc.id='fc'+i;
-  const back=document.createElement('div');back.className='fc-face fc-back';
-  const backImg=document.createElement('img');
-  backImg.src='assets/ui/card_back.png';backImg.alt='';
-  backImg.style.cssText='width:100%;height:100%;object-fit:cover;display:block;border-radius:9px;';
-  backImg.addEventListener('error',()=>{back.innerHTML=CARD_BACK;});
-  back.appendChild(backImg);
-  const front=document.createElement('div');front.className='fc-face fc-front';
-  front.style.cssText=`transform:rotateY(180deg);padding:0;background:${t.bg};`;
-  const video=document.createElement('video');
-  video.src='assets/demons/'+demonId+'_card.mp4';video.autoplay=true;video.loop=true;video.muted=true;video.playsInline=true;
-  video.setAttribute('playsinline','');video.setAttribute('webkit-playsinline','');
-  video.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;';
-  video.play().catch(()=>{});if(videoPool)videoPool.push(video);
-  const borderSlug=TIER_BORDER_SLUGS[t.idx]||'shade';
-  const borderImg=document.createElement('img');
-  borderImg.src='assets/borders/infernum_border_'+borderSlug+'.png';borderImg.alt='';
-  borderImg.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;z-index:2;';
-  borderImg.addEventListener('error',()=>{front.style.outline=`2px solid ${t.color}`;front.style.boxShadow=`inset 0 0 0 1px ${t.color}90,0 0 18px ${t.color}60`;borderImg.style.display='none';});
-  const infoBar=document.createElement('div');
-  infoBar.style.cssText='position:absolute;bottom:0;left:0;right:0;z-index:3;background:linear-gradient(to top,rgba(6,0,14,.92) 40%,transparent);padding:18px 6px 6px;text-align:center;pointer-events:none;';
-  infoBar.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:0.52rem;letter-spacing:.18em;color:${t.color};text-shadow:0 0 8px ${t.color}80;margin-bottom:3px;text-transform:uppercase;">${t.label.toUpperCase()}</div><div style="font-style:italic;font-size:0.58rem;color:#d4c8e8;line-height:1.3;">${r.name}</div>`;
-  front.appendChild(video);front.appendChild(borderImg);front.appendChild(infoBar);
-  fc.appendChild(back);fc.appendChild(front);fcWrap.appendChild(fc);
-  return fcWrap;
-}
-
-function flip(i,r){
-  const card=document.getElementById('fc'+i);if(!card)return;
-  card.classList.add('flipped');
-  if(r.ti>=4)setTimeout(()=>flash(r.tier.color),420);
-}
-
-function flash(col){
-  const el=document.getElementById('tier-flash');
-  el.style.background=col;el.style.transition='opacity .12s ease';el.style.opacity='0.32';
-  setTimeout(()=>{el.style.transition='opacity 1.8s ease';el.style.opacity='0';},180);
-}
-
-function closeOverlay(){
-  const ov=document.getElementById('pull-overlay');
-  const stage=document.getElementById('card-stage');
-  ov.style.display='none';
-  if(stage._videos){stage._videos.forEach(v=>{try{v.pause();v.removeAttribute('src');v.load();}catch(e){}});stage._videos=[];}
-  stage.innerHTML='';
-}
-
-// ═══════════════════════════════════════════
-// CODEX
-// ═══════════════════════════════════════════
-function renderCodex(){
-  const grid=document.getElementById('codex-grid');
-  if(!grid)return;
-  const owned=ALL_DEMONS.filter(d=>(S.collection[d.name]||0)>0).length;
-  document.getElementById('codex-count').textContent=`${owned} / ${ALL_DEMONS.length} demons bound`;
-  if(grid._cards)grid._cards.forEach(c=>c.destroy());
-  grid._cards=[];grid.innerHTML='';
-  const cols=window.innerWidth>=700?5:window.innerWidth>=480?4:3;
-  const cardW=Math.floor((window.innerWidth-32-10*(cols-1))/cols);
-  for(const d of ALL_DEMONS){
-    const cnt=S.collection[d.name]||0;
-    const t=d.tier;
-    const cell=document.createElement('div');
-    cell.className='codex-cell'+(cnt===0?' unknown':'');
-    if(cnt===0){
-      cell.innerHTML=`<div class="cc-unknown-art">👤</div><div class="cc-unknown-name">???</div>`;
-    } else {
-      const demonObj={id:DEMON_IDS[d.name]||d.name.toLowerCase().replace(/['\s]/g,'_').replace(/[^a-z0-9_]/g,''),name:d.name,tier:t.idx+1,tierName:t.name,color:t.color,count:cnt};
-      const card=new DemonCard(demonObj,{width:cardW,showName:true,showTier:true,showCount:true,animate:true});
-      card.el.style.cssText='width:100%;height:100%;position:absolute;inset:0;border-radius:8px;';
-      cell.style.position='relative';
-      cell.appendChild(card.el);
-      grid._cards.push(card);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && ritual.name.length >= 2) {
+      advance.click();
     }
-    grid.appendChild(cell);
-  }
-}
-
-// ═══════════════════════════════════════════
-// REALMS
-// ═══════════════════════════════════════════
-function renderRealms(){
-  const grid=document.getElementById('realms-grid');if(!grid)return;
-  grid.innerHTML=REALMS.map(r=>{
-    const conquered=S.realmProgress[r.id]||0;
-    const done=conquered>=r.stages;
-    return `
-    <div class="realm-card${r.locked?' locked':''}" onclick="${r.locked?'':'enterRealm(\''+r.id+'\')'}">
-      <div class="realm-icon">${r.icon}</div>
-      <div class="realm-name" style="color:${r.color}">${r.name}</div>
-      <div class="realm-progress">${conquered} / ${r.stages} stages</div>
-      <div class="realm-bar"><div class="realm-bar-fill" style="width:${conquered/r.stages*100}%;background:${r.color}"></div></div>
-      <span class="realm-status" style="background:${r.locked?'rgba(255,255,255,.05)':r.color+'18'};color:${r.locked?'#2d1a4b':r.color};border:0.5px solid ${r.locked?'rgba(255,255,255,.08)':r.color+'40'}">
-        ${r.locked?'🔒 LOCKED':done?'CONQUERED':conquered===0?'ENTER':'CONTINUE'}
-      </span>
-    </div>`;
-  }).join('');
-}
-function enterRealm(id){
-  // TEMPORARY dev helper until battle system exists — advances realm by 1 stage per click
-  const realm=REALMS.find(r=>r.id===id);
-  if(!realm||realm.locked)return;
-  const current=S.realmProgress[id]||0;
-  if(current>=realm.stages){
-    alert(realm.name+' already fully conquered — replace this with battle system');
-    return;
-  }
-  S.realmProgress[id]=current+1;
-  save();updateUI();renderRealms();
-  if(window.Music)Music.checkUnlocks();
-  if(S.realmProgress[id]===realm.stages){
-    setTimeout(()=>alert('🏆 '+realm.name+' fully conquered!'),100);
-  }
-}
-
-// ═══════════════════════════════════════════
-// GARRISON
-// ═══════════════════════════════════════════
-function getGarrisonRate(){
-  let rate=0;
-  for(const[stage,demon] of Object.entries(S.garrison||{})){
-    if(demon&&demon.tierIdx!==undefined)rate+=GARRISON_RATES[demon.tierIdx]||0;
-  }
-  return rate;
-}
-
-function startGarrisonTicker(){
-  if(garrisonInterval)clearInterval(garrisonInterval);
-  garrisonInterval=setInterval(()=>{
-    const rate=getGarrisonRate();
-    if(rate>0){
-      S.garrisonAccum=(S.garrisonAccum||0)+rate/3600;
-      const hubIncome=document.getElementById('hub-income');
-      if(hubIncome)hubIncome.textContent=`◆ ${Math.floor(S.garrisonAccum).toLocaleString()}`;
-    }
-  },1000);
-}
-
-function collectAll(){
-  const accumulated=Math.floor(S.garrisonAccum||0);
-  if(accumulated>0){
-    S.shards+=accumulated;S.garrisonAccum=0;save();updateUI();
-    const el=document.getElementById('hub-income');
-    if(el){el.textContent='◆ 0';el.style.color='#fbbf24';setTimeout(()=>{el.style.color='#4ade80';},600);}
-  }
-  renderGarrison();
-}
-
-function renderGarrison(){
-  const slots=document.getElementById('garrison-slots');
-  const total=document.getElementById('garrison-total');
-  const rateLabel=document.getElementById('garrison-rate-label');
-  if(!slots)return;
-  const rate=getGarrisonRate();
-  const accum=Math.floor(S.garrisonAccum||0);
-  if(total)total.textContent=`◆ ${accum.toLocaleString()}`;
-  if(rateLabel)rateLabel.textContent=`${rate.toLocaleString()} ◆/hr from ${Object.keys(S.garrison||{}).length} garrisons`;
-  const garrisoned=Object.entries(S.garrison||{});
-  if(garrisoned.length===0){
-    slots.innerHTML=`<div class="gslot"><div class="gslot-empty-msg">No garrisons active. Conquer stages in the Realms to unlock garrison slots and assign your demons.</div></div>`;
-    return;
-  }
-  slots.innerHTML=garrisoned.map(([stage,demon])=>`
-    <div class="gslot">
-      <div class="gslot-art"><div class="gslot-art-empty">👤</div></div>
-      <div class="gslot-info">
-        <div class="gslot-stage">${stage}</div>
-        <div class="gslot-demon" style="color:${demon.color||'#e2d9f3'}">${demon.name}</div>
-        <div class="gslot-income">${GARRISON_RATES[demon.tierIdx]||0} ◆/hr</div>
-      </div>
-      <button class="gslot-collect" onclick="collectSlot('${stage}')">Collect</button>
-    </div>`).join('');
-}
-
-function collectSlot(stage){collectAll();}
-
-// ═══════════════════════════════════════════
-// SCROLL UI
-// ═══════════════════════════════════════════
-function renderScrollShelf(){
-  const shelf=document.getElementById('scroll-shelf');if(!shelf)return;
-  shelf.innerHTML='';
-  SCROLLS.forEach(sc=>{
-    const isActive=sc.id===S.activeScroll;
-    const item=document.createElement('div');
-    item.className='scroll-item'+(sc.locked?' locked':'')+(isActive?' active':'');
-    item.style.borderColor=isActive?sc.color:'';
-    item.style.boxShadow=isActive?`0 0 10px ${sc.color}40`:'';
-    item.title=sc.locked?(sc.lockHint||'Locked'):'';
-    const iconHtml = sc.iconImg
-      ? `<img src="${sc.iconImg}" alt="${sc.name}" style="width:36px;height:36px;object-fit:cover;border-radius:5px;display:block;margin:0 auto 4px;border:0.5px solid ${sc.color}40;" onerror="this.outerHTML='<span class=\\'scroll-icon\\'>${sc.icon}</span>'">`
-      : `<span class="scroll-icon">${sc.icon}</span>`;
-    item.innerHTML=`${iconHtml}<div class="scroll-name">${sc.name}</div><div class="scroll-cap" style="color:${sc.capColor};background:${sc.capColor}18;border:0.5px solid ${sc.capColor}40">${sc.capLabel}</div><div class="scroll-cost">${sc.cost}</div>${sc.locked?'<span class="scroll-lock-icon">🔒</span>':''}`;
-    if(!sc.locked)item.onclick=()=>{S.activeScroll=sc.id;save();renderScrollShelf();renderScrollInfo();updateUI();};
-    shelf.appendChild(item);
   });
+
+  advance.addEventListener('click', () => {
+    if (ritual.name.length < 2) return;
+    showStep(2);
+  });
+
+  // focus after fade-in
+  setTimeout(() => input.focus(), 1600);
 }
 
-function renderScrollInfo(){
-  const info=document.getElementById('scroll-info');if(!info)return;
-  const sc=getActiveScroll();
-  const maxPct=Math.max(...sc.rates.map(r=>r.pct));
-  info.style.borderColor=sc.color+'40';
-  info.innerHTML=`<div class="si-name" style="color:${sc.color}">${sc.name}</div><div class="si-desc">${sc.desc}</div>${sc.rates.map(r=>`<div class="si-rate-row"><div class="si-rate-label" style="color:${r.color}">${r.label}</div><div class="si-rate-bar"><div class="si-rate-fill" style="width:${Math.round(r.pct/maxPct*100)}%;background:${r.color}"></div></div><div class="si-rate-val" style="color:${r.color}">${r.pct}%</div></div>`).join('')}${sc.locked?`<div style="margin-top:8px;font-size:.6rem;color:#f43f5e;font-style:italic">${sc.lockHint}</div>`:''}`;
-}
+// ── Step 2 · Title ─────────────────────────────────────
+function initStep2() {
+  const cards = document.querySelectorAll('#title-grid .title-card');
+  const advance = document.getElementById('advance-2');
 
-// ═══════════════════════════════════════════
-// UI UPDATE
-// ═══════════════════════════════════════════
-function updateUI(){
-  const scroll=getActiveScroll();
-  const cost1=getCost(1),cost10=getCost(10);
-  document.getElementById('shard-count').textContent=S.shards.toLocaleString();
-  const epicThresh=scroll.pity.epic||40,legThresh=scroll.pity.leg||70;
-  const ec=document.getElementById('epic-count'),lc=document.getElementById('leg-count');
-  if(ec)ec.textContent=`${S.epicPity} / ${epicThresh}`;
-  if(lc)lc.textContent=`${S.legPity} / ${legThresh}`;
-  const ef=document.getElementById('epic-fill'),lf=document.getElementById('leg-fill');
-  if(ef)ef.style.width=`${Math.min(100,(S.epicPity/epicThresh)*100)}%`;
-  if(lf)lf.style.width=`${Math.min(100,(S.legPity/legThresh)*100)}%`;
-  const bp1=document.getElementById('btn-pull-1'),bp10=document.getElementById('btn-pull-10');
-  if(bp1)bp1.disabled=scroll.locked||(cost1>0&&S.shards<cost1);
-  if(bp10)bp10.disabled=scroll.locked||(cost10>0&&S.shards<cost10);
-  const c1l=document.getElementById('cost-1-label'),c10l=document.getElementById('cost-10-label');
-  if(c1l)c1l.textContent=cost1===0?'Free':cost1===null?'Earned Only':`◆ ${cost1?.toLocaleString()}`;
-  if(c10l)c10l.textContent=cost10===0?'Free ×10':cost10===null?'Earned Only':`◆ ${cost10?.toLocaleString()}`;
-  const hb1=document.getElementById('hub-pull-1'),hb10=document.getElementById('hub-pull-10');
-  if(hb1)hb1.disabled=S.shards<800;
-  if(hb10)hb10.disabled=S.shards<7200;
-  const owned=ALL_DEMONS.filter(d=>(S.collection[d.name]||0)>0).length;
-  const sb=document.getElementById('stat-bound');if(sb)sb.textContent=owned;
-  const cb=document.getElementById('codex-badge');if(cb)cb.textContent=`${owned} / ${ALL_DEMONS.length}`;
-  const sg=document.getElementById('stat-garrison');if(sg)sg.textContent=Object.keys(S.garrison||{}).length;
-  const ss=document.getElementById('stat-stages');if(ss)ss.textContent=Object.values(S.realmProgress||{}).reduce((a,b)=>a+b,0);
-  const rate=getGarrisonRate();
-  const hr=document.getElementById('hub-rate');
-  if(hr)hr.textContent=rate>0?`${rate.toLocaleString()} ◆/hr passive income`:'No garrisons active';
-}
-
-function addDemoShards(){S.shards+=500;save();updateUI();}
-
-// ═══════════════════════════════════════════
-// COUNTDOWN
-// ═══════════════════════════════════════════
-function tick(){
-  const rem=Math.max(0,S.bannerExpiry-Date.now());
-  const fmt=(n)=>String(n).padStart(2,'0');
-  if(rem<=0){['hub-countdown'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='BANNER ENDED';});return;}
-  const d=Math.floor(rem/86400000),h=Math.floor((rem%86400000)/3600000);
-  const m=Math.floor((rem%3600000)/60000),s=Math.floor((rem%60000)/1000);
-  const txt=(d>0?d+'d ':'')+fmt(h)+'h '+fmt(m)+'m '+fmt(s)+'s';
-  const el=document.getElementById('hub-countdown');if(el)el.textContent=txt;
-}
-
-// ═══════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════
-(function init(){
-  load();
-  document.getElementById('btn-again').onclick=()=>{closeOverlay();const cost=lastCount===1?getCost(1):getCost(10);if(S.shards>=(cost||0))setTimeout(()=>doPull(lastCount),80);};
-  document.getElementById('btn-close-pull').onclick=()=>closeOverlay();
-  (function spawnAmbient(){
-    const SIGILS=['ᚠ','ᚢ','ᚦ','ᚨ','ᚱ','ᚲ','ᚷ','ᚹ','✦','◈','⬡','✧'];
-    function createSigil(sigCont){
-      const el=document.createElement('div');el.className='sigil';
-      el.textContent=SIGILS[Math.floor(Math.random()*SIGILS.length)];
-      const sz=Math.random()*14+8;
-      const dur=Math.random()*20+15;
-      el.style.cssText=`font-size:${sz}px;left:${Math.random()*100}%;bottom:-20px;animation-duration:${dur}s;animation-delay:${Math.random()*dur}s;opacity:0;`;
-      sigCont.appendChild(el);
-      setTimeout(()=>el.remove(),(dur+3)*1000);
-    }
-    function createEmber(sigCont){
-      const el=document.createElement('div');el.className='ember';
-      const sz=Math.random()*3+1.5;
-      const dur=Math.random()*10+8;
-      el.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;bottom:-5px;--drift:${(Math.random()-.5)*100}px;animation-duration:${dur}s;animation-delay:${Math.random()*dur}s;opacity:0;`;
-      sigCont.appendChild(el);
-      setTimeout(()=>el.remove(),(dur+2)*1000);
-    }
-    const hubCont=document.getElementById('hub-sigils');
-    const splashCont=document.getElementById('splash-sigils');
-    function populate(){
-      if(hubCont){createSigil(hubCont);createEmber(hubCont);}
-      if(splashCont&&splashCont.isConnected){createSigil(splashCont);createEmber(splashCont);}
-    }
-    // Initial burst on both containers
-    if(hubCont)for(let i=0;i<8;i++){createSigil(hubCont);createEmber(hubCont);}
-    if(splashCont)for(let i=0;i<8;i++){createSigil(splashCont);createEmber(splashCont);}
-    setInterval(populate,1200);
-  })();
-
-  renderScrollShelf();renderScrollInfo();
-  renderRealms();renderGarrison();
-  updateUI();
-  startGarrisonTicker();
-  tick();setInterval(tick,1000);
-  if(window.Music&&window.Music.init)window.Music.init();
-})();
-</script>
-
-<script>
-// ═══════════════════════════════════════════
-// MUSIC SYSTEM
-// ═══════════════════════════════════════════
-(function(global){'use strict';
-
-var TRACKS = [
-  // ─── MAIN PROGRESSION (13) ───
-  // 01
-  {id:'infernum_welcome', name:'Infernum Welcome', file:'assets/audio/infernum_welcome.mp3',
-    condition:'Unlocked by default', check:function(){return true;}},
-
-  // 02 — TODO: Wire when scroll inventory + tutorial exist. First scroll is
-  // earned during the tutorial, which forces the player to use it. Check shape:
-  //   return (S.scrollInventory && Object.keys(S.scrollInventory).length > 0);
-  // or if tutorial sets a flag:
-  //   return !!S.tutorialFirstScrollReceived;
-  {id:'the_pull', name:'The Pull', file:'assets/audio/the_pull.mp3',
-    condition:'Receive your first scroll',
-    check:function(){return false;}},
-
-  // 03
-  {id:'the_binding', name:'The Binding', file:'assets/audio/the_binding.mp3',
-    condition:'Complete your first pull',
-    check:function(){var t=0,c=S.collection||{};for(var k in c)t+=c[k]||0;return t>=1;}},
-
-  // 04
-  {id:'shade', name:'Shade', file:'assets/audio/shade.mp3',
-    condition:'Bind all 5 Shades',
-    check:function(){return (POOL.shade||[]).every(function(n){return (S.collection[n]||0)>0;});}},
-
-  // 05 — TODO: Wire when garrison assignment UI exists. Demons have to be
-  // assignable to conquered stages from the Garrison screen. Check shape:
-  //   return Object.keys(S.garrison||{}).length > 0;
-  {id:'the_garrison', name:'The Garrison', file:'assets/audio/the_garrison.mp3',
-    condition:'Garrison your first demon',
-    check:function(){return false;}},
-
-  // 06 — R1 reuses this same file per spec
-  {id:'the_shattered_vale', name:'The Shattered Vale', file:'assets/audio/the_shattered_vale.mp3',
-    condition:'Conquer the Shattered Vale',
-    check:function(){
-      var realm=REALMS.find(function(r){return r.id==='vale';});
-      if(!realm) return false;
-      return (S.realmProgress.vale||0) >= realm.stages;
-    }},
-
-  // 07
-  {id:'sin_lords_anthem', name:"Sin Lords' Anthem", file:'assets/audio/sin_lords_anthem.mp3',
-    condition:'Bind your first Sin Lord',
-    check:function(){return (POOL.sin_lord||[]).some(function(n){return (S.collection[n]||0)>0;});}},
-
-  // 08
-  {id:'the_codex', name:'The Codex', file:'assets/audio/the_codex.mp3',
-    condition:'Bind 14 demons — half the roster',
-    check:function(){
-      var count=0;
-      for(var i=0;i<ALL_DEMONS.length;i++){if((S.collection[ALL_DEMONS[i].name]||0)>0)count++;}
-      return count>=14;
-    }},
-
-  // 09
-  {id:'rift_walker', name:'Rift Walker', file:'assets/audio/rift_walker.mp3',
-    condition:"Bind all three Archdemons — Bal'zeth, Xerathos, Malvekis",
-    check:function(){return (POOL.archdemon||[]).every(function(n){return (S.collection[n]||0)>0;});}},
-
-  // 10
-  {id:'the_unnamed_one', name:'The Unnamed One', file:'assets/audio/the_unnamed_one.mp3',
-    condition:'Pull your first Void Primordial',
-    check:function(){return (POOL.void_primordial||[]).some(function(n){return (S.collection[n]||0)>0;});}},
-
-  // 11 — TODO: Wire when realm unlocking exists. All 8 realms fully conquered.
-  // Check shape:
-  //   return REALMS.every(function(r){return (S.realmProgress[r.id]||0) >= r.stages;});
-  {id:'sanctum_rising', name:'Sanctum Rising', file:'assets/audio/sanctum_rising.mp3',
-    condition:'Conquer all 8 realms',
-    check:function(){return false;}},
-
-  // 12 — full codex (all 28 demons bound)
-  {id:'the_rift_between', name:'The Rift Between', file:'assets/audio/the_rift_between.mp3',
-    condition:'Bind all 28 demons',
-    check:function(){
-      for(var i=0;i<ALL_DEMONS.length;i++){if(!(S.collection[ALL_DEMONS[i].name]>0))return false;}
-      return true;
-    }},
-
-  // 13 — TODO: Wire when realm unlocking AND cinematic trigger system exist.
-  // All realms conquered + full codex, plus a one-time cinematic trigger
-  // before this becomes hub ambient. Check shape for the unlock itself:
-  //   var fullCodex = ALL_DEMONS.every(function(d){return (S.collection[d.name]||0)>0;});
-  //   var allRealms = REALMS.every(function(r){return (S.realmProgress[r.id]||0) >= r.stages;});
-  //   return fullCodex && allRealms;
-  // The cinematic playback is separate — when unlocked, fire a one-shot
-  // cinematic via Music.playCinematic('apex'), then the track becomes
-  // selectable hub ambient like any other.
-  {id:'the_apex', name:'The Apex', file:'assets/audio/the_apex.mp3',
-    condition:'Complete everything — all realms, full codex',
-    check:function(){return false;}},
-
-  // ─── REALM TRACKS (7) ───
-  // R1 Shattered Vale is track 06 above — same file, no separate entry.
-  //
-  // All realm tracks below are TODO: Wire when realm unlocking exists (realms
-  // beyond Shattered Vale need to be enterable). Each track plays while the
-  // player is inside its realm — which requires screen-scoped playback logic
-  // that doesn't exist yet either. For now, check() returns false so they
-  // appear locked until both systems ship.
-  //
-  // When ready, the unlock check per realm is:
-  //   return !REALMS.find(function(r){return r.id==='<realm_id>';}).locked;
-  // And the in-realm playback logic (separate from unlock) fires when the
-  // player enters that realm's battle/conquest screen.
-
-  // R2 — Vrath'ax Warfront
-  {id:'vrathax_warfront', name:"Vrath'ax Warfront", file:'assets/audio/vrathax_warfront.mp3',
-    condition:"Enter Vrath'ax Warfront",
-    check:function(){return false;}},
-
-  // R3 — Gilded Pit (unwritten)
-  {id:'gilded_pit', name:'Gilded Pit', file:'assets/audio/gilded_pit.mp3',
-    condition:'Enter Gilded Pit',
-    check:function(){return false;}},
-
-  // R4 — The Stillness (unwritten)
-  {id:'the_stillness', name:'The Stillness', file:'assets/audio/the_stillness.mp3',
-    condition:'Enter The Stillness',
-    check:function(){return false;}},
-
-  // R5 — Mirror Maze (unwritten)
-  {id:'mirror_maze', name:'Mirror Maze', file:'assets/audio/mirror_maze.mp3',
-    condition:'Enter Mirror Maze',
-    check:function(){return false;}},
-
-  // R6 — Crumbling Throne (unwritten)
-  {id:'crumbling_throne', name:'Crumbling Throne', file:'assets/audio/crumbling_throne.mp3',
-    condition:'Enter Crumbling Throne',
-    check:function(){return false;}},
-
-  // R7 — Gorgethorn's Maw (unwritten)
-  {id:'gorgethorn_maw', name:"Gorgethorn's Maw", file:'assets/audio/gorgethorn_maw.mp3',
-    condition:"Enter Gorgethorn's Maw",
-    check:function(){return false;}},
-
-  // R8 — The Void Wastes (unwritten)
-  {id:'void_wastes', name:'The Void Wastes', file:'assets/audio/void_wastes.mp3',
-    condition:'Enter The Void Wastes',
-    check:function(){return false;}}
-];
-
-var audioA, audioB, active;
-var fadeTimer = null;
-var currentIdx = 0;
-var playing = false;
-var audioUnlocked = false;
-var booted = false;
-
-var PLAY_ICON  = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5 L19 12 L7 19 Z"/></svg>';
-var PAUSE_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
-var LOCK_SVG   = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/></svg>';
-
-function target(){ return S.musicEnabled ? S.musicVolume : 0; }
-function isUnlocked(id){ return S.musicUnlocked.indexOf(id) !== -1; }
-function isEnabled(id){ return S.musicPlaylist.indexOf(id) !== -1; }
-function getRotation(){ return TRACKS.filter(function(t){ return isUnlocked(t.id) && isEnabled(t.id); }); }
-function getCurrent(){ var r=getRotation(); return r.length ? r[currentIdx%r.length] : null; }
-function stopFade(){ if(fadeTimer){ clearInterval(fadeTimer); fadeTimer=null; } }
-
-function fade(ramps, duration, onDone){
-  stopFade();
-  duration = duration || 1200;
-  var steps = 24, step = 0;
-  fadeTimer = setInterval(function(){
-    step++;
-    var p = step / steps;
-    ramps.forEach(function(r){
-      var a = r[0]; if(!a) return;
-      a.volume = Math.max(0, Math.min(1, r[1] + (r[2]-r[1])*p));
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      cards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      ritual.title = card.dataset.title;
+      advance.classList.add('ready');
     });
-    if(step >= steps){ stopFade(); if(onDone) onDone(); }
-  }, duration / steps);
-}
-
-function playCurrent(){
-  var t = getCurrent();
-  if(!t){ playing = false; updateMiniPlayer(); return; }
-  var next = (active === audioA) ? audioB : audioA;
-  var prev = active;
-  try { next.src = t.file; } catch(e){ return; }
-  next.volume = 0;
-  var p = next.play();
-  if(p && p.catch) p.catch(function(){ playing = false; updateMiniPlayer(); });
-  var targ = target();
-  fade([
-    [prev, prev ? prev.volume : 0, 0],
-    [next, 0, targ]
-  ], 1200, function(){
-    if(prev && prev !== next){ try{ prev.pause(); }catch(e){} }
-    active = next;
-    active.volume = targ;
   });
-  playing = true;
-  updateMiniPlayer();
+
+  advance.addEventListener('click', () => {
+    if (!ritual.title) return;
+    showStep(3);
+  });
 }
 
-function next(){ var r=getRotation(); if(!r.length) return; currentIdx=(currentIdx+1)%r.length; playCurrent(); }
-function prev(){ var r=getRotation(); if(!r.length) return; currentIdx=(currentIdx-1+r.length)%r.length; playCurrent(); }
+// ── Step 3 · Sigil ─────────────────────────────────────
+function initStep3() {
+  const grid = document.getElementById('sigil-grid');
+  const advance = document.getElementById('advance-3');
 
-function toggle(){
-  if(!audioUnlocked){ audioUnlocked=true; playCurrent(); return; }
-  if(playing && active){
-    fade([[active, active.volume, 0]], 400, function(){ try{ active.pause(); }catch(e){} });
-    playing = false;
-  } else if(active && active.src){
-    active.volume = 0;
-    var p = active.play();
-    if(p && p.catch) p.catch(function(){});
-    fade([[active, 0, target()]], 600);
-    playing = true;
-  } else {
-    playCurrent();
-  }
-  updateMiniPlayer();
+  SIGILS.forEach(s => {
+    const slot = document.createElement('div');
+    slot.className = 'sigil-slot';
+    slot.dataset.sigil = s.id;
+    const svg = getSigilSvg(s.id);
+    if (svg) slot.appendChild(svg);
+    const label = document.createElement('div');
+    label.className = 'sigil-name';
+    label.textContent = s.label;
+    slot.appendChild(label);
+    grid.appendChild(slot);
+
+    slot.addEventListener('click', () => {
+      grid.querySelectorAll('.sigil-slot').forEach(x => x.classList.remove('selected'));
+      slot.classList.add('selected');
+      ritual.sigil = s.id;
+      advance.classList.add('ready');
+    });
+  });
+
+  advance.addEventListener('click', () => {
+    if (!ritual.sigil) return;
+    showStep(4);
+    setTimeout(playCinematic, 900);
+  });
 }
 
-function toggleMute(){
-  S.musicEnabled = !S.musicEnabled;
-  save();
-  if(audioA) audioA.muted = !S.musicEnabled;
-  if(audioB) audioB.muted = !S.musicEnabled;
-  updateMuteUI();
-}
-
-function setVolume(v){
-  v = Math.max(0, Math.min(1, v));
-  S.musicVolume = v;
-  save();
-  if(!fadeTimer && active) active.volume = target();
-}
-
-function togglePlaylist(id){
-  if(!isUnlocked(id)) return;
-  var cur = getCurrent();
-  var curId = cur ? cur.id : null;
-  var i = S.musicPlaylist.indexOf(id);
-  if(i >= 0) S.musicPlaylist.splice(i, 1);
-  else S.musicPlaylist.push(id);
-  save();
-  var r = getRotation();
-  if(r.length === 0){
-    if(active){ try{ active.pause(); }catch(e){} }
-    playing = false;
-  } else if(curId === id && i >= 0){
-    currentIdx = 0;
-    if(playing) playCurrent();
-  } else if(curId){
-    for(var j=0; j<r.length; j++){ if(r[j].id === curId){ currentIdx=j; break; } }
-  }
-  renderTracks();
-  updateMiniPlayer();
-}
-
-function checkUnlocks(){
-  if(!S.musicUnlocked) return;
-  var newly = [];
-  for(var i=0; i<TRACKS.length; i++){
-    var t = TRACKS[i];
-    if(!isUnlocked(t.id) && t.check()){
-      S.musicUnlocked.push(t.id);
-      if(!isEnabled(t.id)) S.musicPlaylist.push(t.id);
-      newly.push(t);
+// ── Step 4 · Cinematic ─────────────────────────────────
+function playCinematic() {
+  // stamp chosen sigil into the wax seal
+  const target = document.getElementById('seal-sigil-target');
+  if (target && ritual.sigil) {
+    const sourceSvg = getSigilSvg(ritual.sigil);
+    if (sourceSvg) {
+      // extract inner contents and re-style for the seal
+      const inner = sourceSvg.innerHTML;
+      target.innerHTML = inner;
+      target.setAttribute('stroke', '#f5e8d0');
+      target.setAttribute('fill', 'none');
+      target.setAttribute('stroke-width', '2.4');
+      target.setAttribute('stroke-linecap', 'round');
+      target.setAttribute('stroke-linejoin', 'round');
+      // make any currentColor fills match stamp color
+      target.querySelectorAll('[fill="currentColor"]').forEach(el => {
+        el.setAttribute('fill', '#f5e8d0');
+      });
     }
   }
-  if(newly.length){
-    save();
-    newly.forEach(showToast);
-    renderTracks();
-  }
+
+  // darken
+  document.getElementById('cinematic-dim').classList.add('active');
+
+  // scroll rises
+  setTimeout(() => {
+    document.getElementById('scroll-container').classList.add('active');
+  }, 300);
+
+  // narrator speaks
+  setTimeout(() => {
+    document.getElementById('narrator').classList.add('active');
+  }, 1900);
+
+  // enter button appears
+  setTimeout(() => {
+    document.getElementById('enter-rift').classList.add('active');
+  }, 2200);
 }
 
-function showToast(track){
-  var el = document.createElement('div');
-  el.className = 'music-toast';
-  el.innerHTML = '<div class="mt-label">NEW TRACK UNLOCKED</div><div class="mt-name">' + track.name + '</div>';
-  document.body.appendChild(el);
-  requestAnimationFrame(function(){ el.classList.add('show'); });
-  setTimeout(function(){
-    el.classList.remove('show');
-    setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 400);
-  }, 3000);
-}
-
-function openScreen(){
-  var s = document.getElementById('musicScreen');
-  if(!s) return;
-  renderTracks();
-  updateVolumeSlider();
-  updateMuteUI();
-  updateMiniPlayer();
-  s.classList.add('open');
-  s.setAttribute('aria-hidden', 'false');
-}
-function closeScreen(){
-  var s = document.getElementById('musicScreen');
-  if(!s) return;
-  s.classList.remove('open');
-  s.setAttribute('aria-hidden', 'true');
-}
-
-function updateMiniPlayer(){
-  var cur = getCurrent();
-  var title = document.getElementById('mmTitle');
-  var sub = document.getElementById('mmSub');
-  var play = document.getElementById('mmPlay');
-  var msPlay = document.getElementById('msPlay');
-  var msNow = document.getElementById('msNowTitle');
-  if(cur){
-    if(title) title.textContent = cur.name;
-    if(msNow) msNow.textContent = cur.name;
-    if(sub) sub.textContent = playing ? 'NOW PLAYING · TAP TO EXPAND' : 'PAUSED · TAP TO EXPAND';
-  } else {
-    if(title) title.textContent = 'No tracks in rotation';
-    if(msNow) msNow.textContent = '—';
-    if(sub) sub.textContent = 'SELECT A TRACK · TAP TO EXPAND';
-  }
-  if(play) play.innerHTML = playing ? PAUSE_ICON : PLAY_ICON;
-  if(msPlay) msPlay.innerHTML = playing ? PAUSE_ICON : PLAY_ICON;
-}
-
-function updateMuteUI(){
-  var btn = document.getElementById('msMute');
-  if(!btn) return;
-  btn.setAttribute('aria-pressed', S.musicEnabled ? 'false' : 'true');
-  var on = btn.querySelector('.ms-mute-on');
-  var off = btn.querySelector('.ms-mute-off');
-  if(on) on.style.display = S.musicEnabled ? '' : 'none';
-  if(off) off.style.display = S.musicEnabled ? 'none' : '';
-}
-
-function updateVolumeSlider(){
-  var v = document.getElementById('msVol');
-  if(v) v.value = Math.round(S.musicVolume * 100);
-}
-
-function renderTracks(){
-  var c = document.getElementById('msTracks');
-  var countEl = document.getElementById('msBoundCount');
-  if(!c) return;
-  if(countEl) countEl.textContent = S.musicUnlocked.length + ' OF ' + TRACKS.length + ' BOUND';
-  c.innerHTML = '';
-  var cur = getCurrent();
-  TRACKS.forEach(function(t){
-    var locked = !isUnlocked(t.id);
-    var enabled = isEnabled(t.id);
-    var isNow = playing && cur && cur.id === t.id;
-    var row = document.createElement('div');
-    row.className = 'ms-track' + (locked?' locked':'') + (isNow?' playing':'');
-    var subText = locked ? t.condition : (isNow ? 'Playing now' : (enabled ? 'In rotation' : 'Not in rotation'));
-    row.innerHTML =
-      '<div class="ms-track-indicator">' + (locked ? LOCK_SVG : '') + '</div>' +
-      '<div class="ms-track-info">' +
-        '<div class="ms-track-name">' + t.name + '</div>' +
-        '<div class="ms-track-cond">' + subText + '</div>' +
-      '</div>' +
-      '<button class="ms-toggle' + (!locked && enabled ? ' on' : '') + '"' +
-        (locked?' disabled':'') + ' data-id="' + t.id + '" aria-label="Toggle ' + t.name + '"></button>';
-    c.appendChild(row);
-  });
-  Array.prototype.forEach.call(c.querySelectorAll('.ms-toggle'), function(btn){
-    btn.addEventListener('click', function(){ togglePlaylist(btn.getAttribute('data-id')); });
-  });
-}
-
-function init(){
-  if(booted) return;
-  if(typeof S === 'undefined' || typeof POOL === 'undefined') return;
-  booted = true;
-
-  if(!S.musicUnlocked) S.musicUnlocked = ['infernum_welcome'];
-  if(!S.musicPlaylist) S.musicPlaylist = ['infernum_welcome'];
-  if(typeof S.musicVolume !== 'number') S.musicVolume = 0.7;
-  if(typeof S.musicEnabled !== 'boolean') S.musicEnabled = true;
-
-  audioA = document.createElement('audio');
-  audioB = document.createElement('audio');
-  audioA.preload = audioB.preload = 'auto';
-  audioA.muted = audioB.muted = !S.musicEnabled;
-  active = audioA;
-
-  [audioA, audioB].forEach(function(a){
-    a.addEventListener('ended', function(){ if(a === active && playing) next(); });
-  });
-
-  checkUnlocks();
-
-  var vol = document.getElementById('msVol');
-  if(vol) vol.addEventListener('input', function(e){ setVolume(e.target.value / 100); });
-
-  // Splash screen is the single entry point — clicking "Walk the Rift" starts the game and the music
-  var splashBtn = document.getElementById('splash-btn');
-  var splash = document.getElementById('splash');
-  if(splashBtn && splash){
-    splashBtn.addEventListener('click', function(){
-      audioUnlocked = true;
-      document.body.classList.add('game-started');
-      if(S.musicEnabled && getRotation().length > 0) playCurrent();
-      splash.classList.add('fading');
-      setTimeout(function(){ if(splash.parentNode) splash.parentNode.removeChild(splash); }, 750);
-    }, {once:true});
-  } else {
-    // Fallback: if splash is missing for any reason, revert to old click-anywhere behavior
-    document.body.classList.add('game-started');
-    var unlock = function(){
-      if(audioUnlocked) return;
-      audioUnlocked = true;
-      if(S.musicEnabled && getRotation().length > 0) playCurrent();
+function initStep4() {
+  document.getElementById('enter-rift').addEventListener('click', () => {
+    // commit character to state
+    S.character = {
+      name: ritual.name,
+      title: ritual.title,
+      sigil: ritual.sigil,
+      created: Date.now()
     };
-    document.addEventListener('click', unlock, {once:true, capture:true});
-    document.addEventListener('touchstart', unlock, {once:true, capture:true});
-    document.addEventListener('keydown', unlock, {once:true, capture:true});
-  }
-
-  renderTracks();
-  updateMiniPlayer();
-  updateMuteUI();
-  updateVolumeSlider();
+    saveState();
+    // fade to hub
+    showScreen('hub');
+    renderHub();
+  });
 }
 
-global.Music = {
-  init: init, toggle: toggle, next: next, prev: prev,
-  toggleMute: toggleMute, setVolume: setVolume, togglePlaylist: togglePlaylist,
-  openScreen: openScreen, closeScreen: closeScreen, checkUnlocks: checkUnlocks
-};
+// ── Hub ────────────────────────────────────────────────
+function renderHub() {
+  if (!S.character) return;
+  const card = document.getElementById('hub-card');
+  const sigilSvg = getSigilSvg(S.character.sigil);
+  const d = new Date(S.character.created);
+  const dateStr = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
-if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-else init();
+  card.innerHTML = `
+    <div class="hub-sigil"></div>
+    <div class="row">
+      <div class="label">Walker</div>
+      <div class="value">${escapeHtml(S.character.name)}</div>
+    </div>
+    <div class="row">
+      <div class="label">Title</div>
+      <div class="value">${escapeHtml(S.character.title)}</div>
+    </div>
+    <div class="row">
+      <div class="label">Bound</div>
+      <div class="value" style="font-family:var(--body); font-style:italic; font-size:.9rem; color:rgba(229,214,240,.5); letter-spacing:.04em">${dateStr}</div>
+    </div>
+  `;
+  if (sigilSvg) card.querySelector('.hub-sigil').appendChild(sigilSvg);
+}
 
-})(window);
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+// ── Reset (for testing) ────────────────────────────────
+document.getElementById('reset-link').addEventListener('click', () => {
+  delete S.character;
+  saveState();
+  location.reload();
+});
+
+// ── Boot ───────────────────────────────────────────────
+function boot() {
+  seedEmbers(16);
+  initStep1();
+  initStep2();
+  initStep3();
+  initStep4();
+
+  requestAnimationFrame(() => {
+    document.body.classList.add('ready');
+
+    if (S.character) {
+      // skip ritual entirely
+      showScreen('hub');
+      renderHub();
+    } else {
+      showScreen('creation');
+      setTimeout(() => showStep(1), 400);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', boot);
 </script>
+
 </body>
 </html>
