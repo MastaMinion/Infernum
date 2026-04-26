@@ -1070,6 +1070,52 @@ body:not(.game-started) .music-mini{display:none;}
   .rit-narrator{bottom:12vh}
   .rit-scroll.rit-active{transform:translate(-50%,-22vh) rotate(1deg)}
 }
+
+/* ══════════════════════════════════════════════════
+   SANCTUM FLOOR SIGIL — carved into the ground
+   beneath the rift portal
+══════════════════════════════════════════════════ */
+.sanctum-center{position:relative;}
+.main-rift-wrap{position:relative;z-index:1;}
+
+.sanctum-floor{
+  position:absolute;
+  left:50%;top:55%;
+  width:min(520px,88vw);height:min(520px,88vw);
+  transform:translate(-50%,-50%) perspective(1100px) rotateX(64deg);
+  transform-origin:center center;
+  pointer-events:none;
+  z-index:0;
+  opacity:0;
+  transition:opacity 1800ms ease;
+}
+.sanctum-floor.active{opacity:.20}
+.sanctum-floor-inner{
+  width:100%;height:100%;
+  animation:floorSigilRotate 90s linear infinite;
+  transform-origin:center;
+}
+.sanctum-floor svg{
+  width:100%;height:100%;
+  stroke:var(--gold);fill:none;stroke-width:1.4;
+  filter:drop-shadow(0 0 18px rgba(251,191,36,.45)) drop-shadow(0 0 50px rgba(251,191,36,.18));
+}
+@keyframes floorSigilRotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* Tiny sigil seal above the identity name */
+.rw-sigil-mark{
+  width:32px;height:32px;
+  margin:0 auto 6px;
+  opacity:0;
+  transform:translateY(-4px);
+  transition:opacity 800ms ease,transform 800ms ease;
+}
+.rw-sigil-mark.active{opacity:.85;transform:translateY(0);}
+.rw-sigil-mark svg{
+  width:100%;height:100%;
+  stroke:var(--purple);fill:none;stroke-width:1.5;
+  filter:drop-shadow(0 0 6px rgba(192,132,252,.55));
+}
 </style>
 </head>
 <body>
@@ -1317,9 +1363,10 @@ body:not(.game-started) .music-mini{display:none;}
         <!-- DESKTOP LEFT: identity + stats + tribute -->
         <div class="sanctum-left">
           <div class="rw-identity">
+            <div class="rw-sigil-mark" id="rw-sigil-mark"></div>
             <div class="rw-identity-title">You are</div>
-            <div class="rw-identity-name">Rift Walker</div>
-            <div class="rw-identity-sub">The wound between worlds</div>
+            <div class="rw-identity-name" id="rw-name">Rift Walker</div>
+            <div class="rw-identity-sub" id="rw-sub">The wound between worlds</div>
           </div>
           <div class="sanctum-status">
             <div class="sstat" onclick="switchScreen('codex')">
@@ -1352,6 +1399,9 @@ body:not(.game-started) .music-mini{display:none;}
 
         <!-- CENTER: The active rift portal -->
         <div class="sanctum-center">
+          <div class="sanctum-floor" id="sanctum-floor">
+            <div class="sanctum-floor-inner" id="sanctum-floor-inner"></div>
+          </div>
           <div class="main-rift-wrap">
             <div class="main-rift" onclick="switchScreen('summon')">
               <div class="rift-ring rift-ring-1"></div>
@@ -2355,6 +2405,9 @@ function tick(){
       if(typeof save === 'function') save();
       else try { localStorage.setItem('inf_hub', JSON.stringify(S)); } catch(e){}
 
+      // Populate hub with character data so it's ready when overlay fades
+      applyCharacterToHub();
+
       overlay.classList.add('rit-fading-out');
       setTimeout(function(){
         overlay.classList.remove('rit-active','rit-fading-out');
@@ -2362,6 +2415,63 @@ function tick(){
       }, 1700);
     });
   }
+
+  // ─── Reusable Sigil helper ──────────────────────────
+  // Use anywhere you want to render the player's sigil:
+  //   Sigil.render(elementOrId, S.character.sigil)
+  //   Sigil.render(el, 'watcher', { color:'#fbbf24', strokeWidth:2 })
+  window.Sigil = {
+    get: function(id){ return getSigilSvg(id); },
+    render: function(target, id, opts){
+      var el = (typeof target === 'string') ? document.getElementById(target) : target;
+      if(!el) return null;
+      var svg = getSigilSvg(id);
+      if(!svg) return null;
+      opts = opts || {};
+      if(opts.color){
+        svg.setAttribute('stroke', opts.color);
+        var fillEls = svg.querySelectorAll('[fill="currentColor"]');
+        Array.prototype.forEach.call(fillEls, function(f){ f.setAttribute('fill', opts.color); });
+      }
+      if(opts.strokeWidth) svg.setAttribute('stroke-width', opts.strokeWidth);
+      el.innerHTML = '';
+      el.appendChild(svg);
+      return svg;
+    }
+  };
+
+  // ─── Apply character to hub (floor sigil + identity) ──
+  function applyCharacterToHub(){
+    if(typeof S === 'undefined' || !S || !S.character) return;
+    var ch = S.character;
+
+    // Identity name + title
+    var nameEl = document.getElementById('rw-name');
+    var subEl = document.getElementById('rw-sub');
+    if(nameEl && ch.name) nameEl.textContent = ch.name;
+    if(subEl && ch.title) subEl.textContent = ch.title;
+
+    // Identity sigil mark (purple, small)
+    var markEl = document.getElementById('rw-sigil-mark');
+    if(markEl && ch.sigil){
+      window.Sigil.render(markEl, ch.sigil, { color:'#c084fc' });
+      markEl.classList.add('active');
+    }
+
+    // Sanctum floor sigil (gold, large, slow rotate)
+    var floorInner = document.getElementById('sanctum-floor-inner');
+    var floorWrap = document.getElementById('sanctum-floor');
+    if(floorInner && ch.sigil){
+      window.Sigil.render(floorInner, ch.sigil, { color:'#fbbf24' });
+      // Activate after a frame so the opacity transition fires
+      requestAnimationFrame(function(){
+        if(floorWrap) floorWrap.classList.add('active');
+      });
+    }
+  }
+
+  // Expose so other code (or the dev console) can re-apply if needed
+  window.applyCharacterToHub = applyCharacterToHub;
 
   function openRitual(){
     if(initialized) return;
@@ -2386,11 +2496,18 @@ function tick(){
 
   function gate(){
     var hasChar = (typeof S !== 'undefined') && S && S.character;
-    if(hasChar) return;
+    if(hasChar){
+      applyCharacterToHub();
+      return;
+    }
     openRitual();
   }
 
   function wireSplash(){
+    // Apply character to hub immediately if one exists, so the floor sigil
+    // and identity are already in place behind the splash.
+    if(typeof S !== 'undefined' && S && S.character) applyCharacterToHub();
+
     var btn = document.getElementById('splash-btn');
     if(!btn){
       if(document.readyState === 'loading'){
