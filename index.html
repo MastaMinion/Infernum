@@ -614,6 +614,318 @@ body{font-family:var(--body);color:var(--text);position:relative}
 /* Animations */
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
 .fade-in{animation:fadeIn .4s ease both}
+/* ═══════════════════════════════════════════
+   PROGRESSION SYSTEM — added by progression module
+   detail screen, seals, unchaining, echoes, test panel
+   ═══════════════════════════════════════════ */
+
+/* topbar logo image */
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-logo{
+  width:32px;height:32px;object-fit:contain;
+  filter:drop-shadow(0 0 12px rgba(251,191,36,.30));
+  flex-shrink:0;
+}
+
+/* fixed corner watermark */
+.inf-watermark{
+  position:fixed;bottom:8px;right:8px;z-index:9;
+  width:36px;height:36px;pointer-events:none;
+  opacity:.18;
+  filter:drop-shadow(0 0 10px rgba(251,191,36,.3));
+  animation:wmBreathe 6s ease-in-out infinite;
+}
+.inf-watermark img{width:100%;height:100%;object-fit:contain}
+@keyframes wmBreathe{0%,100%{opacity:.14}50%{opacity:.32}}
+
+/* echoes pill row in topbar-right */
+#echoes-bar{display:flex;gap:6px}
+.echoes-pill{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(124,58,237,.08);
+  border:0.5px solid var(--border);
+  border-radius:14px;padding:4px 9px;
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.1em;
+}
+.echoes-pill .ed{width:5px;height:5px;border-radius:50%;box-shadow:0 0 8px currentColor}
+.echoes-pill.void{color:#a78bfa}.echoes-pill.void .ed{background:#a78bfa}
+.echoes-pill.rift{color:#67e8f9}.echoes-pill.rift .ed{background:#67e8f9}
+.echoes-pill.soul{color:var(--gold)}.echoes-pill.soul .ed{background:var(--gold)}
+.echoes-pill b{color:var(--text);font-weight:600}
+@media (max-width:480px){
+  .echoes-pill{padding:3px 7px;font-size:.55rem}
+  .echoes-pill .label{display:none}
+}
+
+/* ── DETAIL OVERLAY ── */
+#detail-overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(2,0,8,.78);backdrop-filter:blur(14px);
+  display:none;align-items:center;justify-content:center;
+  padding:14px;
+  animation:fadeIn .35s ease;
+}
+#detail-overlay.open{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+#detail-card{
+  position:relative;
+  width:min(1000px,100%);max-height:calc(100vh - 28px);
+  background:linear-gradient(180deg,rgba(20,8,40,.94),rgba(6,0,14,.97));
+  border:1px solid var(--border);
+  display:grid;grid-template-columns:minmax(260px,.9fr) 1.1fr;
+  overflow:hidden;
+  animation:detailIn .45s cubic-bezier(.2,.7,.2,1);
+  box-shadow:0 60px 100px -20px rgba(0,0,0,.9);
+}
+@keyframes detailIn{from{transform:translateY(20px) scale(.985);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+@media (max-width:780px){
+  #detail-card{grid-template-columns:1fr;max-height:calc(100vh - 28px);overflow-y:auto}
+}
+
+.detail-corner{position:absolute;width:18px;height:18px;border-color:rgba(251,191,36,.45);border-style:solid;border-width:0;pointer-events:none}
+.detail-corner.tl{top:10px;left:10px;border-top-width:1px;border-left-width:1px}
+.detail-corner.tr{top:10px;right:10px;border-top-width:1px;border-right-width:1px}
+.detail-corner.bl{bottom:10px;left:10px;border-bottom-width:1px;border-left-width:1px}
+.detail-corner.br{bottom:10px;right:10px;border-bottom-width:1px;border-right-width:1px}
+
+.detail-mark{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  width:28px;height:28px;z-index:4;pointer-events:none;
+  opacity:.55;filter:drop-shadow(0 0 8px rgba(251,191,36,.4));
+}
+.detail-mark img{width:100%;height:100%;object-fit:contain}
+
+#detail-close{
+  position:absolute;top:12px;right:12px;z-index:5;
+  width:32px;height:32px;border:1px solid var(--border);
+  background:rgba(0,0,0,.55);color:var(--muted);
+  font-family:var(--serif);font-size:18px;cursor:pointer;
+  transition:all .2s;
+}
+#detail-close:hover{color:var(--gold);border-color:rgba(251,191,36,.4);background:rgba(20,8,2,.7)}
+
+/* card side */
+.detail-card-side{
+  position:relative;padding:32px 24px 22px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(60% 50% at 50% 40%,rgba(124,58,237,.12),transparent 70%);
+  border-right:1px solid var(--border);
+  min-height:0;
+}
+@media (max-width:780px){
+  .detail-card-side{border-right:none;border-bottom:1px solid var(--border);padding:36px 20px 20px}
+}
+.detail-card-slot{width:min(220px,72%);position:relative}
+.detail-card-slot.upgrading{animation:cardCharge .9s ease-out}
+@keyframes cardCharge{0%{filter:none}40%{filter:brightness(1.6) saturate(1.3);transform:scale(1.02)}100%{filter:none;transform:scale(1)}}
+
+.detail-card-slot.aura-rebound{box-shadow:0 0 40px -8px var(--purple)}
+.detail-card-slot.aura-deepbound{box-shadow:0 0 40px -8px var(--crimson)}
+.detail-card-slot.aura-soulbound{box-shadow:0 0 50px -6px var(--gold)}
+
+/* card-overlay seals (1-6 small marks at the bottom border) */
+.card-seals{
+  position:absolute;left:0;right:0;bottom:8px;
+  display:flex;justify-content:center;gap:5px;padding:0 12px;
+  z-index:5;pointer-events:none;
+}
+.card-seals svg{width:10px;height:10px;opacity:.18;transition:opacity .4s ease,filter .4s ease}
+.card-seals svg.lit{opacity:1;filter:drop-shadow(0 0 4px rgba(251,191,36,.85))}
+
+.detail-name{
+  margin-top:18px;text-align:center;
+  font-family:var(--deco);font-weight:700;
+  font-size:clamp(16px,2.4vw,22px);letter-spacing:.04em;
+  color:var(--text);line-height:1.15;
+  transition:color .6s,text-shadow .6s;
+}
+.detail-name.soulbound{color:var(--gold);text-shadow:0 0 20px rgba(251,191,36,.35)}
+.detail-tier{
+  margin-top:6px;text-align:center;
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.32em;
+  text-transform:uppercase;color:var(--muted);
+}
+.detail-tier .sep{margin:0 7px;opacity:.5}
+.detail-tier .uc{color:var(--uc-color,var(--muted))}
+
+/* info side */
+.detail-info{
+  padding:30px 26px;
+  overflow-y:auto;display:flex;flex-direction:column;gap:22px;
+  scrollbar-width:thin;scrollbar-color:var(--muted) transparent;
+}
+.detail-info::-webkit-scrollbar{width:5px}
+.detail-info::-webkit-scrollbar-thumb{background:var(--muted);border-radius:3px}
+
+.detail-section h3{
+  margin:0 0 10px;font-family:var(--serif);font-weight:500;
+  font-size:.6rem;letter-spacing:.42em;text-transform:uppercase;
+  color:var(--muted);
+  display:flex;align-items:center;gap:10px;
+}
+.detail-section h3::before,.detail-section h3::after{content:"";flex:1;height:1px;background:var(--border)}
+.detail-section h3::before{flex:0 0 12px}
+
+/* binding row */
+.seal-row{display:flex;justify-content:center;gap:7px;margin-bottom:10px}
+.seal-pip{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  opacity:.22;transition:all .5s cubic-bezier(.2,.7,.2,1);
+}
+.seal-pip.lit{opacity:1}
+.seal-pip.lit svg{filter:drop-shadow(0 0 8px rgba(251,191,36,.7))}
+.seal-pip.next{opacity:.42}
+.seal-pip.next svg{animation:pipPulse 2.2s ease-in-out infinite}
+@keyframes pipPulse{0%,100%{filter:drop-shadow(0 0 0 transparent);transform:scale(1)}50%{filter:drop-shadow(0 0 5px rgba(232,212,255,.5));transform:scale(1.06)}}
+.seal-pip.flash svg{animation:sealFlash 1s ease-out}
+@keyframes sealFlash{0%{filter:drop-shadow(0 0 24px rgba(251,191,36,1));transform:scale(1.4)}100%{filter:drop-shadow(0 0 8px rgba(251,191,36,.7));transform:scale(1)}}
+
+.unchain-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.uc-pip{
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.28em;
+  text-transform:uppercase;padding:6px 12px;
+  border:1px solid var(--muted);color:var(--muted);
+  background:transparent;transition:all .4s ease;
+}
+.uc-pip.lit{
+  border-color:var(--c,var(--purple));color:var(--c,var(--purple));
+  background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--c,var(--purple)) 14%,transparent));
+  box-shadow:0 0 16px -6px var(--c,var(--purple));
+}
+
+/* stats */
+.det-stats{display:flex;flex-direction:column;gap:4px;font-size:.85rem}
+.det-stat{display:grid;grid-template-columns:auto 1fr auto auto;align-items:baseline;gap:8px;padding:4px 0}
+.det-stat .name{font-family:var(--serif);font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.det-stat .leader{height:1px;align-self:end;margin-bottom:4px;background-image:radial-gradient(circle,var(--muted) 1px,transparent 1.5px);background-size:6px 2px;background-repeat:repeat-x;opacity:.5}
+.det-stat .val{font-family:var(--serif);font-weight:600;font-variant-numeric:tabular-nums;color:var(--text);font-size:.95rem}
+.det-stat .delta{font-family:var(--serif);font-variant-numeric:tabular-nums;font-size:.6rem;letter-spacing:.08em;color:var(--gold);min-width:42px;text-align:right;opacity:.85}
+.det-stat .delta.empty{color:transparent}
+
+/* upgrade block */
+.upgrade-box{
+  position:relative;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(124,58,237,.06),rgba(0,0,0,.2));
+  padding:18px 18px 20px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.upgrade-box.afford::before{content:"";position:absolute;inset:0;pointer-events:none;border:1px solid rgba(251,191,36,.2);animation:bp 3s ease-in-out infinite}
+@keyframes bp{0%,100%{opacity:.4}50%{opacity:1;box-shadow:0 0 20px -8px rgba(251,191,36,.35) inset}}
+
+.upgrade-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.upgrade-head .what{font-family:var(--deco);font-weight:700;font-size:.95rem;letter-spacing:.04em;color:var(--text)}
+.upgrade-head .kind{font-family:var(--serif);font-size:.55rem;letter-spacing:.36em;text-transform:uppercase;color:var(--muted)}
+
+.cost-row{display:flex;gap:10px;flex-wrap:wrap}
+.cost-pill{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 10px;border:1px solid var(--border);
+  background:rgba(0,0,0,.35);
+  font-family:var(--serif);font-size:.7rem;letter-spacing:.06em;
+}
+.cost-pill .dot{width:6px;height:6px;border-radius:50%;box-shadow:0 0 8px currentColor}
+.cost-pill.void{color:#a78bfa}.cost-pill.void .dot{background:#a78bfa}
+.cost-pill.rift{color:#67e8f9}.cost-pill.rift .dot{background:#67e8f9}
+.cost-pill.soul{color:var(--gold)}.cost-pill.soul .dot{background:var(--gold)}
+.cost-pill.dup{color:var(--purple)}.cost-pill.dup .dot{background:var(--purple)}
+.cost-pill b{color:var(--text);font-weight:600}
+.cost-pill.short b{color:var(--crimson)}
+.cost-pill .have{color:var(--muted);font-size:.6rem;margin-left:1px}
+
+.deepen-btn{
+  width:100%;padding:14px 18px;
+  background:linear-gradient(180deg,rgba(251,191,36,.08),rgba(251,191,36,.02));
+  border:1px solid rgba(251,191,36,.5);color:var(--gold);
+  font-family:var(--deco);font-weight:700;
+  font-size:.75rem;letter-spacing:.36em;text-transform:uppercase;
+  cursor:pointer;transition:all .35s ease;
+}
+.deepen-btn:hover:not(:disabled){
+  background:linear-gradient(180deg,rgba(251,191,36,.18),rgba(251,191,36,.05));
+  border-color:rgba(251,191,36,.85);color:#fff8e1;letter-spacing:.42em;
+  box-shadow:0 0 26px -8px rgba(251,191,36,.5);
+}
+.deepen-btn:disabled{cursor:not-allowed;opacity:.45;border-color:var(--border);color:var(--muted);background:rgba(0,0,0,.3)}
+.deepen-btn.unchain{
+  border-color:var(--c,var(--crimson));
+  color:color-mix(in srgb,var(--c,var(--crimson)) 70%,white);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c,var(--crimson)) 12%,transparent),transparent);
+}
+.deepen-btn.unchain:hover:not(:disabled){
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c,var(--crimson)) 22%,transparent),transparent);
+  box-shadow:0 0 26px -8px var(--c,var(--crimson));
+}
+
+.maxed-msg{
+  text-align:center;padding:18px;
+  font-family:var(--deco);font-weight:700;
+  font-size:.7rem;letter-spacing:.4em;text-transform:uppercase;
+  color:var(--gold);
+  border:1px solid rgba(251,191,36,.3);
+  background:linear-gradient(180deg,rgba(251,191,36,.06),transparent);
+}
+
+.det-flavor{
+  font-family:var(--body);font-style:italic;
+  font-size:.8rem;line-height:1.5;color:var(--muted);
+  text-align:center;padding:14px 8px 0;
+  border-top:1px solid var(--border);
+}
+
+/* ── TEST PANEL (dev-only) ── */
+.test-toggle{
+  position:fixed;bottom:8px;left:8px;z-index:50;
+  padding:7px 14px;border:1px solid var(--border);
+  background:rgba(12,4,24,.85);backdrop-filter:blur(6px);
+  color:var(--gold);font-family:var(--serif);
+  font-size:.55rem;letter-spacing:.32em;text-transform:uppercase;
+  cursor:pointer;transition:all .25s;
+}
+.test-toggle:hover{border-color:rgba(251,191,36,.55);color:#fff8e1;box-shadow:0 0 18px -8px rgba(251,191,36,.5)}
+
+.test-panel{
+  position:fixed;top:0;left:0;bottom:0;z-index:60;
+  width:min(420px,92vw);
+  background:linear-gradient(180deg,rgba(12,4,24,.97),rgba(6,0,14,.98));
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transform:translateX(-105%);
+  transition:transform .45s cubic-bezier(.2,.7,.2,1);
+  box-shadow:30px 0 60px -20px rgba(0,0,0,.85);
+}
+.test-panel.open{transform:translateX(0)}
+
+.test-panel-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.test-panel-head h2{margin:0;flex:1;font-family:var(--deco);font-weight:700;font-size:.7rem;letter-spacing:.34em;color:var(--gold);text-transform:uppercase}
+.test-panel-close{background:rgba(0,0,0,.5);border:1px solid var(--border);width:28px;height:28px;color:var(--muted);font-family:var(--serif);font-size:16px;cursor:pointer;transition:all .2s}
+.test-panel-close:hover{color:var(--gold);border-color:rgba(251,191,36,.4)}
+
+.test-panel-body{flex:1;overflow-y:auto;padding:18px 22px 22px;scrollbar-width:thin;scrollbar-color:var(--muted) transparent}
+.test-section{margin-bottom:24px}
+.test-section h3{margin:0 0 10px;font-family:var(--serif);font-weight:500;font-size:.55rem;letter-spacing:.4em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+.test-section h3::before,.test-section h3::after{content:"";flex:1;height:1px;background:var(--border)}
+.test-section h3::before{flex:0 0 12px}
+
+.test-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.test-btn{padding:9px 10px;border:1px solid var(--border);background:rgba(0,0,0,.4);color:var(--text);font-family:var(--serif);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:all .25s}
+.test-btn:hover{border-color:rgba(251,191,36,.4);color:var(--gold)}
+.test-btn.danger:hover{border-color:var(--crimson);color:var(--crimson)}
+.test-btn.run{grid-column:span 2;padding:13px;border-color:rgba(251,191,36,.55);color:var(--gold);font-family:var(--deco);font-weight:700;font-size:.65rem;letter-spacing:.34em;margin-bottom:11px}
+.test-btn.run:hover{background:linear-gradient(180deg,rgba(251,191,36,.1),transparent);color:#fff8e1;box-shadow:0 0 22px -8px rgba(251,191,36,.5)}
+
+.test-summary{padding:11px 14px;margin-bottom:11px;border:1px solid var(--border);background:rgba(0,0,0,.35);font-family:var(--serif);font-size:.75rem;display:flex;gap:14px;align-items:center}
+.test-summary .ps{color:#86efac}.test-summary .fl{color:var(--crimson)}.test-summary .tt{color:var(--muted);margin-left:auto;font-size:.55rem;letter-spacing:.28em;text-transform:uppercase}
+
+.test-result{padding:9px 11px;margin-bottom:4px;border-left:2px solid var(--muted);background:rgba(0,0,0,.22);font-family:var(--body);font-size:.78rem}
+.test-result.pass{border-color:#86efac}
+.test-result.fail{border-color:var(--crimson);background:rgba(244,63,94,.06)}
+.test-result .name{font-family:var(--serif);font-size:.65rem;letter-spacing:.16em;color:var(--text);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.test-result.pass .icon{color:#86efac}.test-result.fail .icon{color:var(--crimson)}
+.test-result .msg{margin-top:4px;color:var(--crimson);font-size:.7rem;font-style:italic;line-height:1.4}
+.test-empty{text-align:center;padding:24px 0;font-family:var(--body);font-style:italic;color:var(--muted);font-size:.78rem}
+
 </style>
 </head>
 <body>
@@ -637,11 +949,19 @@ body{font-family:var(--body);color:var(--text);position:relative}
 <div id="shell">
   <!-- TOP BAR -->
   <div id="topbar">
-    <div>
-      <div class="logo-mark">INF<span>E</span>RNUM</div>
-      <span class="logo-sub">ABYSSAL SANCTUM</span>
+    <div class="topbar-left">
+      <img class="topbar-logo" src="assets/ui/infernum-logo.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
+      <div>
+        <div class="logo-mark">INF<span>E</span>RNUM</div>
+        <span class="logo-sub">ABYSSAL SANCTUM</span>
+      </div>
     </div>
     <div class="topbar-right">
+      <div id="echoes-bar">
+        <div class="echoes-pill void"><span class="ed"></span><span class="label">VOID</span><b id="echo-void">0</b></div>
+        <div class="echoes-pill rift"><span class="ed"></span><span class="label">RIFT</span><b id="echo-rift">0</b></div>
+        <div class="echoes-pill soul"><span class="ed"></span><span class="label">SOUL</span><b id="echo-soul">0</b></div>
+      </div>
       <div id="shard-display" onclick="addDemoShards()">
         <span class="shard-gem">◆</span>
         <div>
@@ -895,6 +1215,56 @@ body{font-family:var(--body);color:var(--text);position:relative}
   </div>
 </div><!-- /shell -->
 
+<!-- DETAIL OVERLAY -->
+<div id="detail-overlay" role="dialog" aria-modal="true" aria-labelledby="detail-name">
+  <div id="detail-card">
+    <span class="detail-corner tl"></span>
+    <span class="detail-corner tr"></span>
+    <span class="detail-corner bl"></span>
+    <span class="detail-corner br"></span>
+    <div class="detail-mark"><img src="assets/ui/infernum-logo.png" alt="" aria-hidden="true" onerror="this.style.display='none'"></div>
+    <button id="detail-close" aria-label="Close">×</button>
+    <section class="detail-card-side">
+      <div class="detail-card-slot" id="detail-card-slot"></div>
+      <div class="detail-name" id="detail-name"></div>
+      <div class="detail-tier" id="detail-tier"></div>
+    </section>
+    <section class="detail-info" id="detail-info"></section>
+  </div>
+</div>
+
+<!-- CORNER WATERMARK -->
+<div class="inf-watermark"><img src="assets/ui/infernum-logo.png" alt="" aria-hidden="true" onerror="this.parentElement.style.display='none'"></div>
+
+<!-- TEST PANEL (dev-only — remove before launch) -->
+<button class="test-toggle" id="test-toggle">⸻ Trial of the Bound ⸻</button>
+<aside class="test-panel" id="test-panel" aria-hidden="true">
+  <header class="test-panel-head">
+    <h2>Trial of the Bound</h2>
+    <button class="test-panel-close" id="test-panel-close" aria-label="Close panel">×</button>
+  </header>
+  <div class="test-panel-body">
+    <div class="test-section">
+      <h3>Rituals</h3>
+      <div class="test-actions">
+        <button class="test-btn" data-cheat="void">+50 Void</button>
+        <button class="test-btn" data-cheat="rift">+50 Rift</button>
+        <button class="test-btn" data-cheat="soul">+50 Soul</button>
+        <button class="test-btn" data-cheat="dups">+1 Each Duplicate</button>
+        <button class="test-btn" data-cheat="seedall">Seed Full Codex</button>
+        <button class="test-btn danger" data-cheat="wipe">Wipe Vessel</button>
+      </div>
+    </div>
+    <div class="test-section">
+      <h3>Tests</h3>
+      <button class="test-btn run" id="run-tests-btn">Invoke the Trial</button>
+      <div id="test-results">
+        <div class="test-empty">No trial cast yet. The seals lie undisturbed.</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
 <script>
 // ═══════════════════════════════════════════
 // DEMON CARD CLASS (inline)
@@ -1009,6 +1379,7 @@ const SCROLLS=[
 let S={
   shards:1200,epicPity:0,legPity:0,scrollPity:{},
   collection:{},garrison:{},garrisonAccum:0,
+  echoes:{void:0,rift:0,soul:0},echoesAccum:{void:0,rift:0,soul:0},
   bannerExpiry:null,activeScroll:'infernal',level:1,
 };
 let lastCount=1;
@@ -1077,7 +1448,9 @@ function pullOne(){
   const tier=TIERS[ti];
   const pool=POOL[tier.id];
   const name=pool[Math.floor(Math.random()*pool.length)];
-  S.collection[name]=(S.collection[name]||0)+1;
+  S.collection[name]=(typeof S.collection[name]==='object'&&S.collection[name])
+    ?Object.assign(S.collection[name],{count:(S.collection[name].count|0)+1})
+    :{count:((typeof S.collection[name]==='number'?S.collection[name]:0)+1),seals:1,unchainTier:'none',acquiredAt:Date.now()};
   return{tier,name,ti};
 }
 
@@ -1209,7 +1582,7 @@ function closeOverlay(){
 function renderCodex(){
   const grid=document.getElementById('codex-grid');
   if(!grid)return;
-  const owned=ALL_DEMONS.filter(d=>(S.collection[d.name]||0)>0).length;
+  const owned=ALL_DEMONS.filter(d=>INF.getCount(d.name)>0).length;
   document.getElementById('codex-count').textContent=`${owned} / ${ALL_DEMONS.length} demons bound`;
   if(grid._cards)grid._cards.forEach(c=>c.destroy());
   grid._cards=[];grid.innerHTML='';
@@ -1217,7 +1590,7 @@ function renderCodex(){
   const cols=window.innerWidth>=700?5:window.innerWidth>=480?4:3;
   const cardW=Math.floor((window.innerWidth-32-10*(cols-1))/cols);
   for(const d of ALL_DEMONS){
-    const cnt=S.collection[d.name]||0;
+    const cnt=INF.getCount(d.name);
     const t=d.tier;
     const cell=document.createElement('div');
     cell.className='codex-cell'+(cnt===0?' unknown':'');
@@ -1225,7 +1598,7 @@ function renderCodex(){
       cell.innerHTML=`<div class="cc-unknown-art">👤</div><div class="cc-unknown-name">???</div>`;
     } else {
       const demonObj={id:DEMON_IDS[d.name]||d.name.toLowerCase().replace(/['\s]/g,'_').replace(/[^a-z0-9_]/g,''),name:d.name,tier:t.idx+1,tierName:t.name,color:t.color,count:cnt};
-      const card=new DemonCard(demonObj,{width:cardW,showName:true,showTier:true,showCount:true,animate:true});
+      const card=new DemonCard(demonObj,{width:cardW,showName:true,showTier:true,showCount:true,animate:true,clickable:true,onClick:function(){INF.openDetail(d.name);}});
       card.el.style.cssText='width:100%;height:100%;position:absolute;inset:0;border-radius:8px;';
       cell.style.position='relative';
       cell.appendChild(card.el);
@@ -1275,6 +1648,8 @@ function startGarrisonTicker(){
       const hubIncome=document.getElementById('hub-income');
       if(hubIncome)hubIncome.textContent=`◆ ${Math.floor(S.garrisonAccum).toLocaleString()}`;
     }
+    // Echoes accumulate from garrisoned demons regardless of shard rate
+    if(window.INF&&INF.tickEchoes)INF.tickEchoes();
   },1000);
 }
 
@@ -1374,7 +1749,7 @@ function updateUI(){
   if(hb1)hb1.disabled=S.shards<800;
   if(hb10)hb10.disabled=S.shards<7200;
   // Stats
-  const owned=ALL_DEMONS.filter(d=>(S.collection[d.name]||0)>0).length;
+  const owned=ALL_DEMONS.filter(d=>INF.getCount(d.name)>0).length;
   const sb=document.getElementById('stat-bound');if(sb)sb.textContent=owned;
   const cb=document.getElementById('codex-badge');if(cb)cb.textContent=`${owned} / ${ALL_DEMONS.length}`;
   const sg=document.getElementById('stat-garrison');if(sg)sg.textContent=Object.keys(S.garrison||{}).length;
@@ -1386,6 +1761,750 @@ function updateUI(){
 }
 
 function addDemoShards(){S.shards+=500;save();updateUI();}
+
+// ═══════════════════════════════════════════
+// PROGRESSION SYSTEM (Seals + Unchaining + Echoes)
+// ═══════════════════════════════════════════
+window.INF=(function(){
+  'use strict';
+
+  // ── CONSTANTS ──
+  const SEAL_COSTS={
+    2:{void:20,rift:0,soul:0},
+    3:{void:40,rift:0,soul:0},
+    4:{void:0,rift:30,soul:0},
+    5:{void:0,rift:60,soul:0},
+    6:{void:0,rift:100,soul:0},
+  };
+  const SEAL_MULT=[1.0,1.0,1.15,1.30,1.50,1.75,2.0]; // index by seal count
+
+  const UNCHAIN_NEXT={none:'rebound',rebound:'deepbound',deepbound:'soulbound',soulbound:null};
+  const UNCHAIN_LABEL={none:'—',rebound:'Rebound',deepbound:'Deepbound',soulbound:'Soulbound'};
+  const UNCHAIN_COSTS={
+    rebound:{dup:1,soul:10},
+    deepbound:{dup:1,soul:25},
+    soulbound:{dup:1,soul:50},
+  };
+  const UNCHAIN_MULT={none:1.0,rebound:1.3,deepbound:1.6,soulbound:2.0};
+  const UNCHAIN_GARRISON={none:1.0,rebound:2.0,deepbound:3.0,soulbound:5.0};
+  const UNCHAIN_COLOR={none:null,rebound:'var(--purple)',deepbound:'var(--crimson)',soulbound:'var(--gold)'};
+
+  // Tier IDs from existing TIERS array
+  const RIFT_TIERS=new Set(['fiend','greater_demon','archdemon','sin_lord','void_primordial']);
+  const SOUL_TIERS=new Set(['sin_lord','void_primordial']);
+
+  // Soulbound names — fill in as you write them. Empty = use base name.
+  const SOULBOUND_NAMES={
+    // 'Gorgethorn':'Gorgethorn, the Throated Crown',
+    // 'Null-That-Speaks':'Null, Mouth of the Unmaking',
+  };
+
+  // ── HELPERS ──
+  function getDemonRecord(name){return ALL_DEMONS.find(d=>d.name===name)||null}
+  function getEntry(name){
+    const v=S.collection[name];
+    if(!v)return null;
+    if(typeof v==='number')return null; // pre-migration
+    return v;
+  }
+  function getCount(name){
+    const v=S.collection[name];
+    if(!v)return 0;
+    if(typeof v==='number')return v;
+    return v.count|0;
+  }
+  function displayName(name){
+    const e=getEntry(name);
+    if(e&&e.unchainTier==='soulbound'&&SOULBOUND_NAMES[name])return SOULBOUND_NAMES[name];
+    return name;
+  }
+
+  // Deterministic stat synthesis from tier idx + name hash.
+  // No real stat data exists yet; this gives us numbers to show that scale
+  // sensibly with seal/unchain multipliers. Replace with real stats when ready.
+  function hashName(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*16777619)>>>0;}return h;}
+  function baseStats(name){
+    const d=getDemonRecord(name);if(!d)return null;
+    const tIdx=d.tier.idx; // 0-6
+    const h=hashName(name);
+    // base value scales sharply with tier; per-stat variance from hash bytes
+    const base=10+tIdx*tIdx*3+tIdx*5; // 10, 18, 32, 52, 78, 110, 148
+    const v1=((h)&15)-7;        // -7..+8
+    const v2=((h>>5)&15)-7;
+    const v3=((h>>10)&15)-7;
+    return{
+      Power:    Math.max(1,base+v1),
+      Wrath:    Math.max(1,Math.round(base*0.85)+v2),
+      Cunning:  Math.max(1,Math.round(base*0.75)+v3),
+    };
+  }
+
+  function calcStats(name){
+    const e=getEntry(name);if(!e)return null;
+    const sm=SEAL_MULT[e.seals]||1.0;
+    const um=UNCHAIN_MULT[e.unchainTier]||1.0;
+    const total=sm*um;
+    const b=baseStats(name);if(!b)return null;
+    const out={};
+    for(const k of Object.keys(b))out[k]=Math.round(b[k]*total);
+    out._sealMult=sm;out._unchainMult=um;out._total=total;
+    out._garrison=UNCHAIN_GARRISON[e.unchainTier]||1.0;
+    return out;
+  }
+
+  function nextUpgrade(name){
+    const e=getEntry(name);if(!e)return null;
+    if(e.seals<6){
+      const target=e.seals+1;
+      return{
+        kind:'seal',targetSeal:target,cost:SEAL_COSTS[target],
+        label:`Forge the ${ordinal(target)} Seal`,
+        previewMult:SEAL_MULT[target]*(UNCHAIN_MULT[e.unchainTier]||1.0)
+      };
+    }
+    const next=UNCHAIN_NEXT[e.unchainTier];
+    if(!next)return null;
+    return{
+      kind:'unchain',target:next,cost:UNCHAIN_COSTS[next],
+      label:({rebound:'Rebound the Demon',deepbound:'Deepbind the Demon',soulbound:'Soulbind the Demon'})[next],
+      previewMult:SEAL_MULT[6]*UNCHAIN_MULT[next]
+    };
+  }
+
+  function canAfford(upg,name){
+    if(!upg)return false;
+    const e=S.echoes,entry=getEntry(name);
+    if(upg.kind==='seal'){
+      const c=upg.cost;
+      return(e.void>=(c.void||0))&&(e.rift>=(c.rift||0))&&(e.soul>=(c.soul||0));
+    }
+    if(upg.kind==='unchain'){
+      const dupHave=Math.max(0,((entry&&entry.count)||0)-1);
+      return(dupHave>=(upg.cost.dup||0))&&(e.soul>=(upg.cost.soul||0));
+    }
+    return false;
+  }
+
+  function ordinal(n){return({1:'1st',2:'2nd',3:'3rd',4:'4th',5:'5th',6:'6th'})[n]||(n+'th')}
+
+  function applyUpgrade(name,upg){
+    const e=getEntry(name);if(!e||!upg)return false;
+    if(!canAfford(upg,name))return false;
+    if(upg.kind==='seal'){
+      const c=upg.cost;
+      S.echoes.void-=(c.void||0);
+      S.echoes.rift-=(c.rift||0);
+      S.echoes.soul-=(c.soul||0);
+      e.seals=upg.targetSeal;
+    }else if(upg.kind==='unchain'){
+      e.count-=(upg.cost.dup||0);
+      S.echoes.soul-=(upg.cost.soul||0);
+      e.unchainTier=upg.target;
+    }
+    save();
+    return true;
+  }
+
+  // ── MIGRATION (idempotent) ──
+  function migrate(){
+    if(!S.collection)S.collection={};
+    if(!S.echoes)S.echoes={void:0,rift:0,soul:0};
+    if(S.echoes.void==null)S.echoes.void=0;
+    if(S.echoes.rift==null)S.echoes.rift=0;
+    if(S.echoes.soul==null)S.echoes.soul=0;
+    if(!S.echoesAccum)S.echoesAccum={void:0,rift:0,soul:0};
+    if(S.echoesAccum.void==null)S.echoesAccum.void=0;
+    if(S.echoesAccum.rift==null)S.echoesAccum.rift=0;
+    if(S.echoesAccum.soul==null)S.echoesAccum.soul=0;
+    let changed=false;const now=Date.now();
+    for(const k of Object.keys(S.collection)){
+      const v=S.collection[k];
+      if(typeof v==='number'){
+        S.collection[k]={count:v,seals:1,unchainTier:'none',acquiredAt:now};
+        changed=true;
+      }else if(v&&typeof v==='object'){
+        if(v.count==null){v.count=1;changed=true;}
+        if(v.seals==null){v.seals=1;changed=true;}
+        if(v.unchainTier==null){v.unchainTier='none';changed=true;}
+        if(v.acquiredAt==null){v.acquiredAt=now;changed=true;}
+        v.seals=Math.min(6,Math.max(1,v.seals|0));
+        if(!UNCHAIN_NEXT.hasOwnProperty(v.unchainTier))v.unchainTier='none';
+      }
+    }
+    if(changed)save();
+  }
+
+  // ── ECHO TICK (called from garrison interval) ──
+  // 1 echo/hr/garrisoned demon for void; rift only if Fiend+; soul only if Sin Lord+.
+  // Garrison rate multiplier from unchain tier applies to all three.
+  function tickEchoes(){
+    const garrisoned=Object.values(S.garrison||{}).filter(g=>g&&g.name);
+    if(garrisoned.length===0)return;
+    let v=0,r=0,sl=0;
+    for(const g of garrisoned){
+      const d=getDemonRecord(g.name);if(!d)continue;
+      const e=getEntry(g.name);
+      const mult=e?(UNCHAIN_GARRISON[e.unchainTier]||1.0):1.0;
+      const tid=d.tier.id;
+      v+=mult;
+      if(RIFT_TIERS.has(tid))r+=mult;
+      if(SOUL_TIERS.has(tid))sl+=mult;
+    }
+    // per-second contribution from per-hour rate
+    S.echoesAccum.void+=v/3600;
+    S.echoesAccum.rift+=r/3600;
+    S.echoesAccum.soul+=sl/3600;
+    let dirty=false;
+    if(S.echoesAccum.void>=1){const n=Math.floor(S.echoesAccum.void);S.echoes.void+=n;S.echoesAccum.void-=n;dirty=true;}
+    if(S.echoesAccum.rift>=1){const n=Math.floor(S.echoesAccum.rift);S.echoes.rift+=n;S.echoesAccum.rift-=n;dirty=true;}
+    if(S.echoesAccum.soul>=1){const n=Math.floor(S.echoesAccum.soul);S.echoes.soul+=n;S.echoesAccum.soul-=n;dirty=true;}
+    if(dirty){save();renderEchoes();if(openName)renderDetail();}
+  }
+
+  function renderEchoes(){
+    const v=document.getElementById('echo-void');if(v)v.textContent=S.echoes.void;
+    const r=document.getElementById('echo-rift');if(r)r.textContent=S.echoes.rift;
+    const sl=document.getElementById('echo-soul');if(sl)sl.textContent=S.echoes.soul;
+  }
+
+  // ── SIGIL SVG (hexagram-in-circle, ties to seal-of-six theme) ──
+  function sealSVG(size,litColor,dimColor){
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <polygon points="12,4 20,17 4,17"/>
+        <polygon points="12,20 4,7 20,7"/>
+      </g>
+    </svg>`;
+  }
+
+  // ── DETAIL SCREEN ──
+  let openName=null;
+  let detailDemonCard=null;
+
+  function openDetail(name){
+    openName=name;
+    document.getElementById('detail-overlay').classList.add('open');
+    document.body.style.overflow='hidden';
+    renderDetail();
+  }
+  function closeDetail(){
+    openName=null;
+    if(detailDemonCard){detailDemonCard.destroy();detailDemonCard=null;}
+    document.getElementById('detail-overlay').classList.remove('open');
+    document.body.style.overflow='';
+  }
+
+  function renderDetail(){
+    if(!openName)return;
+    const name=openName;
+    const d=getDemonRecord(name),e=getEntry(name);
+    if(!d||!e){closeDetail();return;}
+    const stats=calcStats(name);
+    const upg=nextUpgrade(name);
+    const afford=canAfford(upg,name);
+    const auraColor=UNCHAIN_COLOR[e.unchainTier];
+
+    // ── card slot: render a real DemonCard with seal overlay ──
+    const slot=document.getElementById('detail-card-slot');
+    slot.className='detail-card-slot';
+    if(e.unchainTier!=='none')slot.classList.add('aura-'+e.unchainTier);
+    if(detailDemonCard){detailDemonCard.destroy();detailDemonCard=null;}
+    slot.innerHTML='';
+    const slug=DEMON_IDS[name]||name.toLowerCase().replace(/['\s]/g,'_').replace(/[^a-z0-9_]/g,'');
+    const cardW=Math.min(220,Math.floor(slot.parentElement.clientWidth*0.72))||200;
+    detailDemonCard=new DemonCard({
+      id:slug,name:name,tier:d.tier.idx+1,tierName:d.tier.name,color:d.tier.color,count:e.count
+    },{width:cardW,showName:true,showTier:true,showCount:false,animate:true});
+    detailDemonCard.el.style.cssText='width:100%;height:auto;border-radius:8px;';
+    slot.appendChild(detailDemonCard.el);
+    // seal overlay
+    const sealHTML=Array.from({length:6},(_,i)=>{
+      const lit=i<e.seals;
+      return `<span style="color:${lit?'var(--gold)':'rgba(232,212,255,.5)'}" class="${lit?'lit':''}">${sealSVG(10)}</span>`;
+    }).join('');
+    const sealLayer=document.createElement('div');
+    sealLayer.className='card-seals';sealLayer.innerHTML=sealHTML;
+    detailDemonCard.el.appendChild(sealLayer);
+
+    // ── name + tier strip ──
+    const nameEl=document.getElementById('detail-name');
+    nameEl.textContent=displayName(name);
+    nameEl.classList.toggle('soulbound',e.unchainTier==='soulbound');
+    document.getElementById('detail-tier').innerHTML=
+      `<span>${d.tier.name}</span>`+
+      `<span class="sep">·</span>`+
+      `<span class="uc" style="${auraColor?`--uc-color:${auraColor}`:''}">${e.unchainTier==='none'?'Unbound':UNCHAIN_LABEL[e.unchainTier]}</span>`+
+      `<span class="sep">·</span>`+
+      `<span>${e.seals}/6 seals</span>`;
+
+    // ── info side ──
+    document.getElementById('detail-info').innerHTML=renderInfoBody(name,d,e,stats,upg,afford);
+    const btn=document.getElementById('deepen-btn');
+    if(btn)btn.addEventListener('click',()=>onDeepen(name));
+  }
+
+  function renderInfoBody(name,d,e,stats,upg,afford){
+    // Binding section
+    const sealRow=Array.from({length:6},(_,i)=>{
+      const idx=i+1;
+      const lit=idx<=e.seals;
+      const next=(upg&&upg.kind==='seal'&&upg.targetSeal===idx);
+      const cls=['seal-pip',lit&&'lit',next&&'next'].filter(Boolean).join(' ');
+      const color=lit?'var(--gold)':'rgba(232,212,255,.6)';
+      return `<span class="${cls}" data-pip="${idx}" style="color:${color}">${sealSVG(28)}</span>`;
+    }).join('');
+    const ucRow=['rebound','deepbound','soulbound'].map(t=>{
+      const order={none:0,rebound:1,deepbound:2,soulbound:3};
+      const lit=order[e.unchainTier]>=order[t];
+      return `<span class="uc-pip ${lit?'lit':''}" style="--c:${UNCHAIN_COLOR[t]}">${UNCHAIN_LABEL[t]}</span>`;
+    }).join('');
+
+    // Stats with delta preview
+    const base=baseStats(name);
+    const previewMult=upg?upg.previewMult:null;
+    const statsRows=Object.keys(base).map(k=>{
+      const cur=stats[k];
+      const next=previewMult!=null?Math.round(base[k]*previewMult):null;
+      const delta=(next!=null&&next!==cur)?`+${next-cur}`:'';
+      return `<div class="det-stat">
+        <span class="name">${k}</span>
+        <span class="leader"></span>
+        <span class="val">${cur}</span>
+        <span class="delta ${delta?'':'empty'}">${delta||'—'}</span>
+      </div>`;
+    }).join('');
+    const garrRow=`<div class="det-stat">
+      <span class="name">Garrison Rate</span>
+      <span class="leader"></span>
+      <span class="val">×${stats._garrison.toFixed(1)}</span>
+      <span class="delta empty">—</span>
+    </div>`;
+
+    // Upgrade block
+    let upgradeBlock='';
+    if(!upg){
+      upgradeBlock=`<div class="maxed-msg">⸻ Bound Beyond the Veil ⸻</div>`;
+    }else{
+      const costPills=renderCostPills(upg,e);
+      upgradeBlock=`
+        <div class="upgrade-box ${afford?'afford':''}">
+          <div class="upgrade-head">
+            <div class="what">${upg.label}</div>
+            <div class="kind">${upg.kind==='seal'?'Seal Forge':'Unchaining'}</div>
+          </div>
+          <div class="cost-row">${costPills}</div>
+          <button id="deepen-btn" class="deepen-btn ${upg.kind==='unchain'?'unchain':''}"
+                  ${afford?'':'disabled'}
+                  ${upg.kind==='unchain'?`style="--c:${UNCHAIN_COLOR[upg.target]}"`:''}>
+            Deepen the Binding
+          </button>
+        </div>`;
+    }
+
+    return `
+      <div class="detail-section">
+        <h3>The Binding</h3>
+        <div class="seal-row">${sealRow}</div>
+        <div class="unchain-row">${ucRow}</div>
+      </div>
+      <div class="detail-section">
+        <h3>Bound Powers</h3>
+        <div class="det-stats">${statsRows}${garrRow}</div>
+      </div>
+      <div class="detail-section">
+        <h3>${upg?'Next Echo':'Final Form'}</h3>
+        ${upgradeBlock}
+      </div>
+    `;
+  }
+
+  function renderCostPills(upg,entry){
+    const out=[];
+    if(upg.kind==='seal'){
+      const c=upg.cost;
+      if(c.void)out.push(costPill('void',c.void,S.echoes.void));
+      if(c.rift)out.push(costPill('rift',c.rift,S.echoes.rift));
+      if(c.soul)out.push(costPill('soul',c.soul,S.echoes.soul));
+    }else if(upg.kind==='unchain'){
+      const dupHave=Math.max(0,((entry&&entry.count)||0)-1);
+      out.push(dupPill(upg.cost.dup,dupHave));
+      if(upg.cost.soul)out.push(costPill('soul',upg.cost.soul,S.echoes.soul));
+    }
+    return out.join('');
+  }
+  function costPill(kind,need,have){
+    const labels={void:'Void',rift:'Rift',soul:'Soul'};
+    const short=have<need;
+    return `<div class="cost-pill ${kind} ${short?'short':''}">
+      <span class="dot"></span>
+      <span><b>${need}</b> ${labels[kind]}</span>
+      <span class="have">(${have})</span>
+    </div>`;
+  }
+  function dupPill(need,have){
+    const short=have<need;
+    return `<div class="cost-pill dup ${short?'short':''}">
+      <span class="dot"></span>
+      <span><b>${need}</b> Duplicate${need>1?'s':''}</span>
+      <span class="have">(${have})</span>
+    </div>`;
+  }
+
+  function onDeepen(name){
+    const upg=nextUpgrade(name);
+    if(!upg||!canAfford(upg,name))return;
+    if(!applyUpgrade(name,upg))return;
+    const slot=document.getElementById('detail-card-slot');
+    if(slot){slot.classList.add('upgrading');setTimeout(()=>slot.classList.remove('upgrading'),900);}
+    renderDetail();
+    if(typeof renderCodex==='function')renderCodex();
+    renderEchoes();
+    if(upg.kind==='seal'){
+      requestAnimationFrame(()=>{
+        const pip=document.querySelector(`.seal-pip[data-pip="${upg.targetSeal}"]`);
+        if(pip){pip.classList.add('flash');setTimeout(()=>pip.classList.remove('flash'),1000);}
+      });
+    }
+  }
+
+  // ── TESTS ──
+  const tests=[];
+  function test(name,fn){tests.push({name,fn})}
+  function assert(cond,msg){if(!cond)throw new Error(msg||'assertion failed')}
+  function assertEq(actual,expected,msg){
+    const a=JSON.stringify(actual),b=JSON.stringify(expected);
+    if(a!==b)throw new Error(`${msg||'expected equal'} — got ${a}, expected ${b}`);
+  }
+  function snap(){return JSON.parse(JSON.stringify(S))}
+  function restore(s){
+    // restore in place (don't reassign S since other modules hold the reference)
+    for(const k of Object.keys(S))delete S[k];
+    Object.assign(S,JSON.parse(JSON.stringify(s)));
+    save();
+  }
+
+  // pick a representative demon at each stat tier we care about
+  const D_SHADE='Mournveil';      // tier 0
+  const D_FIEND='Morkhex';        // tier 2 — rift-eligible
+  const D_SINLORD='Avara';        // tier 5 — soul-eligible
+
+  test('migrate: v1 number → v2 object',()=>{
+    const s=snap();
+    for(const k of Object.keys(S.collection))delete S.collection[k];
+    S.collection['X']=3;
+    migrate();
+    const e=S.collection['X'];
+    assert(typeof e==='object'); assertEq(e.count,3); assertEq(e.seals,1);
+    assertEq(e.unchainTier,'none'); assert(typeof e.acquiredAt==='number');
+    restore(s);
+  });
+  test('migrate: idempotent on v2 data',()=>{
+    const s=snap(); migrate();
+    const a=JSON.parse(JSON.stringify(S.collection));
+    migrate();
+    assertEq(S.collection,a);
+    restore(s);
+  });
+  test('migrate: backfills partial entry',()=>{
+    const s=snap();
+    for(const k of Object.keys(S.collection))delete S.collection[k];
+    S.collection['P']={count:2,seals:3};
+    migrate();
+    assertEq(S.collection['P'].unchainTier,'none');
+    assert(typeof S.collection['P'].acquiredAt==='number');
+    restore(s);
+  });
+  test('migrate: clamps invalid seal values',()=>{
+    const s=snap();
+    for(const k of Object.keys(S.collection))delete S.collection[k];
+    S.collection['B']={count:1,seals:99,unchainTier:'none'};
+    migrate(); assertEq(S.collection['B'].seals,6);
+    S.collection['B'].seals=0; migrate(); assertEq(S.collection['B'].seals,1);
+    restore(s);
+  });
+  test('migrate: creates missing echoes',()=>{
+    const s=snap();
+    delete S.echoes; migrate();
+    assertEq(S.echoes,{void:0,rift:0,soul:0});
+    restore(s);
+  });
+
+  test('nextUpgrade: at seal 1 → seal 2 (20 void)',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:1,seals:1,unchainTier:'none',acquiredAt:Date.now()};
+    const u=nextUpgrade(D_SHADE);
+    assertEq(u.kind,'seal'); assertEq(u.targetSeal,2);
+    assertEq(u.cost,{void:20,rift:0,soul:0});
+    restore(s);
+  });
+  test('nextUpgrade: seal 4 costs 30 rift',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:1,seals:3,unchainTier:'none',acquiredAt:Date.now()};
+    const u=nextUpgrade(D_SHADE);
+    assertEq(u.targetSeal,4); assertEq(u.cost.rift,30); assertEq(u.cost.void,0);
+    restore(s);
+  });
+  test('nextUpgrade: at seal 6 → rebound',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:2,seals:6,unchainTier:'none',acquiredAt:Date.now()};
+    const u=nextUpgrade(D_SHADE);
+    assertEq(u.kind,'unchain'); assertEq(u.target,'rebound');
+    assertEq(u.cost,{dup:1,soul:10});
+    restore(s);
+  });
+  test('nextUpgrade: deepbound → soulbound',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:2,seals:6,unchainTier:'deepbound',acquiredAt:Date.now()};
+    const u=nextUpgrade(D_SHADE);
+    assertEq(u.target,'soulbound'); assertEq(u.cost.soul,50);
+    restore(s);
+  });
+  test('nextUpgrade: maxed → null',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:1,seals:6,unchainTier:'soulbound',acquiredAt:Date.now()};
+    assertEq(nextUpgrade(D_SHADE),null);
+    restore(s);
+  });
+
+  test('canAfford: short on void → false',()=>{
+    const s=snap();
+    S.echoes={void:5,rift:0,soul:0};
+    assertEq(canAfford({kind:'seal',cost:{void:20,rift:0,soul:0}},D_SHADE),false);
+    restore(s);
+  });
+  test('canAfford: enough → true',()=>{
+    const s=snap();
+    S.echoes={void:100,rift:0,soul:0};
+    assertEq(canAfford({kind:'seal',cost:{void:20,rift:0,soul:0}},D_SHADE),true);
+    restore(s);
+  });
+  test('canAfford: unchain needs spare duplicate',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:1,seals:6,unchainTier:'none',acquiredAt:Date.now()};
+    S.echoes={void:0,rift:0,soul:100};
+    const u={kind:'unchain',target:'rebound',cost:{dup:1,soul:10}};
+    assertEq(canAfford(u,D_SHADE),false,'count=1 has no spare');
+    S.collection[D_SHADE].count=2;
+    assertEq(canAfford(u,D_SHADE),true,'count=2 has 1 spare');
+    restore(s);
+  });
+
+  test('applyUpgrade: seal forge deducts void',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:1,seals:1,unchainTier:'none',acquiredAt:Date.now()};
+    S.echoes={void:50,rift:0,soul:0};
+    applyUpgrade(D_SHADE,nextUpgrade(D_SHADE));
+    assertEq(S.echoes.void,30); assertEq(S.collection[D_SHADE].seals,2);
+    restore(s);
+  });
+  test('applyUpgrade: unchain consumes 1 dup + soul',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:3,seals:6,unchainTier:'none',acquiredAt:Date.now()};
+    S.echoes={void:0,rift:0,soul:50};
+    applyUpgrade(D_SHADE,nextUpgrade(D_SHADE));
+    assertEq(S.collection[D_SHADE].count,2);
+    assertEq(S.collection[D_SHADE].unchainTier,'rebound');
+    assertEq(S.echoes.soul,40);
+    restore(s);
+  });
+  test('applyUpgrade: refuses unaffordable, no state change',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:1,seals:1,unchainTier:'none',acquiredAt:Date.now()};
+    S.echoes={void:5,rift:0,soul:0};
+    const ok=applyUpgrade(D_SHADE,{kind:'seal',targetSeal:2,cost:{void:20,rift:0,soul:0}});
+    assertEq(ok,false);
+    assertEq(S.echoes.void,5);
+    assertEq(S.collection[D_SHADE].seals,1);
+    restore(s);
+  });
+
+  test('calcStats: seal 3 → 1.30× base',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:1,seals:3,unchainTier:'none',acquiredAt:Date.now()};
+    const b=baseStats(D_SHADE), st=calcStats(D_SHADE);
+    assertEq(st.Power,Math.round(b.Power*1.30));
+    assertEq(st._sealMult,1.30); assertEq(st._unchainMult,1.0);
+    restore(s);
+  });
+  test('calcStats: 6 seals + soulbound → 4.0× base',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:1,seals:6,unchainTier:'soulbound',acquiredAt:Date.now()};
+    const b=baseStats(D_SHADE), st=calcStats(D_SHADE);
+    assertEq(st.Power,Math.round(b.Power*4.0));
+    assertEq(st._total,4.0);
+    restore(s);
+  });
+  test('garrison rate scales with unchain tier',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:1,seals:1,unchainTier:'none',acquiredAt:Date.now()};
+    assertEq(calcStats(D_SHADE)._garrison,1.0);
+    S.collection[D_SHADE].unchainTier='rebound';   assertEq(calcStats(D_SHADE)._garrison,2.0);
+    S.collection[D_SHADE].unchainTier='deepbound'; assertEq(calcStats(D_SHADE)._garrison,3.0);
+    S.collection[D_SHADE].unchainTier='soulbound'; assertEq(calcStats(D_SHADE)._garrison,5.0);
+    restore(s);
+  });
+
+  test('tier sets: rift requires fiend+, soul requires sinlord+',()=>{
+    assert(!RIFT_TIERS.has('shade'));
+    assert(!RIFT_TIERS.has('imp'));
+    assert(RIFT_TIERS.has('fiend'));
+    assert(RIFT_TIERS.has('greater_demon'));
+    assert(RIFT_TIERS.has('archdemon'));
+    assert(RIFT_TIERS.has('sin_lord'));
+    assert(RIFT_TIERS.has('void_primordial'));
+    assert(!SOUL_TIERS.has('archdemon'));
+    assert(SOUL_TIERS.has('sin_lord'));
+    assert(SOUL_TIERS.has('void_primordial'));
+  });
+
+  test('full progression: 1→6 seals, rebound→deepbound→soulbound',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:4,seals:1,unchainTier:'none',acquiredAt:Date.now()};
+    S.echoes={void:60,rift:190,soul:85};
+    for(let target=2;target<=6;target++){
+      const u=nextUpgrade(D_SHADE);
+      assertEq(u.kind,'seal'); assertEq(u.targetSeal,target);
+      assert(applyUpgrade(D_SHADE,u),`seal ${target} should apply`);
+    }
+    assertEq(S.collection[D_SHADE].seals,6);
+    for(const t of ['rebound','deepbound','soulbound']){
+      const u=nextUpgrade(D_SHADE);
+      assertEq(u.kind,'unchain'); assertEq(u.target,t);
+      assert(applyUpgrade(D_SHADE,u),`${t} should apply`);
+    }
+    assertEq(S.collection[D_SHADE].unchainTier,'soulbound');
+    assertEq(S.collection[D_SHADE].count,1);
+    assertEq(S.echoes.void,0);
+    assertEq(S.echoes.rift,0);
+    assertEq(S.echoes.soul,0);
+    assertEq(nextUpgrade(D_SHADE),null);
+    restore(s);
+  });
+
+  test('echoes never go negative on legitimate spend',()=>{
+    const s=snap();
+    S.collection[D_SHADE]={count:1,seals:1,unchainTier:'none',acquiredAt:Date.now()};
+    S.echoes={void:20,rift:0,soul:0};
+    applyUpgrade(D_SHADE,nextUpgrade(D_SHADE));
+    assertEq(S.echoes.void,0);
+    assert(S.echoes.void>=0);
+    restore(s);
+  });
+
+  test('pullOne integration: writes object schema',()=>{
+    const s=snap();
+    for(const k of Object.keys(S.collection))delete S.collection[k];
+    S.shards=10000;
+    pullOne(); // exists in outer scope
+    const keys=Object.keys(S.collection);
+    assert(keys.length>=1);
+    const v=S.collection[keys[0]];
+    assert(typeof v==='object','pullOne should write object after migration');
+    assertEq(v.seals,1); assertEq(v.unchainTier,'none');
+    restore(s);
+  });
+
+  function runTests(){
+    const out=[];
+    for(const t of tests){
+      try{t.fn();out.push({name:t.name,pass:true});}
+      catch(e){out.push({name:t.name,pass:false,msg:e.message});}
+    }
+    return out;
+  }
+  function renderResults(results){
+    const root=document.getElementById('test-results');
+    if(!root)return;
+    const passed=results.filter(r=>r.pass).length;
+    const failed=results.length-passed;
+    const summary=`<div class="test-summary">
+      <span class="ps">⸻ ${passed} bound</span>
+      <span class="fl">${failed} broken</span>
+      <span class="tt">${results.length} trials</span>
+    </div>`;
+    const list=results.map(r=>`
+      <div class="test-result ${r.pass?'pass':'fail'}">
+        <div class="name">
+          <span>${r.name}</span>
+          <span class="icon">${r.pass?'◆':'✕'}</span>
+        </div>
+        ${r.msg?`<div class="msg">${escapeHtml(r.msg)}</div>`:''}
+      </div>`).join('');
+    root.innerHTML=summary+list;
+  }
+  function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+  // ── CHEATS ──
+  function applyCheat(kind){
+    if(kind==='void')S.echoes.void+=50;
+    else if(kind==='rift')S.echoes.rift+=50;
+    else if(kind==='soul')S.echoes.soul+=50;
+    else if(kind==='dups'){
+      for(const k of Object.keys(S.collection)){
+        const v=S.collection[k];
+        if(typeof v==='object')v.count+=1;
+      }
+    }
+    else if(kind==='seedall'){
+      const now=Date.now();
+      for(const d of ALL_DEMONS){
+        S.collection[d.name]={count:3,seals:1,unchainTier:'none',acquiredAt:now};
+      }
+    }
+    else if(kind==='wipe'){
+      if(!confirm('Wipe all bound demons and echoes from this vessel?'))return;
+      for(const k of Object.keys(S.collection))delete S.collection[k];
+      S.echoes={void:0,rift:0,soul:0};
+      S.echoesAccum={void:0,rift:0,soul:0};
+    }
+    save();
+    if(typeof renderCodex==='function')renderCodex();
+    renderEchoes();
+    if(typeof updateUI==='function')updateUI();
+    if(openName)renderDetail();
+  }
+
+  // ── WIRING ──
+  function wire(){
+    document.getElementById('detail-close').addEventListener('click',closeDetail);
+    document.getElementById('detail-overlay').addEventListener('click',e=>{
+      if(e.target.id==='detail-overlay')closeDetail();
+    });
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openName)closeDetail();});
+
+    const panel=document.getElementById('test-panel');
+    document.getElementById('test-toggle').addEventListener('click',()=>{
+      panel.classList.add('open');panel.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('test-panel-close').addEventListener('click',()=>{
+      panel.classList.remove('open');panel.setAttribute('aria-hidden','true');
+    });
+    document.getElementById('run-tests-btn').addEventListener('click',()=>{
+      const before=snap();
+      const results=runTests();
+      restore(before);
+      renderResults(results);
+      if(typeof renderCodex==='function')renderCodex();
+      renderEchoes();
+      if(typeof updateUI==='function')updateUI();
+      if(openName)renderDetail();
+    });
+    document.querySelectorAll('[data-cheat]').forEach(b=>{
+      b.addEventListener('click',()=>applyCheat(b.dataset.cheat));
+    });
+  }
+
+  // ── PUBLIC API ──
+  return{
+    migrate,getCount,getEntry,displayName,
+    calcStats,nextUpgrade,canAfford,applyUpgrade,
+    openDetail,closeDetail,
+    tickEchoes,renderEchoes,
+    wire,runTests,
+    SOULBOUND_NAMES,RIFT_TIERS,SOUL_TIERS,
+  };
+})();
 
 // ═══════════════════════════════════════════
 // COUNTDOWN
@@ -1405,6 +2524,9 @@ function tick(){
 // ═══════════════════════════════════════════
 (function init(){
   load();
+  INF.migrate();
+  INF.wire();
+  INF.renderEchoes();
   document.getElementById('btn-again').onclick=()=>{closeOverlay();const cost=lastCount===1?getCost(1):getCost(10);if(S.shards>=(cost||0))setTimeout(()=>doPull(lastCount),80);};
   document.getElementById('btn-close-pull').onclick=()=>closeOverlay();
   // Sanctum ambient: sigils + embers
