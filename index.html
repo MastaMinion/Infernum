@@ -226,15 +226,15 @@ body{font-family:var(--body);color:var(--text);position:relative}
   position:relative;
   width:100%;aspect-ratio:3/4;
   background-size:cover;background-position:center 30%;background-repeat:no-repeat;
-  -webkit-mask-image:radial-gradient(ellipse 38% 72% at 50% 50%,black 55%,rgba(0,0,0,.35) 80%,transparent 100%);
-          mask-image:radial-gradient(ellipse 38% 72% at 50% 50%,black 55%,rgba(0,0,0,.35) 80%,transparent 100%);
-  filter:drop-shadow(0 0 18px var(--rift-glow)) drop-shadow(0 6px 22px rgba(0,0,0,.7));
+  -webkit-mask-image:radial-gradient(ellipse 34% 66% at 50% 50%,black 32%,rgba(0,0,0,.13) 62%,transparent 92%);
+          mask-image:radial-gradient(ellipse 34% 66% at 50% 50%,black 32%,rgba(0,0,0,.13) 62%,transparent 92%);
+  filter:drop-shadow(0 0 32px var(--rift-glow)) drop-shadow(0 0 60px var(--rift-glow)) drop-shadow(0 8px 24px rgba(0,0,0,.7));
   animation:riftFloat 7s ease-in-out infinite;
   animation-delay:var(--rift-delay,0s);
   transition:filter .35s ease;
   will-change:transform;
 }
-.rift:hover .rift-opening{filter:drop-shadow(0 0 32px var(--rift-glow)) drop-shadow(0 0 60px var(--rift-glow)) drop-shadow(0 6px 22px rgba(0,0,0,.7))}
+.rift:hover .rift-opening{filter:drop-shadow(0 0 44px var(--rift-glow)) drop-shadow(0 0 90px var(--rift-glow)) drop-shadow(0 0 130px var(--rift-glow)) drop-shadow(0 6px 22px rgba(0,0,0,.7))}
 @keyframes riftFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 
 /* Tall rifts — Realms/Codex extend from top of screen down to the rocks/floor.
