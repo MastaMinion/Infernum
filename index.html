@@ -252,15 +252,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
           mask-image:radial-gradient(ellipse 40% 80% at 50% 50%,black 28%,rgba(0,0,0,.25) 65%,transparent 100%);
 }
 
-.rift-label{
-  position:relative;text-align:center;margin-top:-8px;padding:0 2px;
-  opacity:0;
-  transition:opacity .25s ease;
-  pointer-events:none;
-}
-.rift:hover .rift-label{
-  opacity:1;
-}
+.rift-label{display:none}
 .rift-eyebrow{
   font-family:var(--serif);font-size:.4rem;letter-spacing:.32em;
   color:var(--rift-accent);text-transform:uppercase;
@@ -669,10 +661,12 @@ body{font-family:var(--body);color:var(--text);position:relative}
 /* topbar logo image */
 .topbar-left{display:flex;align-items:center;gap:10px}
 .topbar-logo{
-  width:32px;height:32px;object-fit:contain;
-  filter:drop-shadow(0 0 12px rgba(251,191,36,.30));
+  height:48px;width:auto;max-width:200px;object-fit:contain;
+  filter:drop-shadow(0 0 12px rgba(251,191,36,.30)) drop-shadow(0 0 22px rgba(192,132,252,.25));
   flex-shrink:0;
 }
+/* Hide text wordmark when logo image is loading/loaded — it shows only as fallback if the image fails. */
+.topbar-left > div{display:none}
 
 /* fixed corner watermark */
 .inf-watermark{
@@ -1009,7 +1003,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
   <!-- TOP BAR -->
   <div id="topbar">
     <div class="topbar-left" onclick="switchScreen('hub')" style="cursor:pointer">
-      <img class="topbar-logo" src="assets/ui/infernum-logo.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
+      <img class="topbar-logo" src="assets/ui/infernum-logo.png" alt="INFERNUM" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='block'">
       <div>
         <div class="logo-mark">INF<span>E</span>RNUM</div>
         <span class="logo-sub">ABYSSAL SANCTUM</span>
