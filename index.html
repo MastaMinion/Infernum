@@ -237,6 +237,20 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .rift:hover .rift-opening{filter:drop-shadow(0 0 32px var(--rift-glow)) drop-shadow(0 0 60px var(--rift-glow)) drop-shadow(0 6px 22px rgba(0,0,0,.7))}
 @keyframes riftFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 
+/* Tall rifts — Realms/Codex extend from top of screen down to the rocks/floor.
+   1:3 aspect makes them tall vertical streaks. Source image gets cover-cropped
+   to its central vertical strip (the crack itself). */
+.rift.rift-tall .rift-opening{
+  aspect-ratio: 1 / 3;
+}
+
+/* Soft-top mask — Garrison gets gentler fade at edges so the top
+   doesn't show a hard rectangular cutoff */
+.rift.rift-softtop .rift-opening{
+  -webkit-mask-image:radial-gradient(ellipse 40% 80% at 50% 50%,black 28%,rgba(0,0,0,.25) 65%,transparent 100%);
+          mask-image:radial-gradient(ellipse 40% 80% at 50% 50%,black 28%,rgba(0,0,0,.25) 65%,transparent 100%);
+}
+
 .rift-label{
   position:relative;text-align:center;margin-top:-8px;padding:0 2px;
 }
@@ -1020,7 +1034,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
         <!-- Walker — gold air-tear, suspended high between central pillars (vertical, no rift-floor) -->
         <a class="rift" data-tone="gold" href="javascript:void(0)" onclick="switchScreen('riftwalk')"
-           style="--x:50%;--y:24%;--w:22%;--rift-tilt:0deg;--rift-delay:0s">
+           style="--x:50%;--y:26%;--w:28%;--rift-tilt:0deg;--rift-delay:0s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_walker.jpg')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Ascend</div>
@@ -1041,8 +1055,8 @@ body{font-family:var(--body);color:var(--text);position:relative}
         </a>
 
         <!-- Realms — crimson floor crack, in left pillar bay -->
-        <a class="rift" data-tone="crimson" href="javascript:void(0)" onclick="switchScreen('realms')"
-           style="--x:12%;--y:48%;--w:18%;--rift-tilt:14deg;--rift-delay:-3.2s">
+        <a class="rift rift-tall" data-tone="crimson" href="javascript:void(0)" onclick="switchScreen('realms')"
+           style="--x:12%;--y:30%;--w:18%;--rift-tilt:14deg;--rift-delay:-3.2s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_realms.jpg')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Conquer</div>
@@ -1052,8 +1066,8 @@ body{font-family:var(--body);color:var(--text);position:relative}
         </a>
 
         <!-- Codex — blue floor crack, in right pillar bay -->
-        <a class="rift" data-tone="blue" href="javascript:void(0)" onclick="switchScreen('codex')"
-           style="--x:82%;--y:38%;--w:18%;--rift-tilt:-12deg;--rift-delay:-4.6s">
+        <a class="rift rift-tall" data-tone="blue" href="javascript:void(0)" onclick="switchScreen('codex')"
+           style="--x:82%;--y:30%;--w:18%;--rift-tilt:-12deg;--rift-delay:-4.6s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_codex.jpg')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Chronicle</div>
@@ -1063,8 +1077,8 @@ body{font-family:var(--body);color:var(--text);position:relative}
         </a>
 
         <!-- Garrison — green floor crack, near the player's feet (foreground) -->
-        <a class="rift" data-tone="green" href="javascript:void(0)" onclick="switchScreen('garrison')"
-           style="--x:26%;--y:60%;--w:13%;--rift-tilt:8deg;--rift-delay:-5.5s">
+        <a class="rift rift-softtop" data-tone="green" href="javascript:void(0)" onclick="switchScreen('garrison')"
+           style="--x:32%;--y:54%;--w:13%;--rift-tilt:8deg;--rift-delay:-5.5s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_garrison.jpg')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Tribute</div>
