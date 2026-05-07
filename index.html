@@ -242,6 +242,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
    to its central vertical strip (the crack itself). */
 .rift.rift-tall .rift-opening{
   aspect-ratio: 1 / 3;
+  background-size: 100% 100%;
 }
 
 /* Soft-top mask — Garrison gets gentler fade at edges so the top
@@ -253,6 +254,12 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
 .rift-label{
   position:relative;text-align:center;margin-top:-8px;padding:0 2px;
+  opacity:0;
+  transition:opacity .25s ease;
+  pointer-events:none;
+}
+.rift:hover .rift-label{
+  opacity:1;
 }
 .rift-eyebrow{
   font-family:var(--serif);font-size:.4rem;letter-spacing:.32em;
@@ -1034,7 +1041,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
         <!-- Walker — gold air-tear, suspended high between central pillars (vertical, no rift-floor) -->
         <a class="rift" data-tone="gold" href="javascript:void(0)" onclick="switchScreen('riftwalk')"
-           style="--x:50%;--y:26%;--w:28%;--rift-tilt:0deg;--rift-delay:0s">
+           style="--x:50%;--y:38%;--w:28%;--rift-tilt:0deg;--rift-delay:0s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_walker.jpg')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Ascend</div>
@@ -1078,7 +1085,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
         <!-- Garrison — green floor crack, near the player's feet (foreground) -->
         <a class="rift rift-softtop" data-tone="green" href="javascript:void(0)" onclick="switchScreen('garrison')"
-           style="--x:32%;--y:54%;--w:13%;--rift-tilt:8deg;--rift-delay:-5.5s">
+           style="--x:32%;--y:50%;--w:15%;--rift-tilt:8deg;--rift-delay:-5.5s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_garrison.jpg')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Tribute</div>
