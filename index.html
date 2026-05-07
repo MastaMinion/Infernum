@@ -226,15 +226,33 @@ body{font-family:var(--body);color:var(--text);position:relative}
   position:relative;
   width:100%;aspect-ratio:3/4;
   background-size:cover;background-position:center 30%;background-repeat:no-repeat;
-  -webkit-mask-image:radial-gradient(ellipse 34% 66% at 50% 50%,black 32%,rgba(0,0,0,.13) 62%,transparent 92%);
-          mask-image:radial-gradient(ellipse 34% 66% at 50% 50%,black 32%,rgba(0,0,0,.13) 62%,transparent 92%);
-  filter:drop-shadow(0 0 32px var(--rift-glow)) drop-shadow(0 0 60px var(--rift-glow)) drop-shadow(0 8px 24px rgba(0,0,0,.7));
+  /* Jagged tear silhouette — irregular vertical rift shape */
+  clip-path: polygon(
+    50% 0.5%, 58% 5%, 53% 12%, 64% 22%, 55% 32%, 62% 44%, 56% 54%, 66% 64%,
+    56% 74%, 62% 84%, 54% 92%, 58% 96%, 50% 99.5%, 42% 96%, 46% 92%,
+    38% 84%, 44% 74%, 34% 64%, 44% 54%, 38% 44%, 45% 32%, 36% 22%, 47% 12%, 42% 5%
+  );
+  /* Frame stroke (sharp inner halo in tone-accent) + tone-colored atmospheric glow */
+  filter:
+    drop-shadow(0 0 0.5px var(--rift-accent))
+    drop-shadow(0 0 1.5px var(--rift-accent))
+    drop-shadow(0 0 14px var(--rift-glow))
+    drop-shadow(0 0 32px var(--rift-glow))
+    drop-shadow(0 8px 24px rgba(0,0,0,.7));
   animation:riftFloat 7s ease-in-out infinite;
   animation-delay:var(--rift-delay,0s);
   transition:filter .35s ease;
   will-change:transform;
 }
-.rift:hover .rift-opening{filter:drop-shadow(0 0 44px var(--rift-glow)) drop-shadow(0 0 90px var(--rift-glow)) drop-shadow(0 0 130px var(--rift-glow)) drop-shadow(0 6px 22px rgba(0,0,0,.7))}
+.rift:hover .rift-opening{
+  filter:
+    drop-shadow(0 0 0.5px var(--rift-accent))
+    drop-shadow(0 0 1.5px var(--rift-accent))
+    drop-shadow(0 0 22px var(--rift-glow))
+    drop-shadow(0 0 50px var(--rift-glow))
+    drop-shadow(0 0 80px var(--rift-glow))
+    drop-shadow(0 8px 24px rgba(0,0,0,.7));
+}
 @keyframes riftFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 
 /* Tall rifts — Realms/Codex extend from top of screen down to the rocks/floor.
@@ -294,16 +312,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
   /* Tall rifts less extreme on mobile (shorter viewport) */
   .rift.rift-tall .rift-opening {
     aspect-ratio: 1 / 2 !important;
-  }
-
-  /* Tighter, faster-fading mask on mobile.
-     At smaller sizes, the default 38%×72% ellipse leaves the image's basalt
-     rim visible at top/bottom — looks like rectangular framing.
-     This shrinks the visible region and pushes the fade earlier so edges
-     dissolve completely into the chamber. */
-  .rift-opening {
-    -webkit-mask-image: radial-gradient(ellipse 32% 62% at 50% 52%, black 28%, rgba(0,0,0,.12) 60%, transparent 95%) !important;
-            mask-image: radial-gradient(ellipse 32% 62% at 50% 52%, black 28%, rgba(0,0,0,.12) 60%, transparent 95%) !important;
   }
 
   /* Floor cracks tilt back up on mobile so they remain visible
