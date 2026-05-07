@@ -209,7 +209,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
   transform:translate(-50%,-50%) rotateX(55deg) rotateY(var(--rift-tilt,0deg));
 }
 .rift.rift-floor:hover{
-  transform:translate(-50%,calc(-50% - 4px)) rotateX(40deg) rotateY(0deg) scale(1.05);
+  transform:translate(-50%,calc(-50% - 2px)) rotateX(55deg) rotateY(var(--rift-tilt,0deg)) scale(1.05);
 }
 .rift.rift-floor:active{
   transform:translate(-50%,-50%) rotateX(55deg) rotateY(var(--rift-tilt,0deg)) scale(.97);
@@ -1041,8 +1041,8 @@ body{font-family:var(--body);color:var(--text);position:relative}
         </a>
 
         <!-- Realms — crimson floor crack, in left pillar bay -->
-        <a class="rift rift-floor" data-tone="crimson" href="javascript:void(0)" onclick="switchScreen('realms')"
-           style="--x:14%;--y:60%;--w:14%;--rift-tilt:14deg;--rift-delay:-3.2s">
+        <a class="rift" data-tone="crimson" href="javascript:void(0)" onclick="switchScreen('realms')"
+           style="--x:22%;--y:50%;--w:12%;--rift-tilt:8deg;--rift-delay:-3.2s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_realms.jpg')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Conquer</div>
@@ -1052,8 +1052,8 @@ body{font-family:var(--body);color:var(--text);position:relative}
         </a>
 
         <!-- Codex — blue floor crack, in right pillar bay -->
-        <a class="rift rift-floor" data-tone="blue" href="javascript:void(0)" onclick="switchScreen('codex')"
-           style="--x:86%;--y:60%;--w:14%;--rift-tilt:-14deg;--rift-delay:-4.6s">
+        <a class="rift" data-tone="blue" href="javascript:void(0)" onclick="switchScreen('codex')"
+           style="--x:78%;--y:50%;--w:12%;--rift-tilt:-8deg;--rift-delay:-4.6s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_codex.jpg')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Chronicle</div>
@@ -1063,8 +1063,8 @@ body{font-family:var(--body);color:var(--text);position:relative}
         </a>
 
         <!-- Garrison — green floor crack, near the player's feet (foreground) -->
-        <a class="rift rift-floor" data-tone="green" href="javascript:void(0)" onclick="switchScreen('garrison')"
-           style="--x:30%;--y:90%;--w:13%;--rift-tilt:5deg;--rift-delay:-5.5s">
+        <a class="rift" data-tone="green" href="javascript:void(0)" onclick="switchScreen('garrison')"
+           style="--x:50%;--y:53%;--w:11%;--rift-tilt:0deg;--rift-delay:-5.5s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_garrison.jpg')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Tribute</div>
