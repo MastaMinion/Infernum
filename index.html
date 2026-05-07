@@ -226,18 +226,12 @@ body{font-family:var(--body);color:var(--text);position:relative}
   position:relative;
   width:100%;aspect-ratio:3/4;
   background-size:cover;background-position:center 30%;background-repeat:no-repeat;
-  /* Smooth almond/tear silhouette via SVG clipPath (defined at top of <body>).
-     Bezier curves (4 cubic) — symmetric around x=50%, widest at middle (y=50%, x=70%),
-     tapered to points at top and bottom. Reads as a clean rift, not a zigzag. */
-  clip-path: url(#rift-tear);
-  /* Frame stroke (3 layered accent halos = visible tone-color outline) +
-     tone-colored atmospheric glow + downward depth shadow */
+  /* Atmospheric tone glow + downward depth shadow. Drop-shadows follow
+     the image's alpha channel — for transparent-background rift PNGs, the glow
+     hugs the natural silhouette of each rift. */
   filter:
-    drop-shadow(0 0 1px var(--rift-accent))
-    drop-shadow(0 0 2px var(--rift-accent))
-    drop-shadow(0 0 4px var(--rift-accent))
-    drop-shadow(0 0 18px var(--rift-glow))
-    drop-shadow(0 0 38px var(--rift-glow))
+    drop-shadow(0 0 16px var(--rift-glow))
+    drop-shadow(0 0 36px var(--rift-glow))
     drop-shadow(0 8px 24px rgba(0,0,0,.7));
   animation:riftFloat 7s ease-in-out infinite;
   animation-delay:var(--rift-delay,0s);
@@ -246,9 +240,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 .rift:hover .rift-opening{
   filter:
-    drop-shadow(0 0 1px var(--rift-accent))
-    drop-shadow(0 0 2px var(--rift-accent))
-    drop-shadow(0 0 4px var(--rift-accent))
     drop-shadow(0 0 28px var(--rift-glow))
     drop-shadow(0 0 60px var(--rift-glow))
     drop-shadow(0 0 100px var(--rift-glow))
@@ -262,6 +253,14 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .rift.rift-tall .rift-opening{
   aspect-ratio: 1 / 3;
   background-size: 100% 100%;
+}
+
+/* Cutout rifts — transparent-background PNGs where the silhouette IS the art.
+   Use contain so the full keyed shape (basalt + rubble base) shows uncropped. */
+.rift.rift-cutout .rift-opening{
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* Soft-top mask — Garrison gets gentler fade at edges so the top
@@ -1124,21 +1123,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
 </style>
 </head>
 <body>
-<!-- Shared SVG clip-path: smooth almond/tear shape used as silhouette for all rifts.
-     clipPathUnits="objectBoundingBox" makes coords 0-1 of the element's box,
-     so the same path scales correctly for any rift size or aspect ratio. -->
-<svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
-  <defs>
-    <clipPath id="rift-tear" clipPathUnits="objectBoundingBox">
-      <path d="M 0.5 0
-               C 0.55 0.05, 0.65 0.2, 0.7 0.5
-               C 0.65 0.8, 0.55 0.95, 0.5 1
-               C 0.45 0.95, 0.35 0.8, 0.3 0.5
-               C 0.35 0.2, 0.45 0.05, 0.5 0
-               Z"/>
-    </clipPath>
-  </defs>
-</svg>
 
 <div id="rotate-lock">
   <div class="rotate-icon">⟲</div>
@@ -1198,9 +1182,9 @@ body{font-family:var(--body);color:var(--text);position:relative}
       <div class="sanctum-stage">
 
         <!-- Walker — gold air-tear, suspended high between central pillars (vertical, no rift-floor) -->
-        <a class="rift" data-tone="gold" href="javascript:void(0)" onclick="switchScreen('riftwalk')"
+        <a class="rift rift-cutout" data-tone="gold" href="javascript:void(0)" onclick="switchScreen('riftwalk')"
            style="--x:50%;--y:38%;--w:28%;--rift-tilt:0deg;--rift-delay:0s">
-          <div class="rift-opening" style="background-image:url('assets/ui/rift_walker.jpg')"></div>
+          <div class="rift-opening" style="background-image:url('assets/ui/rift_walker.png')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Ascend</div>
             <div class="rift-name">Walker</div>
