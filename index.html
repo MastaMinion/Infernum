@@ -305,33 +305,37 @@ body{font-family:var(--body);color:var(--text);position:relative}
     transform: translate(-50%,calc(-50% - 2px)) rotateX(38deg) rotateY(var(--rift-tilt,0deg)) scale(1.05) !important;
   }
 
-  /* Walker — much bigger, centered top, fills the upper chamber */
+  /* Walker — bigger, dropped down, softer top edge so the square cutoff fades */
   .rift[data-tone="gold"] {
     --x: 50% !important;
-    --y: 28% !important;
+    --y: 36% !important;
     --w: 50% !important;
   }
+  .rift[data-tone="gold"] .rift-opening {
+    -webkit-mask-image: radial-gradient(ellipse 36% 78% at 50% 52%, black 38%, rgba(0,0,0,.22) 68%, transparent 100%) !important;
+            mask-image: radial-gradient(ellipse 36% 78% at 50% 52%, black 38%, rgba(0,0,0,.22) 68%, transparent 100%) !important;
+  }
 
-  /* Realms — moved DOWN below Walker so the top isn't cramped */
+  /* Realms — left toward the rocks, off the leftmost pillar */
   .rift[data-tone="crimson"] {
-    --x: 22% !important;
+    --x: 14% !important;
     --y: 42% !important;
     --w: 24% !important;
-    --rift-tilt: 8deg !important;
+    --rift-tilt: 10deg !important;
   }
 
-  /* Codex — mirror, also moved down */
+  /* Codex — right between the pillar and the edge, mirroring Realms */
   .rift[data-tone="blue"] {
-    --x: 78% !important;
+    --x: 86% !important;
     --y: 42% !important;
     --w: 24% !important;
-    --rift-tilt: -8deg !important;
+    --rift-tilt: -10deg !important;
   }
 
-  /* Garrison — pushed lower toward floor, slightly bigger */
+  /* Garrison — moved up since Realms vacated this area */
   .rift[data-tone="green"] {
-    --x: 28% !important;
-    --y: 64% !important;
+    --x: 32% !important;
+    --y: 55% !important;
     --w: 24% !important;
   }
 
