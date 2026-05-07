@@ -148,13 +148,14 @@ body{font-family:var(--body);color:var(--text);position:relative}
 ══════════════════════════════════════ */
 #screen-hub{
   background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
-  overflow:hidden;
+  overflow-y:auto;
+  overflow-x:hidden;
 }
 #screen-hub::before{
   content:'';position:absolute;inset:0;z-index:0;
   background:
-    radial-gradient(ellipse 60% 50% at 50% 40%,rgba(124,58,237,.12) 0%,transparent 70%),
-    linear-gradient(to bottom,rgba(6,0,14,.7) 0%,rgba(6,0,14,.45) 40%,rgba(6,0,14,.88) 100%);
+    radial-gradient(ellipse 90% 70% at 50% 35%,rgba(124,58,237,.22) 0%,rgba(124,58,237,.05) 40%,transparent 75%),
+    linear-gradient(to bottom,rgba(6,0,14,.55) 0%,rgba(6,0,14,.28) 40%,rgba(6,0,14,.82) 100%);
   pointer-events:none;
 }
 #screen-hub > *{position:relative;z-index:1}
@@ -165,14 +166,14 @@ body{font-family:var(--body);color:var(--text);position:relative}
 @keyframes emberRise{0%{transform:translateY(0) translateX(0) scale(1);opacity:0}8%{opacity:1}88%{opacity:.5}100%{transform:translateY(-100vh) translateX(var(--drift,0px)) scale(.2);opacity:0}}
 /* ══════════════════════════════════════
    HUB — The Sanctum (Altar of Five Rifts)
-   Five equal rifts in 2-1-2 hex layout.
-   Tap any rift to walk through.
+   2-1-2 hex layout with 3D perspective tilts.
+   The chamber is curved; flanking rifts angle toward center.
 ══════════════════════════════════════ */
 
 .floor-mist{
   position:absolute;left:0;right:0;bottom:0;height:35%;
   background:
-    radial-gradient(ellipse 90% 60% at 50% 100%,rgba(124,58,237,.08) 0%,transparent 60%),
+    radial-gradient(ellipse 90% 60% at 50% 100%,rgba(124,58,237,.1) 0%,transparent 60%),
     linear-gradient(to top,rgba(6,0,14,.4) 0%,transparent 100%);
   pointer-events:none;z-index:0;
 }
@@ -182,6 +183,9 @@ body{font-family:var(--body);color:var(--text);position:relative}
   max-width:880px;margin:0 auto;
   padding:14px 14px 32px;
   display:flex;flex-direction:column;gap:18px;
+  /* 3D perspective for chamber curvature */
+  perspective:1400px;
+  perspective-origin:50% 45%;
 }
 
 /* Identity + tribute strip */
@@ -202,14 +206,22 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .trib-collect{font-family:var(--serif);font-size:.55rem;letter-spacing:.25em;font-weight:600;padding:6px 12px;border-radius:14px;cursor:pointer;background:rgba(74,222,128,.1);border:0.5px solid rgba(74,222,128,.4);color:#4ade80;transition:all .2s;white-space:nowrap}
 .trib-collect:hover{background:rgba(74,222,128,.22);box-shadow:0 0 12px rgba(74,222,128,.35)}
 
-/* RIFTS — no frames, edges feather to dark, float in space */
-.rift{position:relative;display:block;text-decoration:none;color:inherit;cursor:pointer}
+/* RIFTS — feathered to dark, float in space, angled in chamber */
+.rift{
+  position:relative;display:block;
+  text-decoration:none;color:inherit;cursor:pointer;
+  transform-style:preserve-3d;
+  transform:rotateY(var(--rift-tilt,0deg));
+  transition:transform .5s cubic-bezier(.22,1,.36,1);
+}
+.rift:hover{transform:rotateY(0deg) translateY(-3px)}
+.rift:active{transform:rotateY(var(--rift-tilt,0deg)) scale(.985)}
 
-.rift[data-tone="purple"]{--rift-glow:rgba(192,132,252,.45);--rift-accent:#c084fc;--rift-soft:#e9d5ff}
-.rift[data-tone="crimson"]{--rift-glow:rgba(244,63,94,.45);--rift-accent:#fb7185;--rift-soft:#fecdd3}
-.rift[data-tone="blue"]{--rift-glow:rgba(96,165,250,.45);--rift-accent:#93c5fd;--rift-soft:#dbeafe}
-.rift[data-tone="green"]{--rift-glow:rgba(74,222,128,.45);--rift-accent:#86efac;--rift-soft:#dcfce7}
-.rift[data-tone="gold"]{--rift-glow:rgba(251,191,36,.45);--rift-accent:#fcd34d;--rift-soft:#fef3c7}
+.rift[data-tone="purple"]{--rift-glow:rgba(192,132,252,.5);--rift-accent:#c084fc;--rift-soft:#e9d5ff}
+.rift[data-tone="crimson"]{--rift-glow:rgba(244,63,94,.5);--rift-accent:#fb7185;--rift-soft:#fecdd3}
+.rift[data-tone="blue"]{--rift-glow:rgba(96,165,250,.5);--rift-accent:#93c5fd;--rift-soft:#dbeafe}
+.rift[data-tone="green"]{--rift-glow:rgba(74,222,128,.5);--rift-accent:#86efac;--rift-soft:#dcfce7}
+.rift[data-tone="gold"]{--rift-glow:rgba(251,191,36,.5);--rift-accent:#fcd34d;--rift-soft:#fef3c7}
 
 .rift-opening{
   position:relative;width:100%;aspect-ratio:3/4;
@@ -219,11 +231,10 @@ body{font-family:var(--body);color:var(--text);position:relative}
   filter:drop-shadow(0 0 24px var(--rift-glow)) drop-shadow(0 12px 32px rgba(0,0,0,.7));
   animation:riftFloat 7s ease-in-out infinite;
   animation-delay:var(--rift-delay,0s);
-  transition:filter .35s ease,transform .35s ease;
+  transition:filter .35s ease;
   will-change:transform;
 }
-.rift:hover .rift-opening{filter:drop-shadow(0 0 40px var(--rift-glow)) drop-shadow(0 0 70px var(--rift-glow)) drop-shadow(0 12px 32px rgba(0,0,0,.7))}
-.rift:active{transform:scale(.985)}
+.rift:hover .rift-opening{filter:drop-shadow(0 0 44px var(--rift-glow)) drop-shadow(0 0 80px var(--rift-glow)) drop-shadow(0 12px 32px rgba(0,0,0,.7))}
 @keyframes riftFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
 .rift-label{position:relative;text-align:center;margin-top:-12px;padding:0 6px}
@@ -234,11 +245,12 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .rift-stat{font-size:.85rem;font-weight:600;color:var(--rift-soft);text-shadow:0 0 8px var(--rift-glow)}
 .rift-stat-sub{font-family:var(--body);font-style:italic;font-size:.58rem;color:rgba(255,255,255,.5)}
 
-/* THE ALTAR — 2-1-2 hex layout */
+/* THE ALTAR — 2-1-2 hex with 3D tilts (chamber curvature) */
 .rift-altar{
   display:grid;grid-template-columns:1fr 1fr;
   gap:22px 14px;
   padding:6px 0 4px;
+  transform-style:preserve-3d;
 }
 .rift-altar > .rift{width:100%}
 .rift-altar > .rift:nth-child(3){
@@ -246,11 +258,13 @@ body{font-family:var(--body);color:var(--text);position:relative}
   width:calc(50% - 7px);
   justify-self:center;
 }
-.rift-altar > .rift:nth-child(1){--rift-delay:-1.2s}
-.rift-altar > .rift:nth-child(2){--rift-delay:-3.5s}
-.rift-altar > .rift:nth-child(3){--rift-delay:0s}
-.rift-altar > .rift:nth-child(4){--rift-delay:-5.1s}
-.rift-altar > .rift:nth-child(5){--rift-delay:-2.3s}
+
+/* Chamber tilts — flanking rifts angle toward center, like mounted on curved walls */
+.rift-altar > .rift:nth-child(1){--rift-tilt:9deg;--rift-delay:-1.2s}    /* top-left, faces right */
+.rift-altar > .rift:nth-child(2){--rift-tilt:-9deg;--rift-delay:-3.5s}   /* top-right, faces left */
+.rift-altar > .rift:nth-child(3){--rift-tilt:0deg;--rift-delay:0s}       /* center, straight on */
+.rift-altar > .rift:nth-child(4){--rift-tilt:9deg;--rift-delay:-5.1s}    /* bottom-left, faces right */
+.rift-altar > .rift:nth-child(5){--rift-tilt:-9deg;--rift-delay:-2.3s}   /* bottom-right, faces left */
 
 @media(min-width:680px){
   .hub-chamber{padding:18px 22px 40px;gap:22px;max-width:760px}
@@ -994,7 +1008,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
 <div id="shell">
   <!-- TOP BAR -->
   <div id="topbar">
-    <div class="topbar-left">
+    <div class="topbar-left" onclick="switchScreen('hub')" style="cursor:pointer">
       <img class="topbar-logo" src="assets/ui/infernum-logo.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
       <div>
         <div class="logo-mark">INF<span>E</span>RNUM</div>
@@ -1066,7 +1080,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
             </div>
           </a>
 
-          <!-- Whisper centered -->
           <a class="rift" data-tone="purple" href="javascript:void(0)" onclick="switchScreen('summon')">
             <div class="rift-opening" style="background-image:url('assets/ui/rift_whisper.jpg')"></div>
             <div class="rift-label">
@@ -1201,26 +1214,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
   </div><!-- /content -->
 
   <!-- BOTTOM NAV -->
-  <div id="bottomnav">
-    <button class="nav-btn active" data-screen="hub" onclick="switchScreen('hub',this)">
-      <span class="nav-icon">🏛</span><span class="nav-label">Sanctum</span>
-    </button>
-    <button class="nav-btn" data-screen="summon" onclick="switchScreen('summon',this)">
-      <span class="nav-icon">📜</span><span class="nav-label">Summon</span>
-    </button>
-    <button class="nav-btn" data-screen="realms" onclick="switchScreen('realms',this)">
-      <span class="nav-icon">⚔</span><span class="nav-label">Realms</span>
-    </button>
-    <button class="nav-btn" data-screen="codex" onclick="switchScreen('codex',this)">
-      <span class="nav-icon">📖</span><span class="nav-label">Codex</span>
-    </button>
-    <button class="nav-btn" data-screen="garrison" onclick="switchScreen('garrison',this)">
-      <span class="nav-icon">⚑</span><span class="nav-label">Garrison</span>
-    </button>
-    <button class="nav-btn" data-screen="riftwalk" onclick="switchScreen('riftwalk',this)">
-      <span class="nav-icon">🌀</span><span class="nav-label">Rift Walker</span>
-    </button>
-  </div>
 </div><!-- /shell -->
 
 <!-- DETAIL OVERLAY -->
