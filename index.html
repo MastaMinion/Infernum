@@ -296,6 +296,16 @@ body{font-family:var(--body);color:var(--text);position:relative}
     aspect-ratio: 1 / 2 !important;
   }
 
+  /* Tighter, faster-fading mask on mobile.
+     At smaller sizes, the default 38%×72% ellipse leaves the image's basalt
+     rim visible at top/bottom — looks like rectangular framing.
+     This shrinks the visible region and pushes the fade earlier so edges
+     dissolve completely into the chamber. */
+  .rift-opening {
+    -webkit-mask-image: radial-gradient(ellipse 32% 62% at 50% 52%, black 28%, rgba(0,0,0,.12) 60%, transparent 95%) !important;
+            mask-image: radial-gradient(ellipse 32% 62% at 50% 52%, black 28%, rgba(0,0,0,.12) 60%, transparent 95%) !important;
+  }
+
   /* Floor cracks tilt back up on mobile so they remain visible
      (55deg rotation foreshortens too much on a small screen) */
   .rift.rift-floor {
@@ -310,10 +320,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
     --x: 50% !important;
     --y: 36% !important;
     --w: 50% !important;
-  }
-  .rift[data-tone="gold"] .rift-opening {
-    -webkit-mask-image: radial-gradient(ellipse 36% 78% at 50% 52%, black 38%, rgba(0,0,0,.22) 68%, transparent 100%) !important;
-            mask-image: radial-gradient(ellipse 36% 78% at 50% 52%, black 38%, rgba(0,0,0,.22) 68%, transparent 100%) !important;
   }
 
   /* Realms — left toward the rocks, off the leftmost pillar */
