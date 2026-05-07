@@ -197,7 +197,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
   cursor:pointer;text-decoration:none;color:inherit;display:block;
 }
 .rift:hover{
-  transform:translate(-50%,calc(-50% - 4px)) rotateY(0deg) scale(1.06);
+  transform:translate(-50%,calc(-50% - 3px)) rotateY(var(--rift-tilt,0deg)) scale(1.03);
   z-index:3;
 }
 .rift:active{transform:translate(-50%,-50%) rotateY(var(--rift-tilt,0deg)) scale(.97)}
