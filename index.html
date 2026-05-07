@@ -147,15 +147,13 @@ body{font-family:var(--body);color:var(--text);position:relative}
    HUB — THE RIFT WALKER'S SANCTUM
 ══════════════════════════════════════ */
 #screen-hub{
-  background:url('assets/ui/summon_bg.jpg') center center/cover no-repeat;
+  background:#06000e;
   overflow-y:auto;
   overflow-x:hidden;
 }
 #screen-hub::before{
   content:'';position:absolute;inset:0;z-index:0;
-  background:
-    radial-gradient(ellipse 90% 70% at 50% 35%,rgba(124,58,237,.22) 0%,rgba(124,58,237,.05) 40%,transparent 75%),
-    linear-gradient(to bottom,rgba(6,0,14,.55) 0%,rgba(6,0,14,.28) 40%,rgba(6,0,14,.82) 100%);
+  background:radial-gradient(ellipse 90% 70% at 50% 30%,rgba(124,58,237,.12) 0%,transparent 70%);
   pointer-events:none;
 }
 #screen-hub > *{position:relative;z-index:1}
@@ -165,32 +163,22 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .ember{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(192,132,252,.9),rgba(124,58,237,.4) 50%,transparent);animation:emberRise linear infinite;}
 @keyframes emberRise{0%{transform:translateY(0) translateX(0) scale(1);opacity:0}8%{opacity:1}88%{opacity:.5}100%{transform:translateY(-100vh) translateX(var(--drift,0px)) scale(.2);opacity:0}}
 /* ══════════════════════════════════════
-   HUB — The Sanctum (Altar of Five Rifts)
-   2-1-2 hex layout with 3D perspective tilts.
-   The chamber is curved; flanking rifts angle toward center.
+   HUB — The Sanctum (chamber + rifts in bays)
+   The chamber image is a fixed-aspect stage.
+   Each rift is positioned absolutely within it
+   so rifts always align with the pillars.
 ══════════════════════════════════════ */
-
-.floor-mist{
-  position:absolute;left:0;right:0;bottom:0;height:35%;
-  background:
-    radial-gradient(ellipse 90% 60% at 50% 100%,rgba(124,58,237,.1) 0%,transparent 60%),
-    linear-gradient(to top,rgba(6,0,14,.4) 0%,transparent 100%);
-  pointer-events:none;z-index:0;
-}
 
 .hub-chamber{
   position:relative;z-index:1;
   max-width:880px;margin:0 auto;
-  padding:14px 14px 32px;
-  display:flex;flex-direction:column;gap:18px;
-  /* 3D perspective for chamber curvature */
-  perspective:1400px;
-  perspective-origin:50% 45%;
+  padding:12px 12px 22px;
+  display:flex;flex-direction:column;gap:12px;
 }
 
-/* Identity + tribute strip */
+/* Identity + tribute (compact strip above the chamber) */
 .hub-strip{display:flex;flex-direction:column;gap:8px}
-.hub-identity{text-align:center;padding:6px 0 2px}
+.hub-identity{text-align:center;padding:4px 0 0}
 .hub-ident-eyebrow{font-family:var(--serif);font-size:.5rem;letter-spacing:.5em;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:3px}
 .hub-ident-name{font-family:var(--deco);font-size:1rem;letter-spacing:.16em;color:var(--text)}
 .hub-ident-name b{color:var(--purple);font-weight:400;text-shadow:0 0 18px rgba(192,132,252,.5)}
@@ -206,80 +194,102 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .trib-collect{font-family:var(--serif);font-size:.55rem;letter-spacing:.25em;font-weight:600;padding:6px 12px;border-radius:14px;cursor:pointer;background:rgba(74,222,128,.1);border:0.5px solid rgba(74,222,128,.4);color:#4ade80;transition:all .2s;white-space:nowrap}
 .trib-collect:hover{background:rgba(74,222,128,.22);box-shadow:0 0 12px rgba(74,222,128,.35)}
 
-/* RIFTS — feathered to dark, float in space, angled in chamber */
-.rift{
-  position:relative;display:block;
-  text-decoration:none;color:inherit;cursor:pointer;
-  transform-style:preserve-3d;
-  transform:rotateY(var(--rift-tilt,0deg));
-  transition:transform .5s cubic-bezier(.22,1,.36,1);
+/* ═════════════ THE SANCTUM STAGE ═════════════ */
+/* Fixed aspect ratio matching sanctum_bg.jpg (928×1232 ≈ 3:4).
+   Width scales to fit viewport, height computed from aspect.
+   max-height clamp prevents stage from being taller than usable space. */
+.sanctum-stage{
+  position:relative;
+  width:min(100%,760px,calc((100vh - 130px) * 928 / 1232));
+  aspect-ratio:928 / 1232;
+  margin:0 auto;
+  background:url('assets/ui/sanctum_bg.jpg') center/cover no-repeat;
+  border-radius:4px;
+  box-shadow:0 0 50px rgba(0,0,0,.6),inset 0 0 80px rgba(6,0,14,.4);
+  overflow:hidden;
+  perspective:1400px;
+  perspective-origin:50% 45%;
 }
-.rift:hover{transform:rotateY(0deg) translateY(-3px)}
-.rift:active{transform:rotateY(var(--rift-tilt,0deg)) scale(.985)}
 
-.rift[data-tone="purple"]{--rift-glow:rgba(192,132,252,.5);--rift-accent:#c084fc;--rift-soft:#e9d5ff}
-.rift[data-tone="crimson"]{--rift-glow:rgba(244,63,94,.5);--rift-accent:#fb7185;--rift-soft:#fecdd3}
-.rift[data-tone="blue"]{--rift-glow:rgba(96,165,250,.5);--rift-accent:#93c5fd;--rift-soft:#dbeafe}
-.rift[data-tone="green"]{--rift-glow:rgba(74,222,128,.5);--rift-accent:#86efac;--rift-soft:#dcfce7}
-.rift[data-tone="gold"]{--rift-glow:rgba(251,191,36,.5);--rift-accent:#fcd34d;--rift-soft:#fef3c7}
+/* Subtle vignette so rift glows pop against the chamber */
+.sanctum-stage::after{
+  content:'';
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 95% 80% at 50% 50%,transparent 55%,rgba(6,0,14,.55) 100%),
+    linear-gradient(to bottom,rgba(6,0,14,.18) 0%,transparent 25%,transparent 70%,rgba(6,0,14,.35) 100%);
+  pointer-events:none;
+  z-index:1;
+}
+
+/* ═════════════ RIFTS — absolutely positioned in pillar bays ═════════════ */
+.rift{
+  position:absolute;
+  left:var(--x);top:var(--y);
+  width:var(--w,24%);
+  transform:translate(-50%,-50%) rotateY(var(--rift-tilt,0deg));
+  transform-style:preserve-3d;
+  transition:transform .5s cubic-bezier(.22,1,.36,1);
+  z-index:2;
+  cursor:pointer;text-decoration:none;color:inherit;display:block;
+}
+.rift:hover{
+  transform:translate(-50%,calc(-50% - 4px)) rotateY(0deg) scale(1.05);
+  z-index:3;
+}
+.rift:active{transform:translate(-50%,-50%) rotateY(var(--rift-tilt,0deg)) scale(.97)}
+
+.rift[data-tone="purple"]{--rift-glow:rgba(192,132,252,.55);--rift-accent:#c084fc;--rift-soft:#e9d5ff}
+.rift[data-tone="crimson"]{--rift-glow:rgba(244,63,94,.55);--rift-accent:#fb7185;--rift-soft:#fecdd3}
+.rift[data-tone="blue"]{--rift-glow:rgba(96,165,250,.55);--rift-accent:#93c5fd;--rift-soft:#dbeafe}
+.rift[data-tone="green"]{--rift-glow:rgba(74,222,128,.55);--rift-accent:#86efac;--rift-soft:#dcfce7}
+.rift[data-tone="gold"]{--rift-glow:rgba(251,191,36,.55);--rift-accent:#fcd34d;--rift-soft:#fef3c7}
 
 .rift-opening{
   position:relative;width:100%;aspect-ratio:3/4;
   background-size:cover;background-position:center 30%;background-repeat:no-repeat;
   -webkit-mask-image:radial-gradient(ellipse 78% 88% at 50% 48%,black 30%,rgba(0,0,0,.55) 75%,transparent 100%);
           mask-image:radial-gradient(ellipse 78% 88% at 50% 48%,black 30%,rgba(0,0,0,.55) 75%,transparent 100%);
-  filter:drop-shadow(0 0 24px var(--rift-glow)) drop-shadow(0 12px 32px rgba(0,0,0,.7));
+  filter:drop-shadow(0 0 16px var(--rift-glow)) drop-shadow(0 6px 18px rgba(0,0,0,.7));
   animation:riftFloat 7s ease-in-out infinite;
   animation-delay:var(--rift-delay,0s);
   transition:filter .35s ease;
   will-change:transform;
 }
-.rift:hover .rift-opening{filter:drop-shadow(0 0 44px var(--rift-glow)) drop-shadow(0 0 80px var(--rift-glow)) drop-shadow(0 12px 32px rgba(0,0,0,.7))}
-@keyframes riftFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.rift:hover .rift-opening{filter:drop-shadow(0 0 30px var(--rift-glow)) drop-shadow(0 0 60px var(--rift-glow)) drop-shadow(0 6px 18px rgba(0,0,0,.7))}
+@keyframes riftFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 
-.rift-label{position:relative;text-align:center;margin-top:-12px;padding:0 6px}
-.rift-eyebrow{font-family:var(--serif);font-size:.42rem;letter-spacing:.36em;color:var(--rift-accent);text-transform:uppercase;text-shadow:0 0 8px var(--rift-glow);margin-bottom:3px;display:flex;align-items:center;justify-content:center;gap:6px}
-.rift-eyebrow::before,.rift-eyebrow::after{content:'';width:10px;height:1px;background:currentColor;opacity:.5}
-.rift-name{font-family:var(--deco);font-size:.78rem;letter-spacing:.1em;color:#fff;line-height:1.15;text-shadow:0 0 14px var(--rift-glow),0 1px 2px #000;margin-bottom:3px}
-.rift-stat-row{display:flex;align-items:baseline;justify-content:center;gap:5px;font-family:var(--serif)}
-.rift-stat{font-size:.85rem;font-weight:600;color:var(--rift-soft);text-shadow:0 0 8px var(--rift-glow)}
-.rift-stat-sub{font-family:var(--body);font-style:italic;font-size:.58rem;color:rgba(255,255,255,.5)}
-
-/* THE ALTAR — 2-1-2 hex with 3D tilts (chamber curvature) */
-.rift-altar{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:22px 14px;
-  padding:6px 0 4px;
-  transform-style:preserve-3d;
+.rift-label{
+  position:relative;text-align:center;margin-top:-6px;padding:0 2px;
 }
-.rift-altar > .rift{width:100%}
-.rift-altar > .rift:nth-child(3){
-  grid-column:1 / -1;
-  width:calc(50% - 7px);
-  justify-self:center;
+.rift-eyebrow{
+  font-family:var(--serif);font-size:.35rem;letter-spacing:.3em;
+  color:var(--rift-accent);text-transform:uppercase;
+  text-shadow:0 0 6px var(--rift-glow),0 1px 2px #000;margin-bottom:1px;
 }
+.rift-name{
+  font-family:var(--deco);font-size:.62rem;letter-spacing:.08em;
+  color:#fff;line-height:1.1;
+  text-shadow:0 0 10px var(--rift-glow),0 1px 2px #000;margin-bottom:1px;
+}
+.rift-stat-row{display:flex;align-items:baseline;justify-content:center;gap:4px;font-family:var(--serif)}
+.rift-stat{font-size:.72rem;font-weight:600;color:var(--rift-soft);text-shadow:0 0 6px var(--rift-glow),0 1px 2px #000}
+.rift-stat-sub{font-family:var(--body);font-style:italic;font-size:.5rem;color:rgba(255,255,255,.55);text-shadow:0 1px 2px #000}
 
-/* Chamber tilts — flanking rifts angle toward center, like mounted on curved walls */
-.rift-altar > .rift:nth-child(1){--rift-tilt:9deg;--rift-delay:-1.2s}    /* top-left, faces right */
-.rift-altar > .rift:nth-child(2){--rift-tilt:-9deg;--rift-delay:-3.5s}   /* top-right, faces left */
-.rift-altar > .rift:nth-child(3){--rift-tilt:0deg;--rift-delay:0s}       /* center, straight on */
-.rift-altar > .rift:nth-child(4){--rift-tilt:9deg;--rift-delay:-5.1s}    /* bottom-left, faces right */
-.rift-altar > .rift:nth-child(5){--rift-tilt:-9deg;--rift-delay:-2.3s}   /* bottom-right, faces left */
-
+@media(min-width:480px){
+  .rift-eyebrow{font-size:.4rem}
+  .rift-name{font-size:.72rem}
+  .rift-stat{font-size:.82rem}
+  .rift-stat-sub{font-size:.55rem}
+}
 @media(min-width:680px){
-  .hub-chamber{padding:18px 22px 40px;gap:22px;max-width:760px}
+  .hub-chamber{padding:18px 22px 32px;gap:18px;max-width:760px}
   .hub-strip{flex-direction:row;align-items:center;justify-content:space-between;gap:14px}
   .hub-identity{text-align:left;flex:1;padding:0}
-  .rift-altar{gap:32px 20px}
-  .rift-altar > .rift:nth-child(3){width:calc(50% - 10px)}
-  .rift-name{font-size:.92rem}
-  .rift-eyebrow{font-size:.46rem}
-  .rift-stat{font-size:.95rem}
-}
-@media(min-width:980px){
-  .hub-chamber{max-width:840px}
-  .rift-altar{gap:40px 28px}
-  .rift-altar > .rift:nth-child(3){width:calc(50% - 14px)}
+  .rift-eyebrow{font-size:.42rem}
+  .rift-name{font-size:.78rem}
+  .rift-stat{font-size:.9rem}
+  .rift-stat-sub{font-size:.58rem}
 }
 
 /* ══════════════════════════════════════
@@ -1038,7 +1048,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
     <!-- HUB -->
     <div id="screen-hub" class="screen active">
       <div id="hub-sigils"></div>
-      <div class="floor-mist"></div>
 
       <div class="hub-chamber">
 
@@ -1059,10 +1068,12 @@ body{font-family:var(--body);color:var(--text);position:relative}
           </div>
         </div>
 
-        <!-- ═══ THE ALTAR — 5 equal rifts, 2-1-2 hex ═══ -->
-        <div class="rift-altar">
+        <!-- ═══ THE SANCTUM STAGE — chamber + 5 rifts in pillar bays ═══ -->
+        <div class="sanctum-stage">
 
-          <a class="rift" data-tone="crimson" href="javascript:void(0)" onclick="switchScreen('realms')">
+          <!-- Top row: Realms (left bay), Whisper (center), Codex (right bay) -->
+          <a class="rift" data-tone="crimson" href="javascript:void(0)" onclick="switchScreen('realms')"
+             style="--x:22%;--y:30%;--w:24%;--rift-tilt:10deg;--rift-delay:-1.2s">
             <div class="rift-opening" style="background-image:url('assets/ui/rift_realms.jpg')"></div>
             <div class="rift-label">
               <div class="rift-eyebrow">Conquer</div>
@@ -1071,16 +1082,8 @@ body{font-family:var(--body);color:var(--text);position:relative}
             </div>
           </a>
 
-          <a class="rift" data-tone="blue" href="javascript:void(0)" onclick="switchScreen('codex')">
-            <div class="rift-opening" style="background-image:url('assets/ui/rift_codex.jpg')"></div>
-            <div class="rift-label">
-              <div class="rift-eyebrow">Chronicle</div>
-              <div class="rift-name">Codex</div>
-              <div class="rift-stat-row"><span class="rift-stat" id="stat-bound">0</span><span class="rift-stat-sub"><span id="codex-badge">0 / 28</span> bound</span></div>
-            </div>
-          </a>
-
-          <a class="rift" data-tone="purple" href="javascript:void(0)" onclick="switchScreen('summon')">
+          <a class="rift" data-tone="purple" href="javascript:void(0)" onclick="switchScreen('summon')"
+             style="--x:50%;--y:28%;--w:26%;--rift-tilt:0deg;--rift-delay:0s">
             <div class="rift-opening" style="background-image:url('assets/ui/rift_whisper.jpg')"></div>
             <div class="rift-label">
               <div class="rift-eyebrow">Summon</div>
@@ -1089,7 +1092,19 @@ body{font-family:var(--body);color:var(--text);position:relative}
             </div>
           </a>
 
-          <a class="rift" data-tone="green" href="javascript:void(0)" onclick="switchScreen('garrison')">
+          <a class="rift" data-tone="blue" href="javascript:void(0)" onclick="switchScreen('codex')"
+             style="--x:78%;--y:30%;--w:24%;--rift-tilt:-10deg;--rift-delay:-3.5s">
+            <div class="rift-opening" style="background-image:url('assets/ui/rift_codex.jpg')"></div>
+            <div class="rift-label">
+              <div class="rift-eyebrow">Chronicle</div>
+              <div class="rift-name">Codex</div>
+              <div class="rift-stat-row"><span class="rift-stat" id="stat-bound">0</span><span class="rift-stat-sub"><span id="codex-badge">0/28</span></span></div>
+            </div>
+          </a>
+
+          <!-- Bottom row: Garrison (left bay), Walker (right bay) -->
+          <a class="rift" data-tone="green" href="javascript:void(0)" onclick="switchScreen('garrison')"
+             style="--x:32%;--y:54%;--w:24%;--rift-tilt:8deg;--rift-delay:-5.1s">
             <div class="rift-opening" style="background-image:url('assets/ui/rift_garrison.jpg')"></div>
             <div class="rift-label">
               <div class="rift-eyebrow">Tribute</div>
@@ -1098,7 +1113,8 @@ body{font-family:var(--body);color:var(--text);position:relative}
             </div>
           </a>
 
-          <a class="rift" data-tone="gold" href="javascript:void(0)" onclick="switchScreen('riftwalk')">
+          <a class="rift" data-tone="gold" href="javascript:void(0)" onclick="switchScreen('riftwalk')"
+             style="--x:68%;--y:54%;--w:24%;--rift-tilt:-8deg;--rift-delay:-2.3s">
             <div class="rift-opening" style="background-image:url('assets/ui/rift_walker.jpg')"></div>
             <div class="rift-label">
               <div class="rift-eyebrow">Ascend</div>
