@@ -347,6 +347,60 @@ body{font-family:var(--body);color:var(--text);position:relative}
   }
 }
 
+
+/* ══════════════════════════════════════
+   ROTATE LOCK — block landscape on mobile
+   Browser tabs can't actually lock orientation;
+   this shows a "rotate device" prompt instead.
+══════════════════════════════════════ */
+#rotate-lock {
+  display: none;
+}
+@media (max-width: 1024px) and (orientation: landscape) {
+  #rotate-lock {
+    display: flex !important;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background:
+      radial-gradient(ellipse 80% 70% at 50% 50%, rgba(124,58,237,.12) 0%, transparent 70%),
+      var(--bg);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    padding: 30px;
+    text-align: center;
+  }
+  .rotate-icon {
+    font-size: 4.5rem;
+    color: var(--gold);
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(251,191,36,.55), 0 0 60px rgba(192,132,252,.25);
+    animation: rotateNudge 2.4s ease-in-out infinite;
+  }
+  .rotate-msg {
+    font-family: var(--deco);
+    font-size: 1.05rem;
+    letter-spacing: 0.32em;
+    color: var(--text);
+    text-transform: uppercase;
+    text-shadow: 0 0 14px rgba(192,132,252,.3);
+  }
+  .rotate-sub {
+    font-family: var(--body);
+    font-style: italic;
+    font-size: .85rem;
+    color: var(--muted);
+    letter-spacing: .04em;
+    margin-top: -10px;
+  }
+  @keyframes rotateNudge {
+    0%, 100% { transform: rotate(-18deg); }
+    50% { transform: rotate(18deg); }
+  }
+}
+
 /* ══════════════════════════════════════
    SUMMON SCREEN
 ══════════════════════════════════════ */
@@ -1055,6 +1109,13 @@ body{font-family:var(--body);color:var(--text);position:relative}
 </style>
 </head>
 <body>
+
+<div id="rotate-lock">
+  <div class="rotate-icon">⟲</div>
+  <div class="rotate-msg">The Sanctum awaits</div>
+  <div class="rotate-sub">Rotate your device to portrait</div>
+</div>
+
 
 <div id="global-bg"></div>
 <div id="global-bg-vignette"></div>
