@@ -293,44 +293,53 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
   /* Tall rifts less extreme on mobile (shorter viewport) */
   .rift.rift-tall .rift-opening {
-    aspect-ratio: 1 / 2.2 !important;
+    aspect-ratio: 1 / 2 !important;
   }
 
-  /* Walker — centered top, bigger to fill narrow viewport */
+  /* Floor cracks tilt back up on mobile so they remain visible
+     (55deg rotation foreshortens too much on a small screen) */
+  .rift.rift-floor {
+    transform: translate(-50%,-50%) rotateX(38deg) rotateY(var(--rift-tilt,0deg)) !important;
+  }
+  .rift.rift-floor:hover {
+    transform: translate(-50%,calc(-50% - 2px)) rotateX(38deg) rotateY(var(--rift-tilt,0deg)) scale(1.05) !important;
+  }
+
+  /* Walker — much bigger, centered top, fills the upper chamber */
   .rift[data-tone="gold"] {
     --x: 50% !important;
     --y: 28% !important;
-    --w: 36% !important;
+    --w: 50% !important;
   }
 
-  /* Realms — pulled inward to stay within mobile's visible chamber band */
+  /* Realms — moved DOWN below Walker so the top isn't cramped */
   .rift[data-tone="crimson"] {
-    --x: 24% !important;
-    --y: 30% !important;
-    --w: 26% !important;
+    --x: 22% !important;
+    --y: 42% !important;
+    --w: 24% !important;
     --rift-tilt: 8deg !important;
   }
 
-  /* Codex — mirror of Realms */
+  /* Codex — mirror, also moved down */
   .rift[data-tone="blue"] {
-    --x: 76% !important;
-    --y: 30% !important;
-    --w: 26% !important;
+    --x: 78% !important;
+    --y: 42% !important;
+    --w: 24% !important;
     --rift-tilt: -8deg !important;
   }
 
-  /* Garrison — between Realms and Whisper, off the central axis */
+  /* Garrison — pushed lower toward floor, slightly bigger */
   .rift[data-tone="green"] {
-    --x: 30% !important;
-    --y: 55% !important;
-    --w: 22% !important;
+    --x: 28% !important;
+    --y: 64% !important;
+    --w: 24% !important;
   }
 
-  /* Whisper — bigger focal floor crack */
+  /* Whisper — much bigger so it dominates the foreground as the focal point */
   .rift[data-tone="purple"] {
     --x: 50% !important;
-    --y: 78% !important;
-    --w: 42% !important;
+    --y: 80% !important;
+    --w: 60% !important;
   }
 }
 
