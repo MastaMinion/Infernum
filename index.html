@@ -418,21 +418,23 @@ body{font-family:var(--body);color:var(--text);position:relative}
 /* ══════════════════════════════════════
    SUMMON SCREEN
 ══════════════════════════════════════ */
-#screen-summon{background:var(--bg);position:relative;overflow:hidden}
-/* 3D canvas backdrop — covers the screen, sits behind UI */
+#screen-summon{background:var(--bg);position:absolute;inset:0;overflow:hidden}
+.summon-3d-wrap{
+  position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+}
 #summon-3d-canvas{
-  position:absolute;inset:0;width:100%;height:100%;
-  z-index:0;display:block;pointer-events:none;
+  width:100%;height:100%;display:block;
 }
-/* Subtle vignette over the 3D scene to ground UI legibility */
-#screen-summon::after{
-  content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+.summon-3d-wrap::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
   background:
-    radial-gradient(ellipse 100% 80% at 50% 50%, transparent 40%, rgba(6,0,14,.55) 100%),
-    linear-gradient(to bottom, rgba(6,0,14,.4) 0%, transparent 18%, transparent 82%, rgba(6,0,14,.7) 100%);
+    radial-gradient(ellipse 110% 90% at 50% 55%, transparent 35%, rgba(6,0,14,.6) 100%),
+    linear-gradient(to bottom, rgba(6,0,14,.45) 0%, transparent 18%, transparent 78%, rgba(6,0,14,.75) 100%);
 }
-#screen-summon > .summon-inner{position:relative;z-index:2}
-.summon-inner{padding:16px 16px 30px;max-width:520px;margin:0 auto}
+.summon-scroll-wrap{
+  position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;z-index:2;
+}
+.summon-inner{padding:16px 16px 30px;max-width:520px;margin:0 auto;position:relative}
 
 /* ══════════════════════════════════════
    CODEX SCREEN
@@ -1255,8 +1257,8 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
     <!-- SUMMON -->
     <div id="screen-summon" class="screen">
-      <canvas id="summon-3d-canvas"></canvas>
-      <div class="summon-inner">
+      <div class="summon-3d-wrap"><canvas id="summon-3d-canvas"></canvas></div>
+      <div class="summon-scroll-wrap"><div class="summon-inner">
         <div class="section-div"><span>CHOOSE SCROLL</span></div>
         <div class="scroll-selector-wrap">
           <div class="scroll-shelf" id="scroll-shelf"></div>
@@ -1289,7 +1291,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
             <span class="btn-cost" id="cost-10-label">◆ 7,200</span>
           </button>
         </div>
-      </div>
+      </div></div>
     </div>
 
     <!-- CODEX -->
@@ -2810,8 +2812,8 @@ window.SummonScene = (function(){
     container = document.getElementById('screen-summon');
     if (!canvas || !container) return;
 
-    const w = container.clientWidth || window.innerWidth;
-    const h = container.clientHeight || window.innerHeight;
+    let w = container.clientWidth, h = container.clientHeight;
+    if (w < 50 || h < 50) { requestAnimationFrame(init); return; }
 
     // ── Scene with atmospheric fog ──
     scene = new THREE.Scene();
@@ -2819,9 +2821,9 @@ window.SummonScene = (function(){
     scene.fog = new THREE.FogExp2(0x06000e, 0.038);
 
     // ── Camera ──
-    camera = new THREE.PerspectiveCamera(48, w/h, 0.1, 200);
-    camera.position.set(0, 2.2, 9.5);
-    camera.lookAt(0, 0.3, 0);
+    camera = new THREE.PerspectiveCamera(50, w/h, 0.1, 200);
+    camera.position.set(0, 2.8, 11);
+    camera.lookAt(0, 0, 0);
 
     // ── Renderer with cinematic tone mapping ──
     renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile });
@@ -2835,7 +2837,7 @@ window.SummonScene = (function(){
     const ambient = new THREE.AmbientLight(0x331a44, 0.45);
     scene.add(ambient);
 
-    pentagramLight = new THREE.PointLight(0xff44ff, 12, 18, 1.6);
+    pentagramLight = new THREE.PointLight(0xff44ff, 7, 16, 1.8);
     pentagramLight.position.set(0, 0.6, 0);
     scene.add(pentagramLight);
 
@@ -2847,10 +2849,10 @@ window.SummonScene = (function(){
     // ── Backdrop plane (your summon_bg as far void context) ──
     new THREE.TextureLoader().load('assets/ui/summon_bg.jpg', function(tex){
       tex.encoding = THREE.sRGBEncoding;
-      const bgGeo = new THREE.PlaneGeometry(70, 40);
+      const bgGeo = new THREE.PlaneGeometry(95, 55);
       const bgMat = new THREE.MeshBasicMaterial({ map: tex, fog: false });
       bgPlane = new THREE.Mesh(bgGeo, bgMat);
-      bgPlane.position.set(0, 4, -22);
+      bgPlane.position.set(0, 1.5, -22);
       scene.add(bgPlane);
     });
 
@@ -2917,11 +2919,11 @@ window.SummonScene = (function(){
     scene.add(pentagram);
 
     // ── Particle systems ──
-    smokeSystem = makeParticles(COUNT_SMOKE, 0xaa55ff, 1.8, 0.35, 4, 6);
+    smokeSystem = makeParticles(COUNT_SMOKE, 0xaa55ff, 0.4, 0.4, 3.5, 5);
     smokeSystem.points.material.blending = THREE.AdditiveBlending;
     scene.add(smokeSystem.points);
 
-    emberSystem = makeParticles(COUNT_EMBER, 0xff88ff, 0.10, 0.95, 7, 8);
+    emberSystem = makeParticles(COUNT_EMBER, 0xff88ff, 0.07, 1.0, 6, 7);
     emberSystem.points.material.blending = THREE.AdditiveBlending;
     scene.add(emberSystem.points);
 
@@ -3010,7 +3012,7 @@ window.SummonScene = (function(){
       });
     }
     if (glowDisc) glowDisc.material.opacity = 0.28 + Math.sin(t * 1.8) * 0.10;
-    if (pentagramLight) pentagramLight.intensity = 10 + Math.sin(t * 1.8) * 4;
+    if (pentagramLight) pentagramLight.intensity = 6 + Math.sin(t * 1.8) * 2;
 
     // Particles
     if (smokeSystem) updateParticles(smokeSystem, dt, t, 1.0, true);
@@ -3018,10 +3020,10 @@ window.SummonScene = (function(){
 
     // Camera idle sway + smooth mouse parallax
     const targetX = mouseX * 0.85 + Math.sin(t * 0.32) * 0.45;
-    const targetY = 2.2 + mouseY * 0.45 + Math.cos(t * 0.4) * 0.18;
+    const targetY = 2.8 + mouseY * 0.35 + Math.cos(t * 0.4) * 0.15;
     camera.position.x += (targetX - camera.position.x) * 0.04;
     camera.position.y += (targetY - camera.position.y) * 0.04;
-    camera.lookAt(0, 0.5, 0);
+    camera.lookAt(0, 0, 0);
 
     renderer.render(scene, camera);
   }
