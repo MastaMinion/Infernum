@@ -2982,7 +2982,7 @@ window.SummonScene = (function(){
     // ── Camera ──
     camera = new THREE.PerspectiveCamera(42, w/h, 0.1, 200);
     camera.position.set(0, 1.5, 5);     // standing height
-    camera.lookAt(0, 0.6, -1);          // gaze slightly forward and up — see the WHOLE scene
+    camera.lookAt(0, 0.4, -1);          // slight downward bias toward painted pentagram
 
     // ── Renderer with cinematic tone mapping ──
     renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile });
@@ -3014,13 +3014,13 @@ window.SummonScene = (function(){
     // The pentagram + platform are baked into this image — we don't render 3D copies on top.
     new THREE.TextureLoader().load('assets/ui/summon_bg.jpg', function(tex){
       tex.encoding = THREE.sRGBEncoding;
-      // Plane sized to overshoot any reasonable screen aspect (16:9 → 21:9 → ultrawide)
-      // and pushed back enough that the whole painted scene reads as the environment
-      const bgGeo = new THREE.PlaneGeometry(54, 30);
+      // New bg image has FPV perspective baked in — show flat, no tilt
+      // Plane oversized to fill ultrawide screens with no margins
+      const bgGeo = new THREE.PlaneGeometry(54, 30.4);  // 16:9 to match image
       const bgMat = new THREE.MeshBasicMaterial({ map: tex, fog: false });
       bgPlane = new THREE.Mesh(bgGeo, bgMat);
       bgPlane.position.set(0, 0.5, -19);
-      bgPlane.rotation.x = -8 * Math.PI / 180;
+      // No tilt — image's own perspective does the work
       scene.add(bgPlane);
     });
 
@@ -3092,14 +3092,14 @@ window.SummonScene = (function(){
     scene.add(pentagram);
 
     // ── Particle systems ──
-    smokeSystem = makeParticles(COUNT_SMOKE, 0xaa55ff, 0.28, 0.4, 2.0, 3);
+    smokeSystem = makeParticles(COUNT_SMOKE, 0xaa55ff, 0.22, 0.3, 2.5, 4);
     smokeSystem.points.material.blending = THREE.AdditiveBlending;
     smokeSystem.points.material.map = softCircleTex;
     smokeSystem.points.material.alphaTest = 0.001;
     smokeSystem.points.material.needsUpdate = true;
     scene.add(smokeSystem.points);
 
-    emberSystem = makeParticles(COUNT_EMBER, 0xffaaff, 0.09, 0.9, 3.0, 4);
+    emberSystem = makeParticles(COUNT_EMBER, 0xffaaff, 0.07, 0.85, 4.0, 5);
     emberSystem.points.material.blending = THREE.AdditiveBlending;
     emberSystem.points.material.map = softCircleTex;
     emberSystem.points.material.alphaTest = 0.001;
@@ -3112,10 +3112,9 @@ window.SummonScene = (function(){
     const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
     pentagramHitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
     pentagramHitbox.rotation.x = -Math.PI / 2;
-    pentagramHitbox.position.y = -1.2;
-    pentagramHitbox.position.z = -2;
-    // Hitbox is bigger to compensate for distance
-    pentagramHitbox.scale.set(2.2, 2.2, 2.2);
+    pentagramHitbox.position.y = -2.5;
+    pentagramHitbox.position.z = -3;
+    pentagramHitbox.scale.set(3.0, 3.0, 3.0);
     pentagramHitbox.userData = { type: 'pentagram' };
     scene.add(pentagramHitbox);
 
@@ -3575,7 +3574,7 @@ window.SummonScene = (function(){
     const targetY = 1.5 + mouseY * 0.18 + Math.cos(t * 0.4) * 0.07;  // first-person eye-level
     camera.position.x += (targetX - camera.position.x) * 0.04;
     camera.position.y += (targetY - camera.position.y) * 0.04;
-    camera.lookAt(0, 0.6, -1);
+    camera.lookAt(0, 0.4, -1);
 
     renderer.render(scene, camera);
   }
