@@ -437,6 +437,50 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .summon-inner{padding:16px 16px 30px;max-width:520px;margin:0 auto;position:relative}
 
 /* Floating HUD over the 3D summon scene */
+/* ──── 2D SCROLL OVERLAY ──── */
+.summon-2d-scrolls{
+  position:absolute;inset:0;z-index:3;
+  pointer-events:none;overflow:hidden;
+}
+.scroll-2d{
+  position:absolute;
+  width:140px;height:140px;
+  pointer-events:auto;cursor:pointer;
+  filter:drop-shadow(0 6px 18px rgba(0,0,0,0.7));
+  transition:filter 0.3s ease;
+  user-select:none;-webkit-user-drag:none;
+  animation:scroll-bob 3.5s ease-in-out infinite;
+}
+.scroll-2d:hover{
+  filter:drop-shadow(0 8px 22px rgba(0,0,0,0.85))
+         drop-shadow(0 0 14px var(--scroll-glow,#bda2e0));
+}
+.scroll-2d.active{
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,0.9))
+         drop-shadow(0 0 22px var(--scroll-glow,#bda2e0))
+         drop-shadow(0 0 38px var(--scroll-glow,#bda2e0));
+  animation:scroll-bob 2.2s ease-in-out infinite, scroll-pulse 2.2s ease-in-out infinite;
+}
+.scroll-2d-count{
+  font-family:'Cinzel Decorative',serif;font-size:16px;
+  color:#fff;text-shadow:0 0 8px var(--scroll-glow,#000),0 2px 4px #000;
+  pointer-events:none;letter-spacing:1px;
+  text-align:center;margin-top:4px;
+  white-space:nowrap;
+}
+@keyframes scroll-bob{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+}
+@keyframes scroll-pulse{
+  0%,100%{opacity:1}
+  50%{opacity:0.92}
+}
+@media (max-width:680px){
+  .scroll-2d{width:88px;height:88px}
+  .scroll-2d-count{font-size:13px}
+}
+
 .summon-hud{
   position:absolute;top:80px;left:0;right:0;z-index:5;
   pointer-events:none;text-align:center;
@@ -1324,6 +1368,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
     <!-- SUMMON -->
     <div id="screen-summon" class="screen">
       <div class="summon-3d-wrap"><canvas id="summon-3d-canvas"></canvas></div>
+      <div class="summon-2d-scrolls" id="summon-2d-scrolls"></div>
       <!-- Phase 1: 3D-only interaction. HUD overlays float above the scene. -->
       <div class="summon-hud" id="summon-hud">
         <div class="summon-hud-active" id="summon-hud-active">
@@ -1550,13 +1595,13 @@ const DEMON_IDS={
 const TIER_BORDER_SLUGS=['shade','imp','fiend','greater','archdemon','sinlord','void'];
 
 const SCROLLS=[
-  {id:'whisper',name:'Whisper Scroll',icon:'📜',iconImg:'assets/ui/scroll_whisper.jpg',color:'#888780',capLabel:'UNCOMMON',capColor:'#14b8a6',cost:'Free',locked:false,desc:'Given freely.',probs:[0.75,0.25,0,0,0,0,0],pity:{},rates:[{label:'Shade',pct:75,color:'#888780'},{label:'Imp',pct:25,color:'#14b8a6'}]},
-  {id:'twilight',name:'Twilight Scroll',icon:'🌒',iconImg:'assets/ui/scroll_twilight.jpg',color:'#60a5fa',capLabel:'RARE',capColor:'#60a5fa',cost:'300 ◆',locked:false,desc:'Standard issue.',probs:[0.45,0.30,0.25,0,0,0,0],pity:{},rates:[{label:'Shade',pct:45,color:'#888780'},{label:'Imp',pct:30,color:'#14b8a6'},{label:'Fiend',pct:25,color:'#60a5fa'}]},
-  {id:'infernal',name:'Infernal Scroll',icon:'🔥',iconImg:'assets/ui/scroll_infernal.jpg',color:'#c084fc',capLabel:'EPIC',capColor:'#c084fc',cost:'800 ◆',locked:false,desc:'Greater Demon contracts.',probs:[0,0.30,0.45,0.25,0,0,0],pity:{epic:40},rates:[{label:'Imp',pct:30,color:'#14b8a6'},{label:'Fiend',pct:45,color:'#60a5fa'},{label:'Greater Demon',pct:25,color:'#c084fc'}]},
-  {id:'bloodpact',name:'Blood Pact',icon:'🩸',iconImg:'assets/ui/scroll_bloodpact.jpg',color:'#f43f5e',capLabel:'LEGENDARY',capColor:'#f43f5e',cost:'2,400 ◆',locked:false,desc:'An Archdemon will be furious.',probs:[0,0,0.20,0.55,0.25,0,0],pity:{leg:70},rates:[{label:'Fiend',pct:20,color:'#60a5fa'},{label:'Greater Demon',pct:55,color:'#c084fc'},{label:'Archdemon',pct:25,color:'#f43f5e'}]},
-  {id:'sincodex',name:'Sin Codex',icon:'⭐',iconImg:'assets/ui/scroll_sincodex.jpg',color:'#fbbf24',capLabel:'MYTHIC',capColor:'#fbbf24',cost:'Sin Essence',locked:true,lockHint:'Conquer a Sin Realm',desc:'Cannot be purchased.',probs:[0,0,0,0.25,0.50,0.25,0],pity:{mythic:90},rates:[{label:'Greater Demon',pct:25,color:'#c084fc'},{label:'Archdemon',pct:50,color:'#f43f5e'},{label:'Sin Lord',pct:25,color:'#fbbf24'}]},
-  {id:'realmrift',name:'Realm Rift',icon:'🌀',iconImg:'assets/ui/scroll_realmrift.jpg',color:'#2dd4bf',capLabel:'REALM',capColor:'#2dd4bf',cost:'Realm Essence',locked:true,lockHint:'Conquer a realm first',desc:'Realm-native demons only.',probs:[0,0,0.45,0.35,0.20,0,0],pity:{},rates:[{label:'Native Common',pct:45,color:'#888780'},{label:'Native Rare',pct:35,color:'#60a5fa'},{label:'Native Epic+',pct:20,color:'#f43f5e'}]},
-  {id:'voidtear',name:'Void Tear',icon:'◈',iconImg:'assets/ui/scroll_voidtear.jpg',color:'#e0e0ff',capLabel:'ABYSSAL',capColor:'#e0e0ff',cost:'Void Echoes',locked:true,lockHint:'Defeat a Void Primordial',desc:'It screams when held.',probs:[0,0,0,0,0.20,0.50,0.30],pity:{abyssal:200},rates:[{label:'Archdemon',pct:20,color:'#f43f5e'},{label:'Sin Lord',pct:50,color:'#fbbf24'},{label:'Void Primordial',pct:30,color:'#e0e0ff'}]},
+  {id:'whisper',name:'Whisper Scroll',image2d:'assets/ui/scroll_whisper.png',icon:'📜',iconImg:'assets/ui/scroll_whisper.jpg',color:'#888780',capLabel:'UNCOMMON',capColor:'#14b8a6',cost:'Free',locked:false,desc:'Given freely.',probs:[0.75,0.25,0,0,0,0,0],pity:{},rates:[{label:'Shade',pct:75,color:'#888780'},{label:'Imp',pct:25,color:'#14b8a6'}]},
+  {id:'twilight',name:'Twilight Scroll',image2d:'assets/ui/scroll_twilight.png',icon:'🌒',iconImg:'assets/ui/scroll_twilight.jpg',color:'#60a5fa',capLabel:'RARE',capColor:'#60a5fa',cost:'300 ◆',locked:false,desc:'Standard issue.',probs:[0.45,0.30,0.25,0,0,0,0],pity:{},rates:[{label:'Shade',pct:45,color:'#888780'},{label:'Imp',pct:30,color:'#14b8a6'},{label:'Fiend',pct:25,color:'#60a5fa'}]},
+  {id:'infernal',name:'Infernal Scroll',image2d:'assets/ui/scroll_infernal.png',icon:'🔥',iconImg:'assets/ui/scroll_infernal.jpg',color:'#c084fc',capLabel:'EPIC',capColor:'#c084fc',cost:'800 ◆',locked:false,desc:'Greater Demon contracts.',probs:[0,0.30,0.45,0.25,0,0,0],pity:{epic:40},rates:[{label:'Imp',pct:30,color:'#14b8a6'},{label:'Fiend',pct:45,color:'#60a5fa'},{label:'Greater Demon',pct:25,color:'#c084fc'}]},
+  {id:'bloodpact',name:'Blood Pact',image2d:'assets/ui/scroll_bloodpact.png',icon:'🩸',iconImg:'assets/ui/scroll_bloodpact.jpg',color:'#f43f5e',capLabel:'LEGENDARY',capColor:'#f43f5e',cost:'2,400 ◆',locked:false,desc:'An Archdemon will be furious.',probs:[0,0,0.20,0.55,0.25,0,0],pity:{leg:70},rates:[{label:'Fiend',pct:20,color:'#60a5fa'},{label:'Greater Demon',pct:55,color:'#c084fc'},{label:'Archdemon',pct:25,color:'#f43f5e'}]},
+  {id:'sincodex',name:'Sin Codex',image2d:'assets/ui/scroll_sincodex.png',icon:'⭐',iconImg:'assets/ui/scroll_sincodex.jpg',color:'#fbbf24',capLabel:'MYTHIC',capColor:'#fbbf24',cost:'Sin Essence',locked:true,lockHint:'Conquer a Sin Realm',desc:'Cannot be purchased.',probs:[0,0,0,0.25,0.50,0.25,0],pity:{mythic:90},rates:[{label:'Greater Demon',pct:25,color:'#c084fc'},{label:'Archdemon',pct:50,color:'#f43f5e'},{label:'Sin Lord',pct:25,color:'#fbbf24'}]},
+  {id:'realmrift',name:'Realm Rift',image2d:'assets/ui/scroll_realmrift.png',icon:'🌀',iconImg:'assets/ui/scroll_realmrift.jpg',color:'#2dd4bf',capLabel:'REALM',capColor:'#2dd4bf',cost:'Realm Essence',locked:true,lockHint:'Conquer a realm first',desc:'Realm-native demons only.',probs:[0,0,0.45,0.35,0.20,0,0],pity:{},rates:[{label:'Native Common',pct:45,color:'#888780'},{label:'Native Rare',pct:35,color:'#60a5fa'},{label:'Native Epic+',pct:20,color:'#f43f5e'}]},
+  {id:'voidtear',name:'Void Tear',image2d:'assets/ui/scroll_voidtear.png',icon:'◈',iconImg:'assets/ui/scroll_voidtear.jpg',color:'#e0e0ff',capLabel:'ABYSSAL',capColor:'#e0e0ff',cost:'Void Echoes',locked:true,lockHint:'Defeat a Void Primordial',desc:'It screams when held.',probs:[0,0,0,0,0.20,0.50,0.30],pity:{abyssal:200},rates:[{label:'Archdemon',pct:20,color:'#f43f5e'},{label:'Sin Lord',pct:50,color:'#fbbf24'},{label:'Void Primordial',pct:30,color:'#e0e0ff'}]},
   {id:'event',name:'Event Scroll',icon:'⚡',iconImg:'assets/ui/scroll_event.jpg',color:'#fb923c',capLabel:'EVENT',capColor:'#fb923c',cost:'Event Currency',locked:true,lockHint:'Active during Rift events',desc:'Limited time only.',probs:[0,0,0.30,0.30,0.20,0.15,0.05],pity:{epic:40},rates:[{label:'Event Common',pct:30,color:'#888780'},{label:'Event Rare/Epic',pct:50,color:'#c084fc'},{label:'Event Exclusive',pct:20,color:'#fb923c'}]},
 ];
 
@@ -1629,6 +1674,7 @@ function switchScreen(name, btnEl){
       if(owned) S.activeScroll=owned.id;
     }
     updateSummonHUD();
+    render2DScrolls();
   }
 
   // 3D scene lifecycle for the summon screen
@@ -1708,7 +1754,7 @@ function summonWithScroll(scrollId,count){
   S.activeScroll=scrollId;
   const results=[];
   for(let i=0;i<count;i++) results.push(pullOne());
-  save();updateUI();updateSummonHUD();
+  save();updateUI();updateSummonHUD();render2DScrolls();
   // Refresh 3D scrolls in case the player ran out / activeScroll changed
   if(window.SummonScene && window.SummonScene.refreshScrolls){
     window.SummonScene.refreshScrolls();
@@ -1724,7 +1770,7 @@ function tradeUpScroll(scrollId){
   const next=SCROLLS[idx+1];
   S.scrollInv[scrollId]-=9;
   S.scrollInv[next.id]=(S.scrollInv[next.id]||0)+1;
-  save();updateUI();updateSummonHUD();
+  save();updateUI();updateSummonHUD();render2DScrolls();
   if(window.SummonScene && window.SummonScene.refreshScrolls){
     window.SummonScene.refreshScrolls();
   }
@@ -1768,6 +1814,79 @@ function showSummonResultText(label, name, color){
   el.classList.add('show');
   clearTimeout(el._fadeTimer);
   el._fadeTimer=setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+function render2DScrolls(){
+  const overlay=document.getElementById('summon-2d-scrolls');
+  if(!overlay) return;
+  overlay.innerHTML='';
+
+  const owned=SCROLLS.filter(s=>(S.scrollInv[s.id]||0)>0 && s.image2d);
+  if(owned.length===0) return;
+
+  // Arc above the painted pentagram (pentagram at ~50%, 68% of canvas).
+  // Range 200°→340° gives a clean upper arc that doesn't overlap the pentagram.
+  const cx=50, cy=68, rx=30, ry=32;
+  const a0=200*Math.PI/180, a1=340*Math.PI/180;
+
+  owned.forEach((scroll,i)=>{
+    const t=owned.length===1 ? 0.5 : i/(owned.length-1);
+    const angle=a0+(a1-a0)*t;
+    const x=cx+Math.cos(angle)*rx;
+    const y=cy+Math.sin(angle)*ry;
+
+    const wrap=document.createElement('div');
+    wrap.style.cssText=`position:absolute;left:${x}%;top:${y}%;transform:translate(-50%,-50%);text-align:center`;
+
+    const img=document.createElement('img');
+    img.className='scroll-2d';
+    img.dataset.tier=scroll.id;
+    img.src=scroll.image2d;
+    img.alt=scroll.name;
+    img.style.position='static';
+    img.style.setProperty('--scroll-glow', scroll.color);
+    img.style.animationDelay=(i*0.4)+'s';
+    if(S.activeScroll===scroll.id) img.classList.add('active');
+
+    const cnt=document.createElement('div');
+    cnt.className='scroll-2d-count';
+    cnt.textContent='× '+(S.scrollInv[scroll.id]||0);
+    cnt.style.setProperty('--scroll-glow', scroll.color);
+
+    // Click + long-press
+    let pressTimer=null, longPressTriggered=false;
+    function startPress(){
+      longPressTriggered=false;
+      pressTimer=setTimeout(()=>{
+        longPressTriggered=true;
+        tradeUpScroll(scroll.id);
+        pressTimer=null;
+      }, 650);
+    }
+    function endPress(){
+      if(pressTimer){clearTimeout(pressTimer); pressTimer=null;}
+      if(!longPressTriggered){
+        S.activeScroll=scroll.id;
+        save();
+        updateSummonHUD();
+        render2DScrolls();
+      }
+    }
+    img.addEventListener('mousedown', startPress);
+    img.addEventListener('mouseup', endPress);
+    img.addEventListener('mouseleave', ()=>{
+      if(pressTimer){clearTimeout(pressTimer); pressTimer=null;}
+    });
+    img.addEventListener('touchstart', (e)=>{e.preventDefault(); startPress();}, {passive:false});
+    img.addEventListener('touchend', endPress);
+    img.addEventListener('touchcancel', ()=>{
+      if(pressTimer){clearTimeout(pressTimer); pressTimer=null;}
+    });
+
+    wrap.appendChild(img);
+    wrap.appendChild(cnt);
+    overlay.appendChild(wrap);
+  });
 }
 
 function updateSummonHUD(){
