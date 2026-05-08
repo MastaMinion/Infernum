@@ -206,13 +206,13 @@ body{font-family:var(--body);color:var(--text);position:relative}
    Rotates rift on X-axis so it appears to lie flat on the floor,
    like a real wound in the basalt rather than a vertical tear. */
 .rift.rift-floor{
-  transform:translate(-50%,-50%) rotateX(55deg) rotateY(var(--rift-tilt,0deg));
+  transform:translate(-50%,-50%) rotateX(35deg) rotateY(var(--rift-tilt,0deg));
 }
 .rift.rift-floor:hover{
-  transform:translate(-50%,calc(-50% - 2px)) rotateX(55deg) rotateY(var(--rift-tilt,0deg)) scale(1.05);
+  transform:translate(-50%,calc(-50% - 2px)) rotateX(35deg) rotateY(var(--rift-tilt,0deg)) scale(1.05);
 }
 .rift.rift-floor:active{
-  transform:translate(-50%,-50%) rotateX(55deg) rotateY(var(--rift-tilt,0deg)) scale(.97);
+  transform:translate(-50%,-50%) rotateX(35deg) rotateY(var(--rift-tilt,0deg)) scale(.97);
 }
 .rift.rift-floor .rift-label{margin-top:-2px}
 
@@ -317,10 +317,10 @@ body{font-family:var(--body);color:var(--text);position:relative}
   /* Floor cracks tilt back up on mobile so they remain visible
      (55deg rotation foreshortens too much on a small screen) */
   .rift.rift-floor {
-    transform: translate(-50%,-50%) rotateX(38deg) rotateY(var(--rift-tilt,0deg)) !important;
+    transform: translate(-50%,-50%) rotateX(25deg) rotateY(var(--rift-tilt,0deg)) !important;
   }
   .rift.rift-floor:hover {
-    transform: translate(-50%,calc(-50% - 2px)) rotateX(38deg) rotateY(var(--rift-tilt,0deg)) scale(1.05) !important;
+    transform: translate(-50%,calc(-50% - 2px)) rotateX(25deg) rotateY(var(--rift-tilt,0deg)) scale(1.05) !important;
   }
 
   /* Walker — bigger, dropped down, softer top edge so the square cutoff fades */
@@ -1183,7 +1183,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
         <!-- Walker — gold air-tear, suspended high between central pillars (vertical, no rift-floor) -->
         <a class="rift rift-cutout" data-tone="gold" href="javascript:void(0)" onclick="switchScreen('riftwalk')"
-           style="--x:50%;--y:38%;--w:28%;--rift-tilt:0deg;--rift-delay:0s">
+           style="--x:50%;--y:38%;--w:20%;--rift-tilt:0deg;--rift-delay:0s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_walker.png')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Ascend</div>
@@ -1205,7 +1205,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
         <!-- Realms — crimson floor crack, in left pillar bay -->
         <a class="rift rift-cutout" data-tone="crimson" href="javascript:void(0)" onclick="switchScreen('realms')"
-           style="--x:10%;--y:28%;--w:18%;--rift-tilt:14deg;--rift-delay:-3.2s">
+           style="--x:10%;--y:28%;--w:20%;--rift-tilt:14deg;--rift-delay:-3.2s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_realms.png')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Conquer</div>
@@ -1216,7 +1216,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
         <!-- Codex — blue floor crack, in right pillar bay -->
         <a class="rift rift-cutout" data-tone="blue" href="javascript:void(0)" onclick="switchScreen('codex')"
-           style="--x:88%;--y:28%;--w:18%;--rift-tilt:-14deg;--rift-delay:-4.6s">
+           style="--x:88%;--y:28%;--w:20%;--rift-tilt:-14deg;--rift-delay:-4.6s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_codex.png')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Chronicle</div>
@@ -1227,7 +1227,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
         <!-- Garrison — green floor crack, near the player's feet (foreground) -->
         <a class="rift rift-cutout" data-tone="green" href="javascript:void(0)" onclick="switchScreen('garrison')"
-           style="--x:32%;--y:50%;--w:15%;--rift-tilt:8deg;--rift-delay:-5.5s">
+           style="--x:32%;--y:50%;--w:20%;--rift-tilt:8deg;--rift-delay:-5.5s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_garrison.png')"></div>
           <div class="rift-label">
             <div class="rift-eyebrow">Tribute</div>
