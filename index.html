@@ -2980,9 +2980,9 @@ window.SummonScene = (function(){
     scene.fog = new THREE.FogExp2(0x06000e, 0.018);  // light fog for atmospheric integration with bg image
 
     // ── Camera ──
-    camera = new THREE.PerspectiveCamera(38, w/h, 0.1, 200);
-    camera.position.set(0, 0.4, 7);
-    camera.lookAt(0, 0, 0);
+    camera = new THREE.PerspectiveCamera(42, w/h, 0.1, 200);
+    camera.position.set(0, 2.2, 6);     // eye level — standing on the platform
+    camera.lookAt(0, -0.8, -0.5);       // looking DOWN at the pentagram in front of you
 
     // ── Renderer with cinematic tone mapping ──
     renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile });
@@ -3001,8 +3001,8 @@ window.SummonScene = (function(){
     scene.add(ambient);
 
     // Magenta key light from below — matches the bg image's pentagram glow direction
-    pentagramLight = new THREE.PointLight(0xff66ff, 2.5, 8, 2);
-    pentagramLight.position.set(0, -0.3, 1.5);
+    pentagramLight = new THREE.PointLight(0xff66ff, 2.8, 9, 2);
+    pentagramLight.position.set(0, -0.7, 1.5);  // glows from "the floor" up onto the scrolls
     scene.add(pentagramLight);
 
     // Cool fill from front-above for scroll readability
@@ -3014,10 +3014,10 @@ window.SummonScene = (function(){
     // The pentagram + platform are baked into this image — we don't render 3D copies on top.
     new THREE.TextureLoader().load('assets/ui/summon_bg.jpg', function(tex){
       tex.encoding = THREE.sRGBEncoding;
-      const bgGeo = new THREE.PlaneGeometry(38, 21);  // sized to match camera framing
+      const bgGeo = new THREE.PlaneGeometry(46, 26);  // larger to cover the new tilted view
       const bgMat = new THREE.MeshBasicMaterial({ map: tex, fog: false });
       bgPlane = new THREE.Mesh(bgGeo, bgMat);
-      bgPlane.position.set(0, 0, -10);  // far enough back to feel like environment
+      bgPlane.position.set(0, 0, -10);
       scene.add(bgPlane);
     });
 
@@ -3109,7 +3109,8 @@ window.SummonScene = (function(){
     const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
     pentagramHitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
     pentagramHitbox.rotation.x = -Math.PI / 2;
-    pentagramHitbox.position.y = -0.4;
+    pentagramHitbox.position.y = -0.9;
+    pentagramHitbox.position.z = 0.3;  // slightly toward the player
     pentagramHitbox.userData = { type: 'pentagram' };
     scene.add(pentagramHitbox);
 
@@ -3155,9 +3156,10 @@ window.SummonScene = (function(){
     if (owned.length === 0) return;
 
     // Scrolls hover in front of the painted pentagram in the bg image
+    // Scrolls float in front of the player at chest/eye level — within the FPV frame
     const arcRadius = 1.6;
-    const arcSpan = Math.min(owned.length * 0.32, 1.4);
-    const baseY = 0.8;  // visually above the painted pentagram, below the painted upper-void
+    const arcSpan = Math.min(owned.length * 0.34, 1.45);
+    const baseY = 0.4;  // chest height for a standing player
 
     owned.forEach((tier, i) => {
       const t = owned.length === 1 ? 0.5 : i / (owned.length - 1);
@@ -3165,7 +3167,7 @@ window.SummonScene = (function(){
       const home = new THREE.Vector3(
         Math.cos(angle) * arcRadius,
         baseY,
-        Math.sin(angle) * arcRadius * 0.4 + 1.5  // forward toward camera (z=+1.5 base + arc offset)
+        Math.sin(angle) * arcRadius * 0.45 + 2.2  // closer to camera in FPV
       );
       const mesh = createScrollMesh(tier);
       mesh.position.copy(home);
@@ -3562,10 +3564,10 @@ window.SummonScene = (function(){
 
     // Camera idle sway + smooth mouse parallax
     const targetX = mouseX * 0.35 + Math.sin(t * 0.32) * 0.18;
-    const targetY = 0.4 + mouseY * 0.18 + Math.cos(t * 0.4) * 0.06;  // gentle parallax avoids revealing 2D seam
+    const targetY = 2.2 + mouseY * 0.22 + Math.cos(t * 0.4) * 0.08;  // first-person eye-level
     camera.position.x += (targetX - camera.position.x) * 0.04;
     camera.position.y += (targetY - camera.position.y) * 0.04;
-    camera.lookAt(0, 0, 0);
+    camera.lookAt(0, -0.8, -0.5);
 
     renderer.render(scene, camera);
   }
