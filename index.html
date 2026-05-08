@@ -3014,12 +3014,13 @@ window.SummonScene = (function(){
     // The pentagram + platform are baked into this image — we don't render 3D copies on top.
     new THREE.TextureLoader().load('assets/ui/summon_bg.jpg', function(tex){
       tex.encoding = THREE.sRGBEncoding;
-      const bgGeo = new THREE.PlaneGeometry(32, 18);  // 16:9 aspect — matches the image
+      // Plane sized to overshoot any reasonable screen aspect (16:9 → 21:9 → ultrawide)
+      // and pushed back enough that the whole painted scene reads as the environment
+      const bgGeo = new THREE.PlaneGeometry(54, 30);
       const bgMat = new THREE.MeshBasicMaterial({ map: tex, fog: false });
       bgPlane = new THREE.Mesh(bgGeo, bgMat);
-      bgPlane.position.set(0, 0.6, -19);   // pushed FAR back so the whole scene fits in frame
-      // Gentle backward tilt for floor recession (subtle now)
-      bgPlane.rotation.x = -10 * Math.PI / 180;
+      bgPlane.position.set(0, 0.5, -19);
+      bgPlane.rotation.x = -8 * Math.PI / 180;
       scene.add(bgPlane);
     });
 
@@ -3153,7 +3154,10 @@ window.SummonScene = (function(){
     });
     scrollMeshes = [];
 
-    // Use the global SCROLLS / S.scrollInv from outer scope
+    // 3D scroll meshes are disabled — Phase 2 will use 2D scroll images positioned
+    // as DOM elements over the canvas, around the painted pentagram.
+    return;
+    /* eslint-disable no-unreachable */
     const owned = (typeof SCROLLS !== 'undefined' && S && S.scrollInv)
       ? SCROLLS.filter(s => (S.scrollInv[s.id] || 0) > 0)
       : [];
