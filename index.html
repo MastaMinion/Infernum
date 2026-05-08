@@ -436,6 +436,59 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 .summon-inner{padding:16px 16px 30px;max-width:520px;margin:0 auto;position:relative}
 
+/* Floating HUD over the 3D summon scene */
+.summon-hud{
+  position:absolute;top:80px;left:0;right:0;z-index:5;
+  pointer-events:none;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.hud-active-label{
+  font-family:'Cinzel',serif;font-size:14px;letter-spacing:4px;
+  color:#bda2e0;text-transform:uppercase;
+  text-shadow:0 0 12px rgba(0,0,0,0.9),0 2px 4px rgba(0,0,0,0.9);
+}
+.hud-active-count{
+  font-family:'Cinzel Decorative',serif;font-size:24px;
+  color:#fff;text-shadow:0 0 14px currentColor,0 2px 4px rgba(0,0,0,0.9);
+  margin-top:2px;
+}
+.summon-hud-hint{
+  font-family:'EB Garamond',serif;font-size:11px;letter-spacing:1px;
+  color:rgba(220,200,255,0.55);font-style:italic;
+  text-shadow:0 1px 2px rgba(0,0,0,0.9);
+  max-width:520px;padding:0 24px;
+}
+
+/* Centered result/notification overlay */
+.summon-result{
+  position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);
+  z-index:6;pointer-events:none;text-align:center;
+  opacity:0;transition:opacity .5s ease;
+}
+.summon-result.show{opacity:1}
+.summon-result .result-tier{
+  font-family:'Cinzel',serif;font-size:14px;letter-spacing:6px;
+  color:#bda2e0;text-transform:uppercase;
+  text-shadow:0 0 14px rgba(0,0,0,0.9);
+}
+.summon-result .result-name{
+  font-family:'Cinzel Decorative',serif;font-size:42px;
+  margin-top:8px;letter-spacing:2px;
+  text-shadow:0 0 20px currentColor,0 2px 8px rgba(0,0,0,0.9);
+}
+.summon-result .result-sub{
+  font-family:'EB Garamond',serif;font-size:14px;
+  margin-top:6px;color:#aaa;letter-spacing:2px;
+  text-shadow:0 1px 4px rgba(0,0,0,0.9);
+}
+@media (max-width:680px){
+  .summon-hud{top:64px}
+  .hud-active-count{font-size:20px}
+  .summon-result .result-name{font-size:30px}
+  .summon-hud-hint{font-size:10px;padding:0 16px}
+}
+
+
 /* ══════════════════════════════════════
    CODEX SCREEN
 ══════════════════════════════════════ */
@@ -1258,40 +1311,15 @@ body{font-family:var(--body);color:var(--text);position:relative}
     <!-- SUMMON -->
     <div id="screen-summon" class="screen">
       <div class="summon-3d-wrap"><canvas id="summon-3d-canvas"></canvas></div>
-      <div class="summon-scroll-wrap"><div class="summon-inner">
-        <div class="section-div"><span>CHOOSE SCROLL</span></div>
-        <div class="scroll-selector-wrap">
-          <div class="scroll-shelf" id="scroll-shelf"></div>
-          <div class="scroll-info" id="scroll-info"></div>
+      <!-- Phase 1: 3D-only interaction. HUD overlays float above the scene. -->
+      <div class="summon-hud" id="summon-hud">
+        <div class="summon-hud-active" id="summon-hud-active">
+          <div class="hud-active-label" id="hud-active-label">No scroll</div>
+          <div class="hud-active-count" id="hud-active-count">×0</div>
         </div>
-        <div class="section-div"><span>PITY TRACKER</span></div>
-        <div class="pity-section">
-          <div class="pity-bar epic">
-            <div class="pity-header">
-              <span class="pity-name">Epic Pity — Greater Demon+ at 40</span>
-              <span class="pity-count" id="epic-count">0 / 40</span>
-            </div>
-            <div class="pity-track"><div class="pity-fill" id="epic-fill" style="width:0%"></div></div>
-          </div>
-          <div class="pity-bar legendary">
-            <div class="pity-header">
-              <span class="pity-name">Legendary Pity — Archdemon+ at 70</span>
-              <span class="pity-count" id="leg-count">0 / 70</span>
-            </div>
-            <div class="pity-track"><div class="pity-fill" id="leg-fill" style="width:0%"></div></div>
-          </div>
-        </div>
-        <div class="pull-buttons">
-          <button class="pull-btn pull-btn-1" id="btn-pull-1" onclick="doPull(1)">
-            <span class="btn-label">Summon ×1</span>
-            <span class="btn-cost" id="cost-1-label">◆ 800</span>
-          </button>
-          <button class="pull-btn pull-btn-10" id="btn-pull-10" onclick="doPull(10)">
-            <span class="btn-label">Summon ×10</span>
-            <span class="btn-cost" id="cost-10-label">◆ 7,200</span>
-          </button>
-        </div>
-      </div></div>
+        <div class="summon-hud-hint" id="summon-hud-hint">Tap a scroll to select &middot; Tap pentagram to summon &middot; Hold pentagram for ×10 &middot; Hold a scroll to trade 9 &rarr; 1 next tier</div>
+      </div>
+      <div class="summon-result" id="summon-result"></div>
     </div>
 
     <!-- CODEX -->
@@ -1526,7 +1554,9 @@ let S={
   shards:1200,epicPity:0,legPity:0,scrollPity:{},
   collection:{},garrison:{},garrisonAccum:0,
   echoes:{void:0,rift:0,soul:0},echoesAccum:{void:0,rift:0,soul:0},
-  bannerExpiry:null,activeScroll:'infernal',level:1,
+  bannerExpiry:null,activeScroll:'whisper',level:1,
+  scrollInv:{whisper:0,twilight:0,infernal:0,bloodpact:0,sincodex:0,realmrift:0,voidtear:0},
+  hasVisitedSummon:false,
 };
 let lastCount=1;
 let garrisonInterval=null;
@@ -1547,6 +1577,8 @@ const REALMS=[
 function save(){localStorage.setItem('inf_hub',JSON.stringify(S))}
 function load(){
   try{const d=localStorage.getItem('inf_hub');if(d)S=Object.assign(S,JSON.parse(d));}catch(e){}
+  if(!S.scrollInv) S.scrollInv={whisper:0,twilight:0,infernal:0,bloodpact:0,sincodex:0,realmrift:0,voidtear:0};
+  if(typeof S.hasVisitedSummon==='undefined') S.hasVisitedSummon=false;
   if(!S.bannerExpiry){S.bannerExpiry=Date.now()+((2*24+14)*3600+33*60)*1000;save();}
 }
 
@@ -1569,7 +1601,22 @@ function switchScreen(name, btnEl){
   if(name==='codex') renderCodex();
   if(name==='realms') renderRealms();
   if(name==='garrison') renderGarrison();
-  if(name==='summon'){renderScrollShelf();renderScrollInfo();}
+  if(name==='summon'){
+    // First visit grant — entering the sanctum gives the player their first Whisper scroll
+    if(!S.hasVisitedSummon){
+      S.hasVisitedSummon=true;
+      S.scrollInv.whisper=(S.scrollInv.whisper||0)+1;
+      S.activeScroll='whisper';
+      save();
+      setTimeout(()=>showSummonResultText('YOU RECEIVED','1 Whisper Scroll','#888780'),900);
+    }
+    // Auto-correct activeScroll to one the player actually owns
+    if((S.scrollInv[S.activeScroll]||0)===0){
+      const owned=SCROLLS.find(s=>(S.scrollInv[s.id]||0)>0);
+      if(owned) S.activeScroll=owned.id;
+    }
+    updateSummonHUD();
+  }
 
   // 3D scene lifecycle for the summon screen
   if(prevName==='summon' && name!=='summon' && window.SummonScene) {
@@ -1631,6 +1678,100 @@ function doPull(count){
   for(let i=0;i<count;i++)results.push(pullOne());
   save();updateUI();
   showOverlay(results);
+}
+
+// ═══════════════════════════════════════════
+// SCROLL-INVENTORY SUMMON (Phase 1: 3D-driven)
+// ═══════════════════════════════════════════
+function getOwnedScrolls(){
+  return SCROLLS.filter(s=>(S.scrollInv[s.id]||0)>0);
+}
+
+function summonWithScroll(scrollId,count){
+  if((S.scrollInv[scrollId]||0)<count) return false;
+  const scroll=SCROLLS.find(s=>s.id===scrollId);
+  if(!scroll) return false;
+  S.scrollInv[scrollId]-=count;
+  S.activeScroll=scrollId;
+  const results=[];
+  for(let i=0;i<count;i++) results.push(pullOne());
+  save();updateUI();updateSummonHUD();
+  // Refresh 3D scrolls in case the player ran out / activeScroll changed
+  if(window.SummonScene && window.SummonScene.refreshScrolls){
+    window.SummonScene.refreshScrolls();
+  }
+  showSummonResultPull(results);
+  return true;
+}
+
+function tradeUpScroll(scrollId){
+  const idx=SCROLLS.findIndex(s=>s.id===scrollId);
+  if(idx<0 || idx>=SCROLLS.length-1) return false;  // can't trade up the highest tier
+  if((S.scrollInv[scrollId]||0)<9) return false;
+  const next=SCROLLS[idx+1];
+  S.scrollInv[scrollId]-=9;
+  S.scrollInv[next.id]=(S.scrollInv[next.id]||0)+1;
+  save();updateUI();updateSummonHUD();
+  if(window.SummonScene && window.SummonScene.refreshScrolls){
+    window.SummonScene.refreshScrolls();
+  }
+  const fromScroll=SCROLLS[idx];
+  showSummonResultText('TRADED UP', `9 ${fromScroll.name} → 1 ${next.name}`, next.color);
+  return true;
+}
+
+function showSummonResultPull(results){
+  if(!results || results.length===0) return;
+  const el=document.getElementById('summon-result');
+  if(!el) return;
+  if(results.length===1){
+    const r=results[0];
+    el.innerHTML = `
+      <div class="result-tier">SUMMONED</div>
+      <div class="result-name" style="color:${r.tier.color}">${r.name}</div>
+      <div class="result-sub">${r.tier.label.toUpperCase()}</div>`;
+  } else {
+    const sorted=[...results].sort((a,b)=>b.ti-a.ti);
+    const best=sorted[0];
+    const tierCounts={};
+    results.forEach(r=>{tierCounts[r.tier.label]=(tierCounts[r.tier.label]||0)+1});
+    const summary=Object.entries(tierCounts).map(([k,v])=>`${v}× ${k}`).join(' &middot; ');
+    el.innerHTML = `
+      <div class="result-tier">×${results.length} SUMMONED</div>
+      <div class="result-name" style="color:${best.tier.color}">${best.name}</div>
+      <div class="result-sub">${summary}</div>`;
+  }
+  el.classList.add('show');
+  clearTimeout(el._fadeTimer);
+  el._fadeTimer=setTimeout(()=>el.classList.remove('show'),4500);
+}
+
+function showSummonResultText(label, name, color){
+  const el=document.getElementById('summon-result');
+  if(!el) return;
+  el.innerHTML = `
+    <div class="result-tier">${label}</div>
+    <div class="result-name" style="color:${color||'#fff'};font-size:32px">${name}</div>`;
+  el.classList.add('show');
+  clearTimeout(el._fadeTimer);
+  el._fadeTimer=setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+function updateSummonHUD(){
+  const labelEl=document.getElementById('hud-active-label');
+  const countEl=document.getElementById('hud-active-count');
+  if(!labelEl || !countEl) return;
+  const owned=getOwnedScrolls();
+  if(owned.length===0){
+    labelEl.textContent='No scrolls — earn them through the realms';
+    countEl.textContent='';
+    countEl.style.color='#888';
+    return;
+  }
+  const active=SCROLLS.find(s=>s.id===S.activeScroll) || owned[0];
+  labelEl.textContent=active.name;
+  countEl.textContent=`× ${S.scrollInv[active.id]||0}`;
+  countEl.style.color=active.color;
 }
 
 // ═══════════════════════════════════════════
@@ -2795,12 +2936,17 @@ window.SummonScene = (function(){
   const COUNT_EMBER = isMobile ? 30 : 60;
 
   let scene, camera, renderer, canvas, container;
-  let platform, pentagram, glowDisc, pentagramLight;
+  let platform, pentagram, glowDisc, pentagramLight, pentagramHitbox;
   let smokeSystem, emberSystem;
   let bgPlane;
   let clock, animationId;
   let mouseX = 0, mouseY = 0;
   let initialized = false;
+  // Phase 1: scroll meshes + interaction state
+  let scrollMeshes = [];
+  let raycaster, ndc;
+  let pressTarget = null, pressStartTime = 0, pressTimer = null;
+  let LONG_PRESS_MS = 650;
 
   function init(){
     if (initialized) return;
@@ -2927,17 +3073,255 @@ window.SummonScene = (function(){
     emberSystem.points.material.blending = THREE.AdditiveBlending;
     scene.add(emberSystem.points);
 
+    // ── Pentagram raycast hitbox (invisible disc, bigger than the geometry for easy tap) ──
+    const hitboxGeo = new THREE.CircleGeometry(3.4, 32);
+    const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
+    pentagramHitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
+    pentagramHitbox.rotation.x = -Math.PI / 2;
+    pentagramHitbox.position.y = -0.15;
+    pentagramHitbox.userData = { type: 'pentagram' };
+    scene.add(pentagramHitbox);
+
+    // ── Raycaster + spawn scrolls based on inventory ──
+    raycaster = new THREE.Raycaster();
+    ndc = new THREE.Vector2();
+    spawnScrollMeshes();
+
     // ── Listeners ──
     window.addEventListener('resize', onResize);
     container.addEventListener('mousemove', onMouseMove);
     container.addEventListener('touchmove', onTouchMove, { passive: true });
+    container.addEventListener('mousedown', onPointerDown);
+    container.addEventListener('mouseup', onPointerUp);
+    container.addEventListener('mouseleave', onPointerCancel);
+    container.addEventListener('touchstart', onTouchStart, { passive: false });
+    container.addEventListener('touchend', onTouchEnd);
+    container.addEventListener('touchcancel', onPointerCancel);
 
     clock = new THREE.Clock();
     initialized = true;
     animate();
   }
 
-  function makeParticles(count, color, size, opacity, spreadXZ, spreadY){
+  // ─────────────────────────────────────────────
+  // Scroll meshes — one per owned tier, arranged in an arc above the platform
+  // ─────────────────────────────────────────────
+  function spawnScrollMeshes(){
+    // Clear existing
+    scrollMeshes.forEach(m => {
+      scene.remove(m);
+      m.traverse(o => {
+        if (o.geometry) o.geometry.dispose();
+        if (o.material) o.material.dispose();
+      });
+    });
+    scrollMeshes = [];
+
+    // Use the global SCROLLS / S.scrollInv from outer scope
+    const owned = (typeof SCROLLS !== 'undefined' && S && S.scrollInv)
+      ? SCROLLS.filter(s => (S.scrollInv[s.id] || 0) > 0)
+      : [];
+    if (owned.length === 0) return;
+
+    const arcRadius = 4.2;
+    const arcSpan = Math.min(owned.length * 0.28, 1.4); // radians, narrower than full arc for tighter grouping
+    const baseY = 1.8;
+
+    owned.forEach((tier, i) => {
+      const t = owned.length === 1 ? 0.5 : i / (owned.length - 1);
+      const angle = (Math.PI/2 + arcSpan/2) - arcSpan * t;
+      const home = new THREE.Vector3(
+        Math.cos(angle) * arcRadius,
+        baseY,
+        -Math.sin(angle) * arcRadius * 0.6  // pull scrolls forward toward camera
+      );
+      const mesh = createScrollMesh(tier);
+      mesh.position.copy(home);
+      mesh.userData = {
+        type: 'scroll',
+        tier: tier.id,
+        color: tier.color,
+        home: home.clone(),
+        bobOffset: Math.random() * Math.PI * 2,
+        targetGlow: 0.15,
+        currentGlow: 0.15,
+        targetZOffset: 0
+      };
+      scene.add(mesh);
+      scrollMeshes.push(mesh);
+    });
+
+    // Apply active-scroll glow to whichever is selected
+    applyActiveScrollState();
+  }
+
+  function createScrollMesh(tier){
+    const group = new THREE.Group();
+    const c = new THREE.Color(tier.color);
+    const dark = c.clone().multiplyScalar(0.4);
+
+    // Body: rolled scroll cylinder (laid horizontal)
+    const bodyGeo = new THREE.CylinderGeometry(0.20, 0.20, 0.72, 14);
+    const bodyMat = new THREE.MeshStandardMaterial({
+      color: 0xe8d8b0, roughness: 0.85, metalness: 0.05,
+      emissive: c, emissiveIntensity: 0.15
+    });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.rotation.z = Math.PI / 2;
+    group.add(body);
+
+    // Caps (tier-colored ends)
+    const capGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.10, 14);
+    const capMat = new THREE.MeshStandardMaterial({
+      color: c, roughness: 0.45, metalness: 0.5,
+      emissive: c, emissiveIntensity: 0.5
+    });
+    const cap1 = new THREE.Mesh(capGeo, capMat);
+    cap1.rotation.z = Math.PI / 2; cap1.position.x = 0.41;
+    group.add(cap1);
+    const cap2 = new THREE.Mesh(capGeo, capMat.clone());
+    cap2.rotation.z = Math.PI / 2; cap2.position.x = -0.41;
+    group.add(cap2);
+
+    // Wax-seal disc (small, slightly off-center)
+    const sealGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.05, 12);
+    const sealMat = new THREE.MeshStandardMaterial({
+      color: dark, roughness: 0.3, metalness: 0.7,
+      emissive: c, emissiveIntensity: 0.6
+    });
+    const seal = new THREE.Mesh(sealGeo, sealMat);
+    seal.position.set(0.06, 0.18, 0);
+    group.add(seal);
+
+    // Underglow disc (additive halo beneath the scroll, scales with active state)
+    const underGeo = new THREE.CircleGeometry(0.55, 24);
+    const underMat = new THREE.MeshBasicMaterial({
+      color: c, transparent: true, opacity: 0.0,
+      blending: THREE.AdditiveBlending, depthWrite: false, fog: false
+    });
+    const under = new THREE.Mesh(underGeo, underMat);
+    under.rotation.x = -Math.PI / 2;
+    under.position.y = -0.28;
+    under.userData.isUnderglow = true;
+    group.add(under);
+
+    return group;
+  }
+
+  function applyActiveScrollState(){
+    if (typeof S === 'undefined') return;
+    scrollMeshes.forEach(m => {
+      const isActive = m.userData.tier === S.activeScroll;
+      m.userData.targetGlow = isActive ? 0.85 : 0.15;
+      m.userData.targetZOffset = isActive ? 0.7 : 0;
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // Pointer / raycast handling — click vs long-press
+  // ─────────────────────────────────────────────
+  function pickFromEvent(clientX, clientY){
+    const rect = container.getBoundingClientRect();
+    ndc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    ndc.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(ndc, camera);
+    const targets = [...scrollMeshes, pentagramHitbox];
+    const hits = raycaster.intersectObjects(targets, true);
+    if (hits.length === 0) return null;
+    let obj = hits[0].object;
+    while (obj && (!obj.userData || !obj.userData.type)) obj = obj.parent;
+    return obj || null;
+  }
+
+  function startPress(target){
+    if (!target) return;
+    pressTarget = target;
+    pressStartTime = Date.now();
+    if (pressTimer) clearTimeout(pressTimer);
+    pressTimer = setTimeout(() => {
+      if (!pressTarget) return;
+      handleLongPress(pressTarget);
+      pressTarget = null;
+    }, LONG_PRESS_MS);
+  }
+
+  function endPress(){
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    if (!pressTarget) return;
+    const held = Date.now() - pressStartTime;
+    if (held < LONG_PRESS_MS) handleClick(pressTarget);
+    pressTarget = null;
+  }
+
+  function handleClick(obj){
+    if (!obj || !obj.userData) return;
+    if (obj.userData.type === 'scroll') {
+      // Select this scroll
+      if (typeof S !== 'undefined') {
+        S.activeScroll = obj.userData.tier;
+        if (typeof save === 'function') save();
+        if (typeof updateSummonHUD === 'function') updateSummonHUD();
+      }
+      applyActiveScrollState();
+    } else if (obj.userData.type === 'pentagram') {
+      if (typeof summonWithScroll === 'function' && S && S.activeScroll) {
+        const ok = summonWithScroll(S.activeScroll, 1);
+        if (!ok && typeof showSummonResultText === 'function') {
+          const owned = (typeof getOwnedScrolls === 'function') ? getOwnedScrolls() : [];
+          showSummonResultText(owned.length===0 ? 'NO SCROLLS' : 'NOT ENOUGH', owned.length===0 ? 'Earn scrolls through the realms' : 'Need at least 1 scroll', '#888');
+        }
+      }
+    }
+  }
+
+  function handleLongPress(obj){
+    if (!obj || !obj.userData) return;
+    if (obj.userData.type === 'scroll') {
+      // Trade up 9 → 1
+      if (typeof tradeUpScroll === 'function') {
+        const idx = SCROLLS.findIndex(s => s.id === obj.userData.tier);
+        const isMax = idx === SCROLLS.length - 1;
+        if (isMax) {
+          showSummonResultText('CANNOT TRADE', 'Already the highest tier', '#888');
+          return;
+        }
+        const have = (S.scrollInv[obj.userData.tier]||0);
+        if (have < 9) {
+          showSummonResultText('NEED MORE', `9 of this scroll required (have ${have})`, '#888');
+          return;
+        }
+        tradeUpScroll(obj.userData.tier);
+      }
+    } else if (obj.userData.type === 'pentagram') {
+      // 10× summon
+      if (typeof summonWithScroll === 'function' && S && S.activeScroll) {
+        const have = (S.scrollInv[S.activeScroll]||0);
+        if (have < 10) {
+          showSummonResultText('NEED MORE', `10 scrolls required (have ${have})`, '#888');
+          return;
+        }
+        summonWithScroll(S.activeScroll, 10);
+      }
+    }
+  }
+
+  function onPointerDown(e){
+    const t = pickFromEvent(e.clientX, e.clientY);
+    if (t) startPress(t);
+  }
+  function onPointerUp(e){ endPress(); }
+  function onPointerCancel(){
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    pressTarget = null;
+  }
+  function onTouchStart(e){
+    if (e.touches.length === 0) return;
+    const t = pickFromEvent(e.touches[0].clientX, e.touches[0].clientY);
+    if (t) { e.preventDefault(); startPress(t); }
+  }
+  function onTouchEnd(e){ endPress(); }
+
+    function makeParticles(count, color, size, opacity, spreadXZ, spreadY){
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const lifes = new Float32Array(count);
@@ -3018,6 +3402,32 @@ window.SummonScene = (function(){
     if (smokeSystem) updateParticles(smokeSystem, dt, t, 1.0, true);
     if (emberSystem) updateParticles(emberSystem, dt, t, 0.55, true);
 
+    // Scroll meshes — bob, lerp position toward home + active offset, lerp glow
+    scrollMeshes.forEach(m => {
+      const u = m.userData;
+      const bob = Math.sin(t * 1.6 + u.bobOffset) * 0.08;
+      const targetPos = u.home.clone();
+      targetPos.y += bob;
+      targetPos.z += u.targetZOffset;
+      m.position.lerp(targetPos, 0.08);
+      // gentle rotation
+      m.rotation.y = Math.sin(t * 0.5 + u.bobOffset) * 0.15;
+      // lerp glow value, apply to underglow + cap emissive
+      u.currentGlow += (u.targetGlow - u.currentGlow) * 0.1;
+      m.traverse(child => {
+        if (child.userData && child.userData.isUnderglow && child.material) {
+          child.material.opacity = u.currentGlow * 0.55;
+        }
+        if (child.material && child.material.emissive && !child.userData.isUnderglow) {
+          // boost emissive intensity for active scroll
+          if (child.geometry && child.geometry.type === 'CylinderGeometry') {
+            const baseI = child.material.color.getHex() === 0xe8d8b0 ? 0.15 : 0.5;
+            child.material.emissiveIntensity = baseI + u.currentGlow * 0.6;
+          }
+        }
+      });
+    });
+
     // Camera idle sway + smooth mouse parallax
     const targetX = mouseX * 0.85 + Math.sin(t * 0.32) * 0.45;
     const targetY = 2.8 + mouseY * 0.35 + Math.cos(t * 0.4) * 0.15;
@@ -3036,7 +3446,16 @@ window.SummonScene = (function(){
     if (container) {
       container.removeEventListener('mousemove', onMouseMove);
       container.removeEventListener('touchmove', onTouchMove);
+      container.removeEventListener('mousedown', onPointerDown);
+      container.removeEventListener('mouseup', onPointerUp);
+      container.removeEventListener('mouseleave', onPointerCancel);
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchend', onTouchEnd);
+      container.removeEventListener('touchcancel', onPointerCancel);
     }
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    pressTarget = null;
+    scrollMeshes = [];
 
     if (scene) {
       scene.traverse(obj => {
@@ -3059,7 +3478,13 @@ window.SummonScene = (function(){
     initialized = false;
   }
 
-  return { init, destroy };
+  function refreshScrolls(){
+    if (initialized) {
+      spawnScrollMeshes();
+      applyActiveScrollState();
+    }
+  }
+  return { init, destroy, refreshScrolls };
 })();
 </script>
 </body>
