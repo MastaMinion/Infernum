@@ -2981,8 +2981,8 @@ window.SummonScene = (function(){
 
     // ── Camera ──
     camera = new THREE.PerspectiveCamera(42, w/h, 0.1, 200);
-    camera.position.set(0, 1.6, 5.5);   // eye level, standing posture
-    camera.lookAt(0, 0.4, 0);           // LEVEL gaze — bg plane provides the floor perspective
+    camera.position.set(0, 1.5, 5);     // standing height
+    camera.lookAt(0, 0.6, -1);          // gaze slightly forward and up — see the WHOLE scene
 
     // ── Renderer with cinematic tone mapping ──
     renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile });
@@ -3014,12 +3014,12 @@ window.SummonScene = (function(){
     // The pentagram + platform are baked into this image — we don't render 3D copies on top.
     new THREE.TextureLoader().load('assets/ui/summon_bg.jpg', function(tex){
       tex.encoding = THREE.sRGBEncoding;
-      const bgGeo = new THREE.PlaneGeometry(46, 28);
+      const bgGeo = new THREE.PlaneGeometry(32, 18);  // 16:9 aspect — matches the image
       const bgMat = new THREE.MeshBasicMaterial({ map: tex, fog: false });
       bgPlane = new THREE.Mesh(bgGeo, bgMat);
-      bgPlane.position.set(0, 1.5, -9);
-      // Tilt top edge AWAY from camera: painted floor projects forward, void recedes back
-      bgPlane.rotation.x = -22 * Math.PI / 180;
+      bgPlane.position.set(0, 0.6, -19);   // pushed FAR back so the whole scene fits in frame
+      // Gentle backward tilt for floor recession (subtle now)
+      bgPlane.rotation.x = -10 * Math.PI / 180;
       scene.add(bgPlane);
     });
 
@@ -3111,8 +3111,10 @@ window.SummonScene = (function(){
     const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
     pentagramHitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
     pentagramHitbox.rotation.x = -Math.PI / 2;
-    pentagramHitbox.position.y = -0.5;
-    pentagramHitbox.position.z = 0.0;
+    pentagramHitbox.position.y = -1.2;
+    pentagramHitbox.position.z = -2;
+    // Hitbox is bigger to compensate for distance
+    pentagramHitbox.scale.set(2.2, 2.2, 2.2);
     pentagramHitbox.userData = { type: 'pentagram' };
     scene.add(pentagramHitbox);
 
@@ -3158,10 +3160,10 @@ window.SummonScene = (function(){
     if (owned.length === 0) return;
 
     // Scrolls hover in front of the painted pentagram in the bg image
-    // Scrolls hover above the painted floor in front of the player
-    const arcRadius = 1.5;
-    const arcSpan = Math.min(owned.length * 0.34, 1.45);
-    const baseY = 0.9;  // chest level — above where painted pentagram appears
+    // Scrolls hover at mid-distance — float between you and the painted scene
+    const arcRadius = 1.8;
+    const arcSpan = Math.min(owned.length * 0.32, 1.35);
+    const baseY = 0.8;
 
     owned.forEach((tier, i) => {
       const t = owned.length === 1 ? 0.5 : i / (owned.length - 1);
@@ -3169,7 +3171,7 @@ window.SummonScene = (function(){
       const home = new THREE.Vector3(
         Math.cos(angle) * arcRadius,
         baseY,
-        Math.sin(angle) * arcRadius * 0.4 + 1.5
+        Math.sin(angle) * arcRadius * 0.4 - 0.5  // mid-distance forward of camera
       );
       const mesh = createScrollMesh(tier);
       mesh.position.copy(home);
@@ -3198,7 +3200,7 @@ window.SummonScene = (function(){
 
     // Body — parchment tinted with tier color (subtle hue, not full saturation)
     const bodyTint = c.clone().lerp(new THREE.Color(0xe0d0a8), 0.55);
-    const bodyGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.55, 20);
+    const bodyGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.78, 20);
     const bodyMat = new THREE.MeshStandardMaterial({
       color: bodyTint, roughness: 0.78, metalness: 0.08,
       emissive: c, emissiveIntensity: 0.22
@@ -3208,12 +3210,12 @@ window.SummonScene = (function(){
     group.add(body);
 
     // Decorative accent rings around the body (3 thin bands of bright tier color)
-    const ringGeo = new THREE.TorusGeometry(0.165, 0.012, 8, 24);
+    const ringGeo = new THREE.TorusGeometry(0.225, 0.016, 8, 24);
     const ringMat = new THREE.MeshStandardMaterial({
       color: c, roughness: 0.3, metalness: 0.7,
       emissive: c, emissiveIntensity: 0.85
     });
-    [-0.13, 0, 0.13].forEach(xOff => {
+    [-0.18, 0, 0.18].forEach(xOff => {
       const r = new THREE.Mesh(ringGeo, ringMat);
       r.rotation.y = Math.PI / 2;
       r.position.x = xOff;
@@ -3221,40 +3223,40 @@ window.SummonScene = (function(){
     });
 
     // Caps (tier-colored ends, brighter emissive — these are the visual identifiers)
-    const capGeo = new THREE.CylinderGeometry(0.20, 0.19, 0.09, 18);
+    const capGeo = new THREE.CylinderGeometry(0.27, 0.26, 0.13, 18);
     const capMat = new THREE.MeshStandardMaterial({
       color: c, roughness: 0.35, metalness: 0.65,
       emissive: c, emissiveIntensity: 1.0
     });
     const cap1 = new THREE.Mesh(capGeo, capMat);
-    cap1.rotation.z = Math.PI / 2; cap1.position.x = 0.32;
+    cap1.rotation.z = Math.PI / 2; cap1.position.x = 0.46;
     group.add(cap1);
     const cap2 = new THREE.Mesh(capGeo, capMat.clone());
-    cap2.rotation.z = Math.PI / 2; cap2.position.x = -0.32;
+    cap2.rotation.z = Math.PI / 2; cap2.position.x = -0.46;
     group.add(cap2);
 
     // End-cap inner disc (darker, recessed look)
-    const innerGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.02, 16);
+    const innerGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.03, 16);
     const innerMat = new THREE.MeshStandardMaterial({
       color: dark, roughness: 0.6, metalness: 0.3,
       emissive: c, emissiveIntensity: 0.4
     });
     const inner1 = new THREE.Mesh(innerGeo, innerMat);
-    inner1.rotation.z = Math.PI / 2; inner1.position.x = 0.37;
+    inner1.rotation.z = Math.PI / 2; inner1.position.x = 0.53;
     group.add(inner1);
     const inner2 = new THREE.Mesh(innerGeo, innerMat.clone());
-    inner2.rotation.z = Math.PI / 2; inner2.position.x = -0.37;
+    inner2.rotation.z = Math.PI / 2; inner2.position.x = -0.53;
     group.add(inner2);
 
     // Underglow disc (additive halo, larger to match scroll size)
-    const underGeo = new THREE.CircleGeometry(0.45, 24);
+    const underGeo = new THREE.CircleGeometry(0.62, 24);
     const underMat = new THREE.MeshBasicMaterial({
       color: c, transparent: true, opacity: 0.0,
       blending: THREE.AdditiveBlending, depthWrite: false, fog: false
     });
     const under = new THREE.Mesh(underGeo, underMat);
     under.rotation.x = -Math.PI / 2;
-    under.position.y = -0.21;
+    under.position.y = -0.30;
     under.userData.isUnderglow = true;
     group.add(under);
 
@@ -3566,10 +3568,10 @@ window.SummonScene = (function(){
 
     // Camera idle sway + smooth mouse parallax
     const targetX = mouseX * 0.35 + Math.sin(t * 0.32) * 0.18;
-    const targetY = 1.6 + mouseY * 0.20 + Math.cos(t * 0.4) * 0.08;  // first-person eye-level
+    const targetY = 1.5 + mouseY * 0.18 + Math.cos(t * 0.4) * 0.07;  // first-person eye-level
     camera.position.x += (targetX - camera.position.x) * 0.04;
     camera.position.y += (targetY - camera.position.y) * 0.04;
-    camera.lookAt(0, 0.4, 0);
+    camera.lookAt(0, 0.6, -1);
 
     renderer.render(scene, camera);
   }
