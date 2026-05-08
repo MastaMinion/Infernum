@@ -2977,11 +2977,11 @@ window.SummonScene = (function(){
     // ── Scene with atmospheric fog ──
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x06000e);
-    scene.fog = new THREE.FogExp2(0x06000e, 0.05);  // denser fog now that bg plane is gone
+    scene.fog = new THREE.FogExp2(0x06000e, 0.018);  // light fog for atmospheric integration with bg image
 
     // ── Camera ──
-    camera = new THREE.PerspectiveCamera(50, w/h, 0.1, 200);
-    camera.position.set(0, 2.8, 11);
+    camera = new THREE.PerspectiveCamera(38, w/h, 0.1, 200);
+    camera.position.set(0, 0.4, 7);
     camera.lookAt(0, 0, 0);
 
     // ── Renderer with cinematic tone mapping ──
@@ -2996,35 +2996,30 @@ window.SummonScene = (function(){
     const softCircleTex = createSoftCircleTexture();
     const stoneTex = createStoneTexture();
 
-    // ── Starfield (deep background depth) ──
-    const starfield = createStarfield(softCircleTex);
-    scene.add(starfield);
-
-    // ── Lights ──
-    const ambient = new THREE.AmbientLight(0x331a44, 0.45);
+    // ── Lights (illuminate the 3D scrolls; bg image provides its own scene lighting) ──
+    const ambient = new THREE.AmbientLight(0x6644aa, 0.65);
     scene.add(ambient);
 
-    pentagramLight = new THREE.PointLight(0xff44ff, 4.5, 14, 2.1);
-    pentagramLight.position.set(0, 0.4, 0);
+    // Magenta key light from below — matches the bg image's pentagram glow direction
+    pentagramLight = new THREE.PointLight(0xff66ff, 2.5, 8, 2);
+    pentagramLight.position.set(0, -0.3, 1.5);
     scene.add(pentagramLight);
 
-    // Cool blue-violet rim from above-right (defines platform shape)
-    const rimLight = new THREE.DirectionalLight(0x6644cc, 0.5);
-    rimLight.position.set(4, 9, 5);
-    scene.add(rimLight);
-
-    // Cool fill from front-left (color contrast against the warm pentagram glow)
-    const fillLight = new THREE.DirectionalLight(0x2244aa, 0.35);
-    fillLight.position.set(-5, 3, 7);
+    // Cool fill from front-above for scroll readability
+    const fillLight = new THREE.DirectionalLight(0xaaccff, 0.5);
+    fillLight.position.set(-2, 4, 5);
     scene.add(fillLight);
 
-    // Subtle red key from below-right for dramatic underglow on platform edges
-    const keyLight = new THREE.PointLight(0x882244, 0.8, 10, 2);
-    keyLight.position.set(2, -1.5, 4);
-    scene.add(keyLight);
-
-    // ── Backdrop: pure void. Scene.background + fog handle atmosphere now.
-    // (summon_bg.jpg removed — its pentagram competed with our 3D pentagram)
+    // ── Backdrop: summon_bg.jpg IS the destination scene shown through the rift.
+    // The pentagram + platform are baked into this image — we don't render 3D copies on top.
+    new THREE.TextureLoader().load('assets/ui/summon_bg.jpg', function(tex){
+      tex.encoding = THREE.sRGBEncoding;
+      const bgGeo = new THREE.PlaneGeometry(38, 21);  // sized to match camera framing
+      const bgMat = new THREE.MeshBasicMaterial({ map: tex, fog: false });
+      bgPlane = new THREE.Mesh(bgGeo, bgMat);
+      bgPlane.position.set(0, 0, -10);  // far enough back to feel like environment
+      scene.add(bgPlane);
+    });
 
     // ── Platform: cylinder with displaced edge vertices (broken obsidian disc) ──
     const platformGeo = new THREE.CylinderGeometry(4.6, 4.1, 0.85, 64, 4);
@@ -3048,6 +3043,7 @@ window.SummonScene = (function(){
     });
     platform = new THREE.Mesh(platformGeo, platformMat);
     platform.position.y = -0.65;
+    platform.visible = false;  // hidden — the bg image already has the platform painted in
     scene.add(platform);
 
     // ── Glow disc under pentagram (additive halo on platform surface) ──
@@ -3059,6 +3055,7 @@ window.SummonScene = (function(){
     glowDisc = new THREE.Mesh(glowGeo, glowMat);
     glowDisc.rotation.x = -Math.PI / 2;
     glowDisc.position.y = -0.18;
+    glowDisc.visible = false;  // hidden — bg image has its own pentagram glow
     scene.add(glowDisc);
 
     // ── Pentagram (5-point star + circle, rendered as thick tubes) ──
@@ -3088,17 +3085,18 @@ window.SummonScene = (function(){
     pentagram.add(ring);
 
     pentagram.position.y = -0.20;  // sit just on top of platform
+    pentagram.visible = false;  // hidden — bg image already has the pentagram
     scene.add(pentagram);
 
     // ── Particle systems ──
-    smokeSystem = makeParticles(COUNT_SMOKE, 0xaa55ff, 0.55, 0.45, 3.5, 5);
+    smokeSystem = makeParticles(COUNT_SMOKE, 0xaa55ff, 0.28, 0.4, 2.0, 3);
     smokeSystem.points.material.blending = THREE.AdditiveBlending;
     smokeSystem.points.material.map = softCircleTex;
     smokeSystem.points.material.alphaTest = 0.001;
     smokeSystem.points.material.needsUpdate = true;
     scene.add(smokeSystem.points);
 
-    emberSystem = makeParticles(COUNT_EMBER, 0xffaaff, 0.18, 1.0, 6, 7);
+    emberSystem = makeParticles(COUNT_EMBER, 0xffaaff, 0.09, 0.9, 3.0, 4);
     emberSystem.points.material.blending = THREE.AdditiveBlending;
     emberSystem.points.material.map = softCircleTex;
     emberSystem.points.material.alphaTest = 0.001;
@@ -3106,11 +3104,12 @@ window.SummonScene = (function(){
     scene.add(emberSystem.points);
 
     // ── Pentagram raycast hitbox (invisible disc, bigger than the geometry for easy tap) ──
-    const hitboxGeo = new THREE.CircleGeometry(3.0, 32);
+    // Invisible click target — placed where the painted pentagram is in the bg image
+    const hitboxGeo = new THREE.CircleGeometry(1.4, 32);
     const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
     pentagramHitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
     pentagramHitbox.rotation.x = -Math.PI / 2;
-    pentagramHitbox.position.y = -0.15;
+    pentagramHitbox.position.y = -0.4;
     pentagramHitbox.userData = { type: 'pentagram' };
     scene.add(pentagramHitbox);
 
@@ -3155,9 +3154,10 @@ window.SummonScene = (function(){
       : [];
     if (owned.length === 0) return;
 
-    const arcRadius = 3.8;
-    const arcSpan = Math.min(owned.length * 0.32, 1.5); // radians, scale arc to scroll count
-    const baseY = 2.6;  // hover well above platform
+    // Scrolls hover in front of the painted pentagram in the bg image
+    const arcRadius = 1.6;
+    const arcSpan = Math.min(owned.length * 0.32, 1.4);
+    const baseY = 0.8;  // visually above the painted pentagram, below the painted upper-void
 
     owned.forEach((tier, i) => {
       const t = owned.length === 1 ? 0.5 : i / (owned.length - 1);
@@ -3165,7 +3165,7 @@ window.SummonScene = (function(){
       const home = new THREE.Vector3(
         Math.cos(angle) * arcRadius,
         baseY,
-        Math.sin(angle) * arcRadius * 0.55  // POSITIVE z → in front of pentagram, toward camera
+        Math.sin(angle) * arcRadius * 0.4 + 1.5  // forward toward camera (z=+1.5 base + arc offset)
       );
       const mesh = createScrollMesh(tier);
       mesh.position.copy(home);
@@ -3194,7 +3194,7 @@ window.SummonScene = (function(){
 
     // Body — parchment tinted with tier color (subtle hue, not full saturation)
     const bodyTint = c.clone().lerp(new THREE.Color(0xe0d0a8), 0.55);
-    const bodyGeo = new THREE.CylinderGeometry(0.32, 0.32, 1.10, 20);
+    const bodyGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.55, 20);
     const bodyMat = new THREE.MeshStandardMaterial({
       color: bodyTint, roughness: 0.78, metalness: 0.08,
       emissive: c, emissiveIntensity: 0.22
@@ -3204,12 +3204,12 @@ window.SummonScene = (function(){
     group.add(body);
 
     // Decorative accent rings around the body (3 thin bands of bright tier color)
-    const ringGeo = new THREE.TorusGeometry(0.325, 0.022, 8, 24);
+    const ringGeo = new THREE.TorusGeometry(0.165, 0.012, 8, 24);
     const ringMat = new THREE.MeshStandardMaterial({
       color: c, roughness: 0.3, metalness: 0.7,
       emissive: c, emissiveIntensity: 0.85
     });
-    [-0.25, 0, 0.25].forEach(xOff => {
+    [-0.13, 0, 0.13].forEach(xOff => {
       const r = new THREE.Mesh(ringGeo, ringMat);
       r.rotation.y = Math.PI / 2;
       r.position.x = xOff;
@@ -3217,40 +3217,40 @@ window.SummonScene = (function(){
     });
 
     // Caps (tier-colored ends, brighter emissive — these are the visual identifiers)
-    const capGeo = new THREE.CylinderGeometry(0.40, 0.38, 0.18, 18);
+    const capGeo = new THREE.CylinderGeometry(0.20, 0.19, 0.09, 18);
     const capMat = new THREE.MeshStandardMaterial({
       color: c, roughness: 0.35, metalness: 0.65,
       emissive: c, emissiveIntensity: 1.0
     });
     const cap1 = new THREE.Mesh(capGeo, capMat);
-    cap1.rotation.z = Math.PI / 2; cap1.position.x = 0.65;
+    cap1.rotation.z = Math.PI / 2; cap1.position.x = 0.32;
     group.add(cap1);
     const cap2 = new THREE.Mesh(capGeo, capMat.clone());
-    cap2.rotation.z = Math.PI / 2; cap2.position.x = -0.65;
+    cap2.rotation.z = Math.PI / 2; cap2.position.x = -0.32;
     group.add(cap2);
 
     // End-cap inner disc (darker, recessed look)
-    const innerGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.04, 16);
+    const innerGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.02, 16);
     const innerMat = new THREE.MeshStandardMaterial({
       color: dark, roughness: 0.6, metalness: 0.3,
       emissive: c, emissiveIntensity: 0.4
     });
     const inner1 = new THREE.Mesh(innerGeo, innerMat);
-    inner1.rotation.z = Math.PI / 2; inner1.position.x = 0.74;
+    inner1.rotation.z = Math.PI / 2; inner1.position.x = 0.37;
     group.add(inner1);
     const inner2 = new THREE.Mesh(innerGeo, innerMat.clone());
-    inner2.rotation.z = Math.PI / 2; inner2.position.x = -0.74;
+    inner2.rotation.z = Math.PI / 2; inner2.position.x = -0.37;
     group.add(inner2);
 
     // Underglow disc (additive halo, larger to match scroll size)
-    const underGeo = new THREE.CircleGeometry(0.9, 24);
+    const underGeo = new THREE.CircleGeometry(0.45, 24);
     const underMat = new THREE.MeshBasicMaterial({
       color: c, transparent: true, opacity: 0.0,
       blending: THREE.AdditiveBlending, depthWrite: false, fog: false
     });
     const under = new THREE.Mesh(underGeo, underMat);
     under.rotation.x = -Math.PI / 2;
-    under.position.y = -0.42;
+    under.position.y = -0.21;
     under.userData.isUnderglow = true;
     group.add(under);
 
@@ -3262,7 +3262,7 @@ window.SummonScene = (function(){
     scrollMeshes.forEach(m => {
       const isActive = m.userData.tier === S.activeScroll;
       m.userData.targetGlow = isActive ? 0.85 : 0.15;
-      m.userData.targetZOffset = isActive ? 0.7 : 0;
+      m.userData.targetZOffset = isActive ? 0.4 : 0;
     });
   }
 
@@ -3528,7 +3528,7 @@ window.SummonScene = (function(){
       });
     }
     if (glowDisc) glowDisc.material.opacity = 0.28 + Math.sin(t * 1.8) * 0.10;
-    if (pentagramLight) pentagramLight.intensity = 4 + Math.sin(t * 1.8) * 1.2;
+    if (pentagramLight) pentagramLight.intensity = 2.5 + Math.sin(t * 1.8) * 0.8;
 
     // Particles
     if (smokeSystem) updateParticles(smokeSystem, dt, t, 1.0, true);
@@ -3561,8 +3561,8 @@ window.SummonScene = (function(){
     });
 
     // Camera idle sway + smooth mouse parallax
-    const targetX = mouseX * 0.85 + Math.sin(t * 0.32) * 0.45;
-    const targetY = 2.8 + mouseY * 0.35 + Math.cos(t * 0.4) * 0.15;
+    const targetX = mouseX * 0.35 + Math.sin(t * 0.32) * 0.18;
+    const targetY = 0.4 + mouseY * 0.18 + Math.cos(t * 0.4) * 0.06;  // gentle parallax avoids revealing 2D seam
     camera.position.x += (targetX - camera.position.x) * 0.04;
     camera.position.y += (targetY - camera.position.y) * 0.04;
     camera.lookAt(0, 0, 0);
