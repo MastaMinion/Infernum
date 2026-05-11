@@ -690,7 +690,10 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .walker-hero{
   position:relative;width:100%;height:380px;
   margin-bottom:16px;border-radius:14px;overflow:hidden;
+  /* IMAGE SLOT: assets/ui/riftwalk_bg.jpg — top-down stone chamber + pool (MJ)
+     Fallback gradient stays beneath in case the asset hasn't been dropped in yet. */
   background:
+    url('assets/ui/riftwalk_bg.jpg') center center/cover no-repeat,
     radial-gradient(ellipse at 50% 70%,rgba(60,20,90,.18) 0%,transparent 60%),
     radial-gradient(ellipse at 50% 20%,rgba(8,4,20,.6) 0%,transparent 50%),
     linear-gradient(180deg,#0a0518 0%,#06000e 60%,#000 100%);
@@ -698,54 +701,43 @@ body{font-family:var(--body);color:var(--text);position:relative}
   box-shadow:inset 0 0 80px rgba(0,0,0,.7);
 }
 .walker-hero::before{
+  /* Bottom-fade so the identity overlay text below stays legible against the MJ image */
   content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
-  background:
-    radial-gradient(circle at 15% 25%,rgba(124,58,237,.06),transparent 30%),
-    radial-gradient(circle at 85% 25%,rgba(251,191,36,.04),transparent 30%);
+  background:linear-gradient(180deg,transparent 55%,rgba(6,0,14,.55) 85%,rgba(6,0,14,.95));
 }
 
-/* the pool */
+/* the pool — transparent tint+effects container layered over the MJ chamber image */
 .pool{
-  position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
-  width:78%;aspect-ratio:1.5;border-radius:50%;z-index:2;
-  background:
-    radial-gradient(ellipse at 50% 45%,rgba(80,30,140,.18) 0%,transparent 35%),
-    radial-gradient(ellipse at 50% 50%,#000 0%,#02000a 40%,#0a0420 70%,#1a0a35 100%);
-  box-shadow:
-    inset 0 0 60px rgba(0,0,0,.95),
-    inset 0 -8px 28px rgba(124,58,237,.18),
-    0 0 30px rgba(124,58,237,.12);
-  border:1px solid rgba(124,58,237,.18);
+  position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);
+  width:68%;aspect-ratio:1.42;border-radius:50%;z-index:2;
+  background:transparent;
   overflow:hidden;
+  pointer-events:none;
+  /* faint inner rim glow so the pool reads even if the MJ asset is missing */
+  box-shadow:inset 0 0 24px rgba(0,0,0,.45);
 }
-/* tinted-water variants — switched by .pool[data-tint=...] */
+/* tinted-water variants — subtle overlays that blend with the MJ pool below */
+.pool[data-tint="void"]{
+  background:radial-gradient(ellipse at 50% 50%,rgba(124,58,237,.06),transparent 70%);
+}
 .pool[data-tint="blood"]{
-  background:
-    radial-gradient(ellipse at 50% 45%,rgba(140,30,30,.22) 0%,transparent 35%),
-    radial-gradient(ellipse at 50% 50%,#000 0%,#0a0202 40%,#1a0606 70%,#350a0a 100%);
-  box-shadow:inset 0 0 60px rgba(0,0,0,.95),inset 0 -8px 28px rgba(244,63,94,.2),0 0 30px rgba(244,63,94,.12);
-  border-color:rgba(244,63,94,.18);
+  background:radial-gradient(ellipse at 50% 50%,rgba(244,63,94,.16),transparent 70%);
+  box-shadow:inset 0 0 36px rgba(244,63,94,.18),inset 0 0 80px rgba(120,10,20,.25);
 }
 .pool[data-tint="starlit"]{
-  background:
-    radial-gradient(ellipse at 50% 45%,rgba(80,80,220,.22) 0%,transparent 35%),
-    radial-gradient(ellipse at 50% 50%,#000 0%,#020210 40%,#08081a 70%,#0a0a30 100%);
-  box-shadow:inset 0 0 60px rgba(0,0,0,.95),inset 0 -8px 28px rgba(99,102,241,.2),0 0 30px rgba(99,102,241,.14);
-  border-color:rgba(99,102,241,.2);
+  background:radial-gradient(ellipse at 50% 50%,rgba(99,102,241,.18),transparent 70%);
+  box-shadow:inset 0 0 36px rgba(99,102,241,.18),inset 0 0 80px rgba(20,20,90,.25);
 }
 .pool[data-tint="goldfire"]{
-  background:
-    radial-gradient(ellipse at 50% 45%,rgba(220,160,40,.22) 0%,transparent 35%),
-    radial-gradient(ellipse at 50% 50%,#000 0%,#0a0700 40%,#1a1000 70%,#3a2400 100%);
-  box-shadow:inset 0 0 60px rgba(0,0,0,.95),inset 0 -8px 28px rgba(251,191,36,.22),0 0 36px rgba(251,191,36,.18);
-  border-color:rgba(251,191,36,.22);
+  background:radial-gradient(ellipse at 50% 50%,rgba(251,191,36,.18),transparent 70%);
+  box-shadow:inset 0 0 36px rgba(251,191,36,.22),inset 0 0 80px rgba(120,70,0,.25);
 }
 
 /* slow ripple rings */
 .pool::before, .pool::after{
   content:'';position:absolute;left:50%;top:50%;
-  width:60%;aspect-ratio:1.5;border-radius:50%;
-  border:1px solid rgba(192,132,252,.14);
+  width:55%;aspect-ratio:1.42;border-radius:50%;
+  border:1px solid rgba(192,132,252,.16);
   transform:translate(-50%,-50%) scale(0.4);
   opacity:0;
   animation:poolRipple 7s ease-out infinite;
@@ -753,14 +745,14 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .pool::after{animation-delay:-3.5s;border-color:rgba(192,132,252,.08)}
 @keyframes poolRipple{
   0%{transform:translate(-50%,-50%) scale(0.2);opacity:0}
-  20%{opacity:.65}
+  20%{opacity:.55}
   100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}
 }
 
 /* avatar reflection — sits inside the pool */
 .pool-reflection{
-  position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
-  width:60%;aspect-ratio:1;border-radius:50%;z-index:3;
+  position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);
+  width:50%;aspect-ratio:1;border-radius:50%;z-index:3;
   display:flex;align-items:center;justify-content:center;
   filter:blur(0.4px) brightness(.78) contrast(.92);
   opacity:.88;pointer-events:none;
@@ -777,8 +769,12 @@ body{font-family:var(--body);color:var(--text);position:relative}
   50%{transform:scaleY(-0.9) translateX(3px)}
 }
 
-/* candles around the pool rim */
-.candle{
+/* candles around the pool rim — DISABLED when the MJ chamber asset is in place
+   (the MJ image has 5 candles baked in). Add class `no-mj-bg` on .walker-hero
+   to re-enable them as a CSS-only fallback when the asset is missing. */
+.candle{display:none}
+.walker-hero.no-mj-bg .candle{
+  display:block;
   position:absolute;width:8px;height:14px;border-radius:50% 50% 30% 30%;
   background:linear-gradient(180deg,#fbbf24,#7c2d12);
   z-index:4;box-shadow:0 0 8px rgba(251,191,36,.6),0 0 16px rgba(251,191,36,.3);
