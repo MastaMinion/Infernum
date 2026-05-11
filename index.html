@@ -671,63 +671,503 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .gslot-empty-msg{color:var(--muted);font-size:.65rem;font-style:italic}
 
 /* ══════════════════════════════════════
-   RIFT WALKER SCREEN
+   THE WALKER — Personal Chamber
 ══════════════════════════════════════ */
 #screen-riftwalk{
   /* IMAGE SLOT: assets/ui/riftwalk_bg.jpg — intimate dark personal chamber */
   background:var(--bg) url('assets/ui/riftwalk_bg.jpg') center center/cover no-repeat;
+  overflow-y:auto;
 }
 #screen-riftwalk::before{
   content:'';position:fixed;inset:0;z-index:0;
-  background:rgba(6,0,14,.65);pointer-events:none;
+  background:radial-gradient(ellipse at 50% 40%,rgba(20,5,45,.35),rgba(6,0,14,.92));
+  pointer-events:none;
 }
 #screen-riftwalk > *{position:relative;z-index:1}
-.rw-inner{padding:16px 16px 30px;max-width:520px;margin:0 auto}
-.rw-hero{
-  width:100%;background:rgba(6,0,14,.8);border:0.5px solid rgba(124,58,237,.35);
-  border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;
+.walker-inner{padding:18px 14px 100px;max-width:560px;margin:0 auto}
+
+/* ─── HERO: REFLECTIVE POOL CHAMBER ─── */
+.walker-hero{
+  position:relative;width:100%;height:380px;
+  margin-bottom:16px;border-radius:14px;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 70%,rgba(60,20,90,.18) 0%,transparent 60%),
+    radial-gradient(ellipse at 50% 20%,rgba(8,4,20,.6) 0%,transparent 50%),
+    linear-gradient(180deg,#0a0518 0%,#06000e 60%,#000 100%);
+  border:0.5px solid rgba(124,58,237,.25);
+  box-shadow:inset 0 0 80px rgba(0,0,0,.7);
 }
-.rw-silhouette{font-size:4rem;opacity:.7;display:block;margin-bottom:8px}
-.rw-name{font-family:var(--deco);font-size:.9rem;letter-spacing:.15em;color:var(--purple);margin-bottom:3px}
-.rw-title{font-size:.6rem;color:var(--muted);font-style:italic;letter-spacing:.1em;font-family:var(--serif)}
-.rw-section{margin-bottom:14px}
-.rw-section-title{
-  font-family:var(--serif);font-size:.6rem;letter-spacing:.3em;color:var(--muted);
-  text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;
-  border-bottom:0.5px solid var(--border);
+.walker-hero::before{
+  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(circle at 15% 25%,rgba(124,58,237,.06),transparent 30%),
+    radial-gradient(circle at 85% 25%,rgba(251,191,36,.04),transparent 30%);
 }
-.rw-gear-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.rw-gear-slot{
-  background:rgba(6,0,14,.7);border:0.5px solid var(--border);
-  border-radius:7px;padding:10px 10px;
+
+/* the pool */
+.pool{
+  position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
+  width:78%;aspect-ratio:1.5;border-radius:50%;z-index:2;
+  background:
+    radial-gradient(ellipse at 50% 45%,rgba(80,30,140,.18) 0%,transparent 35%),
+    radial-gradient(ellipse at 50% 50%,#000 0%,#02000a 40%,#0a0420 70%,#1a0a35 100%);
+  box-shadow:
+    inset 0 0 60px rgba(0,0,0,.95),
+    inset 0 -8px 28px rgba(124,58,237,.18),
+    0 0 30px rgba(124,58,237,.12);
+  border:1px solid rgba(124,58,237,.18);
+  overflow:hidden;
 }
-.rw-gear-name{font-family:var(--serif);font-size:.65rem;color:var(--text);margin-bottom:4px}
-.rw-gear-runes{display:flex;gap:4px;flex-wrap:wrap}
-.rune-dot{width:10px;height:10px;border-radius:50%;background:var(--purple);opacity:.8}
-.rune-dot.empty{background:transparent;border:0.5px solid var(--border)}
-.rw-talent-tree{display:flex;gap:8px}
-.talent-branch{
-  flex:1;background:rgba(6,0,14,.7);border:0.5px solid var(--border);
-  border-radius:7px;padding:10px 8px;text-align:center;cursor:pointer;
+/* tinted-water variants — switched by .pool[data-tint=...] */
+.pool[data-tint="blood"]{
+  background:
+    radial-gradient(ellipse at 50% 45%,rgba(140,30,30,.22) 0%,transparent 35%),
+    radial-gradient(ellipse at 50% 50%,#000 0%,#0a0202 40%,#1a0606 70%,#350a0a 100%);
+  box-shadow:inset 0 0 60px rgba(0,0,0,.95),inset 0 -8px 28px rgba(244,63,94,.2),0 0 30px rgba(244,63,94,.12);
+  border-color:rgba(244,63,94,.18);
+}
+.pool[data-tint="starlit"]{
+  background:
+    radial-gradient(ellipse at 50% 45%,rgba(80,80,220,.22) 0%,transparent 35%),
+    radial-gradient(ellipse at 50% 50%,#000 0%,#020210 40%,#08081a 70%,#0a0a30 100%);
+  box-shadow:inset 0 0 60px rgba(0,0,0,.95),inset 0 -8px 28px rgba(99,102,241,.2),0 0 30px rgba(99,102,241,.14);
+  border-color:rgba(99,102,241,.2);
+}
+.pool[data-tint="goldfire"]{
+  background:
+    radial-gradient(ellipse at 50% 45%,rgba(220,160,40,.22) 0%,transparent 35%),
+    radial-gradient(ellipse at 50% 50%,#000 0%,#0a0700 40%,#1a1000 70%,#3a2400 100%);
+  box-shadow:inset 0 0 60px rgba(0,0,0,.95),inset 0 -8px 28px rgba(251,191,36,.22),0 0 36px rgba(251,191,36,.18);
+  border-color:rgba(251,191,36,.22);
+}
+
+/* slow ripple rings */
+.pool::before, .pool::after{
+  content:'';position:absolute;left:50%;top:50%;
+  width:60%;aspect-ratio:1.5;border-radius:50%;
+  border:1px solid rgba(192,132,252,.14);
+  transform:translate(-50%,-50%) scale(0.4);
+  opacity:0;
+  animation:poolRipple 7s ease-out infinite;
+}
+.pool::after{animation-delay:-3.5s;border-color:rgba(192,132,252,.08)}
+@keyframes poolRipple{
+  0%{transform:translate(-50%,-50%) scale(0.2);opacity:0}
+  20%{opacity:.65}
+  100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}
+}
+
+/* avatar reflection — sits inside the pool */
+.pool-reflection{
+  position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
+  width:60%;aspect-ratio:1;border-radius:50%;z-index:3;
+  display:flex;align-items:center;justify-content:center;
+  filter:blur(0.4px) brightness(.78) contrast(.92);
+  opacity:.88;pointer-events:none;
+}
+.avatar-silhouette{
+  font-size:5.5rem;line-height:1;opacity:.55;
+  background:linear-gradient(180deg,rgba(192,132,252,.6),rgba(124,58,237,.2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  transform:scaleY(-0.9);  /* upside-down reflection */
+  animation:reflectionDrift 5.5s ease-in-out infinite;
+}
+@keyframes reflectionDrift{
+  0%,100%{transform:scaleY(-0.9) translateX(0)}
+  50%{transform:scaleY(-0.9) translateX(3px)}
+}
+
+/* candles around the pool rim */
+.candle{
+  position:absolute;width:8px;height:14px;border-radius:50% 50% 30% 30%;
+  background:linear-gradient(180deg,#fbbf24,#7c2d12);
+  z-index:4;box-shadow:0 0 8px rgba(251,191,36,.6),0 0 16px rgba(251,191,36,.3);
+  animation:candleFlicker 1.8s ease-in-out infinite;
+}
+.candle::after{
+  content:'';position:absolute;left:50%;top:-6px;transform:translateX(-50%);
+  width:3px;height:6px;border-radius:50% 50% 30% 30%;
+  background:radial-gradient(circle at 50% 80%,#fff7c0,#fbbf24,transparent);
+  box-shadow:0 0 6px #fbbf24;
+}
+@keyframes candleFlicker{
+  0%,100%{opacity:.92;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.05)}
+}
+.candle.c1{left:14%;top:38%}
+.candle.c2{right:14%;top:38%;animation-delay:-.3s}
+.candle.c3{left:24%;top:64%;animation-delay:-.6s}
+.candle.c4{right:24%;top:64%;animation-delay:-.9s}
+.candle.c5{left:50%;top:72%;margin-left:-4px;animation-delay:-1.2s}
+
+/* identity panel — sits at bottom of hero, layered on top */
+.walker-identity{
+  position:absolute;bottom:0;left:0;right:0;z-index:5;
+  padding:14px 18px 16px;
+  background:linear-gradient(180deg,transparent,rgba(6,0,14,.88) 50%,rgba(6,0,14,.98));
+  text-align:center;
+}
+.walker-eyebrow{
+  font-family:var(--serif);font-size:.5rem;letter-spacing:.45em;
+  color:var(--gold);opacity:.7;text-transform:uppercase;
+  margin-bottom:4px;
+}
+.walker-title{
+  font-family:var(--deco);font-size:.6rem;letter-spacing:.18em;
+  color:var(--purple);opacity:.85;font-style:italic;
+  margin-bottom:5px;
+}
+.walker-name{
+  font-family:var(--deco);font-size:1.15rem;letter-spacing:.12em;
+  color:var(--text);margin-bottom:8px;
+}
+.walker-meta{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--serif);font-size:.5rem;letter-spacing:.2em;
+  color:var(--muted);text-transform:uppercase;
+  margin-bottom:8px;
+}
+.walker-meta .lvl{color:var(--gold);font-weight:600;font-size:.6rem}
+.walker-xp-bar{
+  width:55%;height:3px;margin:0 auto 12px;
+  background:rgba(124,58,237,.12);border-radius:2px;overflow:hidden;
+}
+.walker-xp-fill{
+  height:100%;background:linear-gradient(90deg,var(--purple2),var(--purple));
+  border-radius:2px;box-shadow:0 0 6px rgba(192,132,252,.5);
+  transition:width .4s ease;
+}
+.walker-actions{
+  display:flex;gap:8px;justify-content:center;
+}
+.walker-btn{
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.22em;
+  color:var(--text);text-transform:uppercase;cursor:pointer;
+  padding:8px 14px;border-radius:6px;
+  background:rgba(124,58,237,.1);border:0.5px solid var(--border);
   transition:all .2s;
 }
-.talent-branch:hover{border-color:rgba(192,132,252,.4);background:rgba(124,58,237,.1)}
-.talent-branch.active{border-color:var(--purple);background:rgba(124,58,237,.15)}
-.tb-icon{font-size:1.2rem;display:block;margin-bottom:4px}
-.tb-name{font-family:var(--serif);font-size:.6rem;color:var(--text);display:block;margin-bottom:2px}
-.tb-desc{font-size:.5rem;color:var(--muted);line-height:1.4}
-.rw-stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-.rw-stat{
-  background:rgba(6,0,14,.7);border:0.5px solid var(--border);
-  border-radius:6px;padding:8px;text-align:center;
+.walker-btn:hover{
+  background:rgba(124,58,237,.18);border-color:rgba(192,132,252,.4);
+  color:var(--purple);
 }
-.rw-stat-val{font-family:var(--serif);font-size:.85rem;color:var(--purple)}
-.rw-stat-label{font-size:.45rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-top:2px}
-.coming-soon-badge{
-  display:inline-block;font-size:.55rem;letter-spacing:.15em;
-  padding:10px 18px;border-radius:6px;font-family:var(--serif);
+.walker-btn-aesthetic{
+  background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.2);
+  color:var(--gold);
+}
+.walker-btn-aesthetic:hover{
+  background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.4);color:var(--gold);
+}
+
+/* ─── TABS ─── */
+.walker-tabs{
+  display:flex;gap:2px;margin-bottom:18px;overflow-x:auto;
+  scrollbar-width:none;
+}
+.walker-tabs::-webkit-scrollbar{display:none}
+.walker-tab{
+  flex:1;min-width:58px;padding:10px 6px;
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.18em;
+  color:var(--muted);text-transform:uppercase;cursor:pointer;
+  background:transparent;border:none;border-bottom:1px solid transparent;
+  transition:all .2s;white-space:nowrap;
+}
+.walker-tab:hover{color:var(--text)}
+.walker-tab.active{color:var(--purple);border-bottom-color:var(--purple)}
+
+/* ─── PANELS ─── */
+.walker-panel{display:none;animation:fadeUp .3s ease-out}
+.walker-panel.active{display:block}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.walker-section-title{
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.3em;
+  color:var(--muted);text-transform:uppercase;margin-bottom:10px;
+  padding-bottom:6px;border-bottom:0.5px solid var(--border);
+}
+.walker-panel-prose{
+  font-size:.55rem;color:var(--muted);line-height:1.55;
+  font-style:italic;text-align:center;padding:0 14px;
+  font-family:var(--body);margin-bottom:14px;
+}
+
+/* Stats grid */
+.walker-stats-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  margin-bottom:16px;
+}
+.walker-stat{
+  background:rgba(6,0,14,.7);border:0.5px solid var(--border);
+  border-radius:7px;padding:12px 8px 10px;text-align:center;
+  transition:all .2s;
+}
+.walker-stat:hover{border-color:rgba(192,132,252,.3)}
+.walker-stat-val{
+  font-family:var(--serif);font-size:1.05rem;color:var(--purple);
+  line-height:1;margin-bottom:4px;
+}
+.walker-stat-val .mult{font-size:.5rem;color:var(--muted);margin-left:1px}
+.walker-stat-label{
+  font-family:var(--serif);font-size:.5rem;color:var(--muted);
+  letter-spacing:.22em;text-transform:uppercase;margin-bottom:3px;
+}
+.walker-stat-desc{
+  font-size:.48rem;color:rgba(226,217,243,.4);
+  font-style:italic;line-height:1.3;font-family:var(--body);
+}
+
+/* Gear slots */
+.walker-gear-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+}
+.gear-slot{
+  background:rgba(6,0,14,.65);border:0.5px solid var(--border);
+  border-radius:7px;padding:10px 8px;text-align:center;
+  cursor:pointer;transition:all .2s;position:relative;
+  aspect-ratio:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+.gear-slot:hover{border-color:rgba(192,132,252,.4);background:rgba(124,58,237,.06)}
+.gear-slot-icon{font-size:1.5rem;opacity:.6;margin-bottom:5px}
+.gear-slot-label{
+  font-family:var(--serif);font-size:.5rem;color:var(--muted);
+  letter-spacing:.18em;text-transform:uppercase;
+}
+.gear-slot.empty{opacity:.55}
+.gear-slot.filled{border-color:rgba(192,132,252,.35);background:rgba(124,58,237,.08)}
+.gear-slot.filled .gear-slot-icon{opacity:.95;color:var(--purple)}
+.gear-slot.filled .gear-slot-label{color:var(--text)}
+
+/* Talents */
+.walker-talents{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.talent-tree-branch{
+  background:rgba(6,0,14,.65);border:0.5px solid var(--border);
+  border-radius:8px;padding:14px 10px;cursor:pointer;transition:all .2s;
+  text-align:center;
+}
+.talent-tree-branch:hover{border-color:rgba(192,132,252,.4)}
+.talent-tree-branch.invested{
+  border-color:rgba(192,132,252,.5);background:rgba(124,58,237,.08);
+}
+.tt-icon{font-size:1.6rem;display:block;margin-bottom:8px;line-height:1}
+.tt-name{
+  font-family:var(--serif);font-size:.7rem;letter-spacing:.15em;
+  color:var(--text);text-transform:uppercase;margin-bottom:8px;
+}
+.tt-rank{
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.2em;
+  color:var(--purple);margin-bottom:6px;
+}
+.tt-desc{
+  font-size:.55rem;color:var(--muted);line-height:1.5;
+  font-family:var(--body);font-style:italic;
+}
+.tt-points-pill{
+  display:inline-block;font-size:.5rem;padding:5px 12px;
+  background:rgba(251,191,36,.08);border:0.5px solid rgba(251,191,36,.2);
+  color:var(--gold);border-radius:4px;letter-spacing:.18em;
+  font-family:var(--serif);text-transform:uppercase;
+}
+
+/* Soul Bonds */
+.walker-bonds{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.bond-slot{
+  background:rgba(6,0,14,.65);border:0.5px solid var(--border);
+  border-radius:8px;padding:14px 8px;text-align:center;
+  aspect-ratio:.75;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;position:relative;
+}
+.bond-slot:hover{border-color:rgba(251,191,36,.3)}
+.bond-slot.locked{opacity:.4;cursor:not-allowed}
+.bond-slot-icon{font-size:1.8rem;opacity:.55;margin-bottom:6px}
+.bond-slot-label{
+  font-family:var(--serif);font-size:.5rem;color:var(--muted);
+  letter-spacing:.18em;text-transform:uppercase;
+}
+.bond-slot-unlock{
+  font-size:.5rem;color:var(--muted);font-style:italic;
+  font-family:var(--body);margin-top:4px;
+}
+
+/* Pacts */
+.pact-list{display:flex;flex-direction:column;gap:8px}
+.pact-row{
+  background:rgba(6,0,14,.65);border:0.5px solid var(--border);
+  border-radius:8px;padding:12px 14px;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:12px;
+}
+.pact-row:hover{border-color:rgba(244,63,94,.3)}
+.pact-row.active{border-color:rgba(244,63,94,.5);background:rgba(244,63,94,.06)}
+.pact-icon{font-size:1.3rem;opacity:.7;line-height:1;width:24px;text-align:center}
+.pact-row.active .pact-icon{opacity:1;color:var(--crimson)}
+.pact-info{flex:1;min-width:0}
+.pact-name{
+  font-family:var(--serif);font-size:.65rem;letter-spacing:.15em;
+  color:var(--text);text-transform:uppercase;margin-bottom:3px;
+}
+.pact-desc{font-size:.55rem;color:var(--muted);line-height:1.45;font-family:var(--body)}
+.pact-toggle{
+  width:32px;height:18px;background:rgba(124,58,237,.08);
+  border-radius:9px;position:relative;flex-shrink:0;transition:all .2s;
+  border:0.5px solid var(--border);
+}
+.pact-toggle::after{
+  content:'';position:absolute;left:2px;top:2px;width:12px;height:12px;
+  border-radius:50%;background:var(--muted);transition:all .2s;
+}
+.pact-row.active .pact-toggle{background:rgba(244,63,94,.2);border-color:rgba(244,63,94,.4)}
+.pact-row.active .pact-toggle::after{left:16px;background:var(--crimson)}
+
+/* Journal */
+.journal-entries{display:flex;flex-direction:column;gap:6px}
+.journal-entry{
+  background:rgba(6,0,14,.55);border-left:2px solid var(--purple);
+  padding:10px 12px;border-radius:0 6px 6px 0;
+}
+.journal-date{
+  font-family:var(--serif);font-size:.5rem;letter-spacing:.2em;
+  color:var(--muted);text-transform:uppercase;margin-bottom:3px;
+}
+.journal-text{font-size:.6rem;color:var(--text);line-height:1.5;font-family:var(--body)}
+.journal-empty{
+  text-align:center;padding:30px 10px;font-style:italic;
+  color:var(--muted);font-size:.6rem;font-family:var(--body);
+}
+
+/* ─── MODALS — identity + aesthetic shop ─── */
+.walker-modal{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(6,0,14,.92);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.walker-modal[data-open="true"]{display:flex;animation:fadeUp .25s ease-out}
+.walker-modal-inner{
+  width:100%;max-width:600px;height:88vh;max-height:88vh;
+  background:linear-gradient(180deg,#0a0518,#06000e);
+  border:0.5px solid rgba(124,58,237,.3);border-bottom:none;
+  border-radius:14px 14px 0 0;overflow-y:auto;
+  padding:0 16px 80px;
+}
+.walker-modal-header{
+  position:sticky;top:0;z-index:5;
+  margin:0 -16px 16px;padding:18px 16px 12px;
+  background:linear-gradient(180deg,#0a0518 70%,rgba(10,5,24,.85));
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:0.5px solid var(--border);
+}
+.walker-modal-title{
+  font-family:var(--deco);font-size:.85rem;letter-spacing:.18em;
+  color:var(--purple);text-transform:uppercase;
+}
+.walker-modal-close{
+  width:28px;height:28px;border-radius:50%;
   background:rgba(124,58,237,.1);border:0.5px solid var(--border);
-  color:var(--muted);width:100%;text-align:center;margin-top:8px;
+  color:var(--text);font-size:1rem;cursor:pointer;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.walker-modal-close:hover{border-color:var(--purple);color:var(--purple)}
+
+/* Identity editor */
+.identity-field{margin-bottom:18px}
+.identity-label{
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.25em;
+  color:var(--muted);text-transform:uppercase;margin-bottom:8px;
+}
+.identity-input{
+  width:100%;padding:11px 12px;
+  background:rgba(6,0,14,.8);border:0.5px solid var(--border);
+  color:var(--text);border-radius:6px;font-family:var(--serif);
+  font-size:.9rem;letter-spacing:.08em;
+}
+.identity-input:focus{outline:none;border-color:var(--purple)}
+.title-options{display:flex;flex-direction:column;gap:6px}
+.title-option{
+  padding:10px 12px;background:rgba(6,0,14,.6);
+  border:0.5px solid var(--border);border-radius:6px;cursor:pointer;
+  transition:all .2s;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.title-option:hover{border-color:rgba(192,132,252,.3)}
+.title-option.selected{border-color:var(--purple);background:rgba(124,58,237,.1)}
+.title-option-name{font-family:var(--deco);font-size:.68rem;letter-spacing:.15em;color:var(--text)}
+.title-option-req{font-size:.5rem;color:var(--muted);font-style:italic;text-align:right;font-family:var(--body)}
+.title-option.locked{opacity:.4;cursor:not-allowed}
+.identity-apply{
+  display:block;width:100%;margin-top:6px;padding:14px;
+  background:linear-gradient(135deg,#18003a,#2c0060);
+  border:0.5px solid rgba(192,132,252,.4);
+  color:var(--text);border-radius:8px;cursor:pointer;
+  font-family:var(--serif);font-size:.7rem;letter-spacing:.25em;
+  text-transform:uppercase;transition:all .2s;
+}
+.identity-apply:hover{border-color:var(--purple);box-shadow:0 0 16px rgba(192,132,252,.2)}
+
+/* Aesthetic shop */
+.shop-currency{display:flex;gap:10px;margin-bottom:16px}
+.currency-pill{
+  flex:1;padding:9px 12px;border-radius:6px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(6,0,14,.6);border:0.5px solid var(--border);
+}
+.currency-pill .label{
+  font-family:var(--serif);font-size:.5rem;letter-spacing:.22em;
+  color:var(--muted);text-transform:uppercase;
+}
+.currency-pill .amount{font-family:var(--serif);font-size:.85rem;color:var(--purple)}
+.currency-pill.embers .amount{color:var(--gold)}
+.shop-categories{
+  display:flex;gap:5px;margin-bottom:14px;overflow-x:auto;
+  scrollbar-width:none;padding-bottom:2px;
+}
+.shop-categories::-webkit-scrollbar{display:none}
+.shop-cat{
+  padding:7px 13px;background:transparent;border:0.5px solid var(--border);
+  border-radius:14px;cursor:pointer;
+  font-family:var(--serif);font-size:.5rem;letter-spacing:.2em;
+  color:var(--muted);text-transform:uppercase;white-space:nowrap;
+  transition:all .2s;
+}
+.shop-cat:hover{color:var(--text)}
+.shop-cat.active{
+  background:rgba(124,58,237,.15);border-color:rgba(192,132,252,.4);
+  color:var(--purple);
+}
+.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.shop-item{
+  background:rgba(6,0,14,.6);border:0.5px solid var(--border);
+  border-radius:8px;overflow:hidden;cursor:pointer;
+  transition:all .2s;position:relative;
+}
+.shop-item:hover{border-color:rgba(192,132,252,.4);transform:translateY(-2px)}
+.shop-item-preview{
+  width:100%;aspect-ratio:1;
+  background:radial-gradient(circle at 50% 50%,rgba(124,58,237,.1),rgba(6,0,14,.6));
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.4rem;opacity:.7;
+}
+.shop-item-info{padding:9px 10px}
+.shop-item-name{
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.12em;
+  color:var(--text);margin-bottom:4px;
+}
+.shop-item-price{
+  display:flex;align-items:center;gap:4px;
+  font-family:var(--serif);font-size:.55rem;color:var(--gold);
+}
+.shop-item-price.purple{color:var(--purple)}
+.shop-item.owned{opacity:.85}
+.shop-item.owned .shop-item-price{color:var(--muted);font-style:italic}
+.shop-item.equipped{border-color:rgba(251,191,36,.6)}
+.shop-item.equipped::after{
+  content:'EQUIPPED';position:absolute;top:6px;right:6px;
+  font-family:var(--serif);font-size:.42rem;letter-spacing:.18em;
+  color:var(--gold);background:rgba(6,0,14,.85);
+  padding:3px 6px;border-radius:3px;border:0.5px solid rgba(251,191,36,.4);
 }
 
 /* ══════════════════════════════════════
@@ -1309,7 +1749,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
           <div class="rift-label">
             <div class="rift-eyebrow">Ascend</div>
             <div class="rift-name">Walker</div>
-            <div class="rift-stat-row"><span class="rift-stat">LVL 1</span><span class="rift-stat-sub">your bond</span></div>
+            <div class="rift-stat-row"><span class="rift-stat" id="hub-walker-lvl">LVL 1</span><span class="rift-stat-sub">your bond</span></div>
           </div>
         </a>
 
@@ -1414,31 +1854,104 @@ body{font-family:var(--body);color:var(--text);position:relative}
       </div>
     </div>
 
-    <!-- RIFT WALKER -->
+    <!-- THE WALKER — Personal Chamber -->
     <div id="screen-riftwalk" class="screen">
-      <div class="rw-inner">
-        <div class="rw-hero">
-          <span class="rw-silhouette">🌀</span>
-          <div class="rw-name">Rift Walker</div>
-          <div class="rw-title">The wound between worlds</div>
-        </div>
-        <div class="rw-section">
-          <div class="rw-section-title">Stats</div>
-          <div class="rw-stats-grid">
-            ${[['ATK','4,200'],['DEF','3,100'],['PWR','3,800'],['HP','28,000'],['SPD','12'],['CRIT','15%']].map(([l,v])=>`<div class="rw-stat"><div class="rw-stat-val">${v}</div><div class="rw-stat-label">${l}</div></div>`).join('')}
+      <div class="walker-inner">
+
+        <!-- HERO: REFLECTIVE POOL CHAMBER -->
+        <section class="walker-hero">
+          <div class="pool" id="walker-pool" data-tint="void">
+            <div class="pool-reflection">
+              <span class="avatar-silhouette" id="walker-avatar-silhouette">⌖</span>
+            </div>
           </div>
-        </div>
-        <div class="rw-section">
-          <div class="rw-section-title">Gear Slots</div>
-          <div class="rw-gear-grid" id="rw-gear"></div>
-        </div>
-        <div class="rw-section">
-          <div class="rw-section-title">Talent Tree</div>
-          <div class="rw-talent-tree">
-            ${[['🔗','Binder','Bonds cost less · demons act sooner'],['🛡','Warden','Rune power +25%'],['✦','Void-Touched','IE gen +15%']].map(([ic,nm,ds],i)=>`<div class="talent-branch${i===0?' active':''}"><span class="tb-icon">${ic}</span><span class="tb-name">${nm}</span><span class="tb-desc">${ds}</span></div>`).join('')}
+          <span class="candle c1"></span>
+          <span class="candle c2"></span>
+          <span class="candle c3"></span>
+          <span class="candle c4"></span>
+          <span class="candle c5"></span>
+          <div class="walker-identity">
+            <div class="walker-eyebrow">The Walker</div>
+            <div class="walker-title" id="walker-title-display">Initiate</div>
+            <div class="walker-name" id="walker-name-display">Walker</div>
+            <div class="walker-meta">
+              <span>LVL <span class="lvl" id="walker-lvl">1</span></span>
+              <span>·</span>
+              <span><span id="walker-xp">0</span>/<span id="walker-xp-max">100</span> XP</span>
+            </div>
+            <div class="walker-xp-bar">
+              <div class="walker-xp-fill" id="walker-xp-fill" style="width:0%"></div>
+            </div>
+            <div class="walker-actions">
+              <button class="walker-btn" onclick="openIdentityEditor()">⚙ Identity</button>
+              <button class="walker-btn walker-btn-aesthetic" onclick="openAestheticShop()">✦ Aesthetics</button>
+            </div>
           </div>
-        </div>
-        <div class="coming-soon-badge">⚔ Full gear & rune system — coming with battle system</div>
+        </section>
+
+        <!-- TABS -->
+        <nav class="walker-tabs">
+          <button class="walker-tab active" data-tab="stats"   onclick="switchWalkerTab('stats',this)">Stats</button>
+          <button class="walker-tab"        data-tab="gear"    onclick="switchWalkerTab('gear',this)">Gear</button>
+          <button class="walker-tab"        data-tab="talents" onclick="switchWalkerTab('talents',this)">Talents</button>
+          <button class="walker-tab"        data-tab="bonds"   onclick="switchWalkerTab('bonds',this)">Bonds</button>
+          <button class="walker-tab"        data-tab="pacts"   onclick="switchWalkerTab('pacts',this)">Pacts</button>
+          <button class="walker-tab"        data-tab="journal" onclick="switchWalkerTab('journal',this)">Journal</button>
+        </nav>
+
+        <!-- STATS -->
+        <section class="walker-panel active" data-tab-panel="stats">
+          <div class="walker-section-title">Binding Power</div>
+          <div class="walker-stats-grid" id="walker-stats-grid"></div>
+          <p class="walker-panel-prose">
+            These are multipliers, not totals. You do not fight — your demons do. The stronger your binding, the more power flows through them.
+          </p>
+        </section>
+
+        <!-- GEAR -->
+        <section class="walker-panel" data-tab-panel="gear">
+          <div class="walker-section-title">Equipment <span id="gear-fill-count" style="color:var(--purple);font-style:italic">— 0/6 forged</span></div>
+          <div class="walker-gear-grid" id="walker-gear-grid"></div>
+          <p class="walker-panel-prose">
+            Forged equipment drops from realm conquests. Each piece carries its own bound stat.
+          </p>
+        </section>
+
+        <!-- TALENTS -->
+        <section class="walker-panel" data-tab-panel="talents">
+          <div style="text-align:center;margin-bottom:14px">
+            <span class="tt-points-pill"><span id="talent-pts-avail">0</span> points unspent</span>
+          </div>
+          <div class="walker-talents" id="walker-talents"></div>
+          <p class="walker-panel-prose">
+            Tap a branch to invest. Each rank grants a passive effect that compounds.
+          </p>
+        </section>
+
+        <!-- BONDS -->
+        <section class="walker-panel" data-tab-panel="bonds">
+          <div class="walker-section-title">Soul Bonds <span id="bonds-count" style="color:var(--gold);font-style:italic">— 0/3 forged</span></div>
+          <p class="walker-panel-prose">
+            Permanently fuse a demon's essence into your own power. The demon is consumed — never returns to your party — but grants a global passive bonus to all your bound.
+          </p>
+          <div class="walker-bonds" id="walker-bonds"></div>
+        </section>
+
+        <!-- PACTS -->
+        <section class="walker-panel" data-tab-panel="pacts">
+          <div class="walker-section-title">Active Vows</div>
+          <p class="walker-panel-prose">
+            Bind yourself in exchange for power. Each vow demands a sacrifice — and rewards it.
+          </p>
+          <div class="pact-list" id="walker-pacts"></div>
+        </section>
+
+        <!-- JOURNAL -->
+        <section class="walker-panel" data-tab-panel="journal">
+          <div class="walker-section-title">Descent Log</div>
+          <div class="journal-entries" id="walker-journal"></div>
+        </section>
+
       </div>
     </div>
 
@@ -1462,6 +1975,41 @@ body{font-family:var(--body);color:var(--text);position:relative}
       <div class="detail-tier" id="detail-tier"></div>
     </section>
     <section class="detail-info" id="detail-info"></section>
+  </div>
+</div>
+
+<!-- WALKER · IDENTITY EDITOR -->
+<div id="identity-editor" class="walker-modal" role="dialog" aria-modal="true">
+  <div class="walker-modal-inner">
+    <header class="walker-modal-header">
+      <div class="walker-modal-title">Edit Identity</div>
+      <button class="walker-modal-close" onclick="closeIdentityEditor()" aria-label="Close">×</button>
+    </header>
+    <div class="identity-field">
+      <div class="identity-label">Name</div>
+      <input class="identity-input" id="identity-name-input" maxlength="24" type="text" placeholder="Walker">
+    </div>
+    <div class="identity-field">
+      <div class="identity-label">Title</div>
+      <div class="title-options" id="identity-title-options"></div>
+    </div>
+    <button class="identity-apply" onclick="applyIdentity()">Bind this name</button>
+  </div>
+</div>
+
+<!-- WALKER · AESTHETIC SHOP -->
+<div id="aesthetic-shop" class="walker-modal" role="dialog" aria-modal="true">
+  <div class="walker-modal-inner">
+    <header class="walker-modal-header">
+      <div class="walker-modal-title">Aesthetics</div>
+      <button class="walker-modal-close" onclick="closeAestheticShop()" aria-label="Close">×</button>
+    </header>
+    <div class="shop-currency">
+      <div class="currency-pill"><span class="label">Sigils</span><span class="amount" id="shop-sigils">0</span></div>
+      <div class="currency-pill embers"><span class="label">Embers</span><span class="amount" id="shop-embers">0</span></div>
+    </div>
+    <div class="shop-categories" id="shop-categories"></div>
+    <div class="shop-grid" id="shop-grid"></div>
   </div>
 </div>
 
@@ -1615,6 +2163,17 @@ let S={
   bannerExpiry:null,activeScroll:'whisper',level:1,
   scrollInv:{whisper:0,twilight:0,infernal:0,bloodpact:0,sincodex:0,realmrift:0,voidtear:0},
   hasVisitedSummon:false,
+  walker:{
+    name:'Walker', title:'initiate', level:1, xp:0,
+    cosmetics:{robe:'robe:novice',hood:'hood:none',aura:'aura:pale',pool:'pool:void'},
+    ownedCosmetics:['robe:novice','hood:none','aura:pale','pool:void'],
+    equipped:{crown:null,pendant:null,robe:null,gloves:null,sash:null,tome:null},
+    talents:{points:0, ranks:{binder:0,warden:0,voidtouched:0,ascendant:0}},
+    bonds:[null,null,null],
+    pacts:{},
+    journal:[],
+  },
+  embers:0,
 };
 let lastCount=1;
 let garrisonInterval=null;
@@ -1632,11 +2191,95 @@ const REALMS=[
   {id:'glut',name:"Gorgethorn's Maw",icon:'💀',color:'#a78bfa',stages:13,conquered:0,locked:true},
 ];
 
+// ═══════════════════════════════════════════
+// THE WALKER — constants
+// ═══════════════════════════════════════════
+const WALKER_STATS=[
+  {id:'power', label:'POWER', desc:'Demon attack multiplier'},
+  {id:'ward',  label:'WARD',  desc:'Demon defense multiplier'},
+  {id:'vigor', label:'VIGOR', desc:'Demon HP multiplier'},
+  {id:'tempo', label:'TEMPO', desc:'ATB speed bonus'},
+  {id:'focus', label:'FOCUS', desc:'Crit chance bonus'},
+  {id:'will',  label:'WILL',  desc:'Status resistance'},
+];
+const WALKER_GEAR=[
+  {id:'crown',  label:'Crown',  icon:'♕'},
+  {id:'pendant',label:'Pendant',icon:'❖'},
+  {id:'robe',   label:'Robe',   icon:'☗'},
+  {id:'gloves', label:'Gloves', icon:'✋'},
+  {id:'sash',   label:'Sash',   icon:'∽'},
+  {id:'tome',   label:'Tome',   icon:'❡'},
+];
+const WALKER_TALENTS=[
+  {id:'binder',     icon:'🔗', name:'Binder',       desc:'Bonds cost less · demons act sooner · pity counters fill faster.'},
+  {id:'warden',     icon:'🛡', name:'Warden',       desc:'Defensive buffs · HP regen · status cleansing for your party.'},
+  {id:'voidtouched',icon:'✦', name:'Void-Touched', desc:'IE generation +15% per rank · dark damage scaling · forbidden spell unlocks.'},
+  {id:'ascendant',  icon:'☥', name:'Ascendant',    desc:'High-risk, high-reward · crits cascade · revive at 1 HP once per battle.'},
+];
+const WALKER_PACTS=[
+  {id:'silence',   icon:'⊘', name:'Vow of Silence',    desc:'Cannot use the Whisper rift. In return, all summons +25% Power.'},
+  {id:'blood',     icon:'⚗', name:'Pact of Blood',     desc:'Lose 10% party HP each battle start. Damage dealt +50%.'},
+  {id:'restraint', icon:'⌖', name:'Oath of Restraint', desc:'One summon per day maximum. Pity counters never reset.'},
+  {id:'starvation',icon:'⊡', name:'Vow of Starvation', desc:'Cannot equip gear. All other multipliers +30%.'},
+  {id:'memory',    icon:'✥', name:'Pact of Memory',    desc:'Lose XP on defeat. Earn 3× XP on victory.'},
+];
+const WALKER_TITLES=[
+  {id:'initiate',  name:'Initiate',      req:'Default'},
+  {id:'bound',     name:'The Bound One', req:'Reach Walker LVL 5',  unlock:s=>s.walker.level>=5},
+  {id:'pitwalker', name:'Pit-Walker',    req:'Reach Walker LVL 10', unlock:s=>s.walker.level>=10},
+  {id:'whispered', name:'The Whispered', req:'Summon 25 demons',    unlock:s=>(Object.values(s.collection||{}).reduce((a,c)=>a+(c.count||0),0))>=25},
+  {id:'voidbound', name:'Voidbound',     req:'Forge a Soul Bond',   unlock:s=>s.walker.bonds.filter(Boolean).length>0},
+  {id:'fallen',    name:'Fallen Choir',  req:'Hold 3 active vows',  unlock:s=>Object.values(s.walker.pacts||{}).filter(Boolean).length>=3},
+];
+const WALKER_COSMETICS=[
+  // robes
+  {id:'robe:novice',     cat:'robes', name:'Novice Wraps',      icon:'☗', price:0,    currency:'sigils'},
+  {id:'robe:scholar',    cat:'robes', name:'Scholar Cloak',     icon:'☗', price:2500, currency:'sigils'},
+  {id:'robe:inquisitor', cat:'robes', name:'Inquisitor Mantle', icon:'☗', price:8000, currency:'sigils'},
+  {id:'robe:pitlord',    cat:'robes', name:'Pit-Lord Regalia',  icon:'☗', price:50,   currency:'embers'},
+  // hoods/masks
+  {id:'hood:none',       cat:'hoods', name:'Unhooded',          icon:'⌖', price:0,    currency:'sigils'},
+  {id:'hood:cowl',       cat:'hoods', name:'Tattered Cowl',     icon:'⌖', price:1200, currency:'sigils'},
+  {id:'hood:masked',     cat:'hoods', name:'Plague Mask',       icon:'☠', price:4500, currency:'sigils'},
+  {id:'hood:hornedmask', cat:'hoods', name:'Horned Mask',       icon:'☠', price:30,   currency:'embers'},
+  // sigil auras
+  {id:'aura:pale',       cat:'auras', name:'Pale Sigil',        icon:'✦', price:0,    currency:'sigils'},
+  {id:'aura:violet',     cat:'auras', name:'Violet Embers',     icon:'✦', price:3000, currency:'sigils'},
+  {id:'aura:crimson',    cat:'auras', name:'Crimson Aura',      icon:'✦', price:6000, currency:'sigils'},
+  {id:'aura:godfire',    cat:'auras', name:'Godfire Halo',      icon:'✦', price:80,   currency:'embers'},
+  // pool tints
+  {id:'pool:void',       cat:'pools', name:'Void Water',        icon:'◯', price:0,    currency:'sigils'},
+  {id:'pool:blood',      cat:'pools', name:'Blood Pool',        icon:'◯', price:2000, currency:'sigils'},
+  {id:'pool:starlit',    cat:'pools', name:'Starlit Pool',      icon:'◯', price:5500, currency:'sigils'},
+  {id:'pool:goldfire',   cat:'pools', name:'Goldfire Pool',     icon:'◯', price:40,   currency:'embers'},
+];
+const WALKER_AVATAR_GLYPHS={
+  'hood:none':'⌖', 'hood:cowl':'☗', 'hood:masked':'☠', 'hood:hornedmask':'♉',
+};
+const WALKER_SHOP_CATS=[
+  {id:'robes', label:'Robes'},
+  {id:'hoods', label:'Hoods'},
+  {id:'auras', label:'Auras'},
+  {id:'pools', label:'Pools'},
+];
+let WALKER_SHOP_ACTIVE_CAT='robes';
+
 function save(){localStorage.setItem('inf_hub',JSON.stringify(S))}
 function load(){
   try{const d=localStorage.getItem('inf_hub');if(d)S=Object.assign(S,JSON.parse(d));}catch(e){}
   if(!S.scrollInv) S.scrollInv={whisper:0,twilight:0,infernal:0,bloodpact:0,sincodex:0,realmrift:0,voidtear:0};
   if(typeof S.hasVisitedSummon==='undefined') S.hasVisitedSummon=false;
+  if(!S.walker){
+    S.walker={
+      name:'Walker', title:'initiate', level:1, xp:0,
+      cosmetics:{robe:'robe:novice',hood:'hood:none',aura:'aura:pale',pool:'pool:void'},
+      ownedCosmetics:['robe:novice','hood:none','aura:pale','pool:void'],
+      equipped:{crown:null,pendant:null,robe:null,gloves:null,sash:null,tome:null},
+      talents:{points:0, ranks:{binder:0,warden:0,voidtouched:0,ascendant:0}},
+      bonds:[null,null,null], pacts:{}, journal:[],
+    };
+  }
+  if(typeof S.embers==='undefined') S.embers=0;
   if(!S.bannerExpiry){S.bannerExpiry=Date.now()+((2*24+14)*3600+33*60)*1000;save();}
 }
 
@@ -1659,6 +2302,7 @@ function switchScreen(name, btnEl){
   if(name==='codex') renderCodex();
   if(name==='realms') renderRealms();
   if(name==='garrison') renderGarrison();
+  if(name==='riftwalk') renderWalker();
   if(name==='summon'){
     // First visit grant — entering the sanctum gives the player their first Whisper scroll
     if(!S.hasVisitedSummon){
@@ -2992,6 +3636,309 @@ window.INF=(function(){
 })();
 
 // ═══════════════════════════════════════════
+// THE WALKER — render + interactions
+// ═══════════════════════════════════════════
+function walkerXpMax(){ return 100 + (S.walker.level-1)*40; }
+
+function walkerStatValue(statId){
+  // base 1.00x + 0.05x per Walker level + 0.10x per relevant talent rank + gear/pact contributions later
+  const lvl=S.walker.level;
+  let mult = 1.00 + (lvl-1)*0.05;
+  const tr = S.walker.talents.ranks;
+  if(statId==='power' || statId==='will') mult += (tr.binder||0)*0.04;
+  if(statId==='ward'  || statId==='vigor') mult += (tr.warden||0)*0.04;
+  if(statId==='tempo' || statId==='focus') mult += (tr.voidtouched||0)*0.04;
+  if(statId==='power' || statId==='focus') mult += (tr.ascendant||0)*0.05;
+  return mult;
+}
+
+function renderWalker(){
+  const w=S.walker;
+  // Identity
+  document.getElementById('walker-name-display').textContent = w.name || 'Walker';
+  const t = WALKER_TITLES.find(x=>x.id===w.title) || WALKER_TITLES[0];
+  document.getElementById('walker-title-display').textContent = t.name;
+  document.getElementById('walker-lvl').textContent = w.level;
+  document.getElementById('walker-xp').textContent = w.xp;
+  const xpMax = walkerXpMax();
+  document.getElementById('walker-xp-max').textContent = xpMax;
+  document.getElementById('walker-xp-fill').style.width = Math.min(100, (w.xp/xpMax)*100)+'%';
+  // Pool tint
+  const poolTint=(w.cosmetics.pool||'pool:void').split(':')[1] || 'void';
+  document.getElementById('walker-pool').setAttribute('data-tint', poolTint);
+  // Avatar silhouette glyph reflects equipped hood
+  const glyph=WALKER_AVATAR_GLYPHS[w.cosmetics.hood] || '⌖';
+  document.getElementById('walker-avatar-silhouette').textContent = glyph;
+  // Hub-side label
+  const hubLvl=document.getElementById('hub-walker-lvl');
+  if(hubLvl) hubLvl.textContent='LVL '+w.level;
+  // Panel content
+  renderWalkerStats();
+  renderWalkerGear();
+  renderWalkerTalents();
+  renderWalkerBonds();
+  renderWalkerPacts();
+  renderWalkerJournal();
+}
+
+function renderWalkerStats(){
+  const root=document.getElementById('walker-stats-grid'); if(!root) return;
+  root.innerHTML = WALKER_STATS.map(s=>{
+    const v=walkerStatValue(s.id);
+    return `<div class="walker-stat">
+      <div class="walker-stat-val">${v.toFixed(2)}<span class="mult">×</span></div>
+      <div class="walker-stat-label">${s.label}</div>
+      <div class="walker-stat-desc">${s.desc}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderWalkerGear(){
+  const root=document.getElementById('walker-gear-grid'); if(!root) return;
+  const eq=S.walker.equipped;
+  let filled=0;
+  root.innerHTML = WALKER_GEAR.map(g=>{
+    const has = !!eq[g.id];
+    if(has) filled++;
+    return `<div class="gear-slot ${has?'filled':'empty'}" onclick="openGearSlot('${g.id}')">
+      <span class="gear-slot-icon">${g.icon}</span>
+      <span class="gear-slot-label">${g.label}</span>
+    </div>`;
+  }).join('');
+  const fc=document.getElementById('gear-fill-count');
+  if(fc) fc.textContent='— '+filled+'/6 forged';
+}
+
+function renderWalkerTalents(){
+  const root=document.getElementById('walker-talents'); if(!root) return;
+  document.getElementById('talent-pts-avail').textContent = S.walker.talents.points;
+  root.innerHTML = WALKER_TALENTS.map(t=>{
+    const rank=S.walker.talents.ranks[t.id]||0;
+    return `<div class="talent-tree-branch ${rank>0?'invested':''}" onclick="investTalent('${t.id}')">
+      <span class="tt-icon">${t.icon}</span>
+      <span class="tt-name">${t.name}</span>
+      <div class="tt-rank">RANK ${rank}</div>
+      <div class="tt-desc">${t.desc}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderWalkerBonds(){
+  const root=document.getElementById('walker-bonds'); if(!root) return;
+  const bonds=S.walker.bonds||[];
+  const forged=bonds.filter(Boolean).length;
+  const bc=document.getElementById('bonds-count');
+  if(bc) bc.textContent='— '+forged+'/3 forged';
+  const unlocks=[1,15,30];
+  root.innerHTML = [0,1,2].map(i=>{
+    const unlocked = S.walker.level >= unlocks[i];
+    const bonded = bonds[i];
+    if(!unlocked) return `<div class="bond-slot locked"><span class="bond-slot-label">Locked</span><span class="bond-slot-unlock">LVL ${unlocks[i]}</span></div>`;
+    if(!bonded) return `<div class="bond-slot" onclick="openBondSlot(${i})">
+      <span class="bond-slot-icon">◯</span>
+      <span class="bond-slot-label">Empty</span>
+      <span class="bond-slot-unlock">tap to forge</span>
+    </div>`;
+    return `<div class="bond-slot" onclick="openBondSlot(${i})">
+      <span class="bond-slot-icon">✦</span>
+      <span class="bond-slot-label">${bonded.name||'Bonded'}</span>
+      <span class="bond-slot-unlock">${bonded.passive||''}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderWalkerPacts(){
+  const root=document.getElementById('walker-pacts'); if(!root) return;
+  root.innerHTML = WALKER_PACTS.map(p=>{
+    const active = !!S.walker.pacts[p.id];
+    return `<div class="pact-row ${active?'active':''}" onclick="togglePact('${p.id}')">
+      <span class="pact-icon">${p.icon}</span>
+      <div class="pact-info">
+        <div class="pact-name">${p.name}</div>
+        <div class="pact-desc">${p.desc}</div>
+      </div>
+      <div class="pact-toggle"></div>
+    </div>`;
+  }).join('');
+}
+
+function renderWalkerJournal(){
+  const root=document.getElementById('walker-journal'); if(!root) return;
+  const entries = (S.walker.journal||[]).slice().reverse();
+  if(!entries.length){
+    root.innerHTML = `<div class="journal-empty">The chamber is silent. Make your mark on INFERNUM and your descent will be recorded here.</div>`;
+    return;
+  }
+  root.innerHTML = entries.slice(0,30).map(e=>`<div class="journal-entry">
+    <div class="journal-date">${e.date||''}</div>
+    <div class="journal-text">${e.text||''}</div>
+  </div>`).join('');
+}
+
+function walkerLog(text){
+  const d = new Date();
+  const date = d.toLocaleDateString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  S.walker.journal=(S.walker.journal||[]);
+  S.walker.journal.push({date,text});
+  if(S.walker.journal.length>100) S.walker.journal=S.walker.journal.slice(-100);
+  save();
+}
+
+// Tabs
+function switchWalkerTab(tab, btnEl){
+  document.querySelectorAll('.walker-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.walker-panel').forEach(p=>p.classList.toggle('active', p.dataset.tabPanel===tab));
+}
+
+// Talent investment
+function investTalent(id){
+  if(S.walker.talents.points<=0){
+    showSummonResultText?.('NO POINTS','Level up to earn talent points','#888780');
+    return;
+  }
+  S.walker.talents.ranks[id]=(S.walker.talents.ranks[id]||0)+1;
+  S.walker.talents.points--;
+  save();
+  renderWalker();
+}
+
+// Pact toggle
+function togglePact(id){
+  S.walker.pacts[id] = !S.walker.pacts[id];
+  if(S.walker.pacts[id]) walkerLog(`Bound: ${WALKER_PACTS.find(p=>p.id===id).name}`);
+  else walkerLog(`Released: ${WALKER_PACTS.find(p=>p.id===id).name}`);
+  save();
+  renderWalkerPacts();
+}
+
+// Gear / bonds — stubs until those systems land
+function openGearSlot(slotId){
+  showSummonResultText?.('GEAR','Equipment drops from realm conquests','#c084fc');
+}
+function openBondSlot(i){
+  showSummonResultText?.('SOUL BOND','Forge from your Garrison once you have demons to sacrifice','#fbbf24');
+}
+
+// ─── Identity editor ───
+function openIdentityEditor(){
+  const m=document.getElementById('identity-editor');
+  document.getElementById('identity-name-input').value = S.walker.name||'Walker';
+  const root=document.getElementById('identity-title-options');
+  root.innerHTML = WALKER_TITLES.map(t=>{
+    const unlocked = !t.unlock || t.unlock(S);
+    const selected = S.walker.title===t.id;
+    return `<div class="title-option ${selected?'selected':''} ${!unlocked?'locked':''}" 
+       onclick="${unlocked?`selectTitle('${t.id}')`:''}">
+      <span class="title-option-name">${t.name}</span>
+      <span class="title-option-req">${t.req}</span>
+    </div>`;
+  }).join('');
+  m.setAttribute('data-open','true');
+}
+function closeIdentityEditor(){
+  document.getElementById('identity-editor').setAttribute('data-open','false');
+}
+function selectTitle(id){
+  document.querySelectorAll('#identity-title-options .title-option').forEach(o=>o.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  S.walker._pendingTitle = id;
+}
+function applyIdentity(){
+  const name = document.getElementById('identity-name-input').value.trim().slice(0,24) || 'Walker';
+  S.walker.name = name;
+  if(S.walker._pendingTitle){ S.walker.title = S.walker._pendingTitle; delete S.walker._pendingTitle; }
+  save();
+  renderWalker();
+  closeIdentityEditor();
+}
+
+// ─── Aesthetic shop ───
+function openAestheticShop(){
+  document.getElementById('shop-sigils').textContent = (S.shards||0).toLocaleString();
+  document.getElementById('shop-embers').textContent = (S.embers||0).toLocaleString();
+  document.getElementById('shop-categories').innerHTML = WALKER_SHOP_CATS.map(c=>
+    `<button class="shop-cat ${c.id===WALKER_SHOP_ACTIVE_CAT?'active':''}" onclick="setShopCat('${c.id}')">${c.label}</button>`
+  ).join('');
+  renderShopGrid();
+  document.getElementById('aesthetic-shop').setAttribute('data-open','true');
+}
+function closeAestheticShop(){
+  document.getElementById('aesthetic-shop').setAttribute('data-open','false');
+}
+function setShopCat(cat){
+  WALKER_SHOP_ACTIVE_CAT=cat;
+  document.querySelectorAll('.shop-cat').forEach((b,i)=>b.classList.toggle('active', WALKER_SHOP_CATS[i] && WALKER_SHOP_CATS[i].id===cat));
+  renderShopGrid();
+}
+function renderShopGrid(){
+  const grid=document.getElementById('shop-grid');
+  const items=WALKER_COSMETICS.filter(c=>c.cat===WALKER_SHOP_ACTIVE_CAT);
+  grid.innerHTML = items.map(c=>{
+    const owned = S.walker.ownedCosmetics.includes(c.id);
+    const equipped = S.walker.cosmetics[c.cat.slice(0,-1)] === c.id; // 'robes'->'robe'
+    const cls = ['shop-item', owned?'owned':'', equipped?'equipped':''].filter(Boolean).join(' ');
+    const priceClass = c.currency==='embers' ? '' : 'purple';
+    const priceLine = owned 
+      ? (equipped ? 'In use' : 'Owned · tap to equip') 
+      : `${c.price.toLocaleString()} ${c.currency==='embers'?'★':'◆'}`;
+    return `<div class="${cls}" onclick="acquireCosmetic('${c.id}')">
+      <div class="shop-item-preview">${c.icon}</div>
+      <div class="shop-item-info">
+        <div class="shop-item-name">${c.name}</div>
+        <div class="shop-item-price ${priceClass}">${priceLine}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function acquireCosmetic(id){
+  const item = WALKER_COSMETICS.find(c=>c.id===id); if(!item) return;
+  const slotKey = item.cat.slice(0,-1); // robes->robe, hoods->hood, auras->aura, pools->pool
+  // Already owned — just equip
+  if(S.walker.ownedCosmetics.includes(id)){
+    S.walker.cosmetics[slotKey] = id;
+    save(); renderShopGrid(); renderWalker();
+    return;
+  }
+  // Need to purchase
+  const cost = item.price;
+  if(item.currency==='sigils'){
+    if((S.shards||0) < cost){ flashShopError('Not enough Sigils'); return; }
+    S.shards -= cost;
+  } else {
+    if((S.embers||0) < cost){ flashShopError('Not enough Embers'); return; }
+    S.embers -= cost;
+  }
+  S.walker.ownedCosmetics.push(id);
+  S.walker.cosmetics[slotKey] = id;
+  walkerLog(`Acquired aesthetic: ${item.name}`);
+  save();
+  document.getElementById('shop-sigils').textContent = (S.shards||0).toLocaleString();
+  document.getElementById('shop-embers').textContent = (S.embers||0).toLocaleString();
+  renderShopGrid();
+  renderWalker();
+}
+function flashShopError(msg){
+  // Lightweight inline error — could be expanded
+  if(window.showSummonResultText) showSummonResultText('NOT ENOUGH', msg, '#f43f5e');
+}
+
+// Public hooks for other systems to award Walker XP / Embers / log entries
+function walkerGainXp(amount){
+  S.walker.xp += amount;
+  while(S.walker.xp >= walkerXpMax()){
+    S.walker.xp -= walkerXpMax();
+    S.walker.level++;
+    S.walker.talents.points++;
+    walkerLog(`Ascended to LVL ${S.walker.level}. Gained 1 talent point.`);
+  }
+  save();
+  if(document.getElementById('screen-riftwalk').classList.contains('active')) renderWalker();
+  // Always update hub label
+  const hubLvl=document.getElementById('hub-walker-lvl'); if(hubLvl) hubLvl.textContent='LVL '+S.walker.level;
+}
+
+
+// ═══════════════════════════════════════════
 // COUNTDOWN
 // ═══════════════════════════════════════════
 function tick(){
@@ -3050,6 +3997,9 @@ function tick(){
   renderScrollShelf();renderScrollInfo();
   renderRealms();renderGarrison();
   updateUI();
+  // Sync hub Walker rift label with current walker state on first paint
+  const hubLvl=document.getElementById('hub-walker-lvl');
+  if(hubLvl && S.walker) hubLvl.textContent='LVL '+S.walker.level;
   startGarrisonTicker();
   tick();setInterval(tick,1000);
 })();
