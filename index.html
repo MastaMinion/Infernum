@@ -674,37 +674,29 @@ body{font-family:var(--body);color:var(--text);position:relative}
    THE WALKER — Personal Chamber
 ══════════════════════════════════════ */
 #screen-riftwalk{
-  /* IMAGE SLOT: assets/ui/riftwalk_bg.jpg — intimate dark personal chamber */
-  background:var(--bg) url('assets/ui/riftwalk_bg.jpg') center center/cover no-repeat;
+  background:var(--bg);
   overflow-y:auto;
+  position:relative;
 }
 #screen-riftwalk::before{
   content:'';position:fixed;inset:0;z-index:0;
   background:radial-gradient(ellipse at 50% 40%,rgba(20,5,45,.35),rgba(6,0,14,.92));
   pointer-events:none;
 }
-#screen-riftwalk > *{position:relative;z-index:1}
+#walker-3d-canvas{
+  position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;
+  pointer-events:none;
+}
+#screen-riftwalk > .walker-inner{position:relative;z-index:1}
 .walker-inner{padding:18px 14px 100px;max-width:560px;margin:0 auto}
 
-/* ─── HERO: REFLECTIVE POOL CHAMBER (3D scene) ─── */
+/* ─── HERO: identity card overlay (3D scene is fullscreen behind) ─── */
 .walker-hero{
-  position:relative;width:100%;height:380px;
+  position:relative;width:100%;
   margin-bottom:16px;border-radius:14px;overflow:hidden;
-  /* Dark fallback if the 3D scene fails to render. The canvas covers when ready. */
-  background:
-    radial-gradient(ellipse at 50% 70%,rgba(60,20,90,.18) 0%,transparent 60%),
-    radial-gradient(ellipse at 50% 20%,rgba(8,4,20,.6) 0%,transparent 50%),
-    linear-gradient(180deg,#0a0518 0%,#06000e 60%,#000 100%);
+  background:linear-gradient(180deg,rgba(6,0,14,.45) 0%,rgba(6,0,14,.78) 100%);
   border:0.5px solid rgba(124,58,237,.25);
-  box-shadow:inset 0 0 80px rgba(0,0,0,.7);
-}
-#walker-3d-canvas{
-  position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;
-}
-.walker-hero::before{
-  /* Bottom-fade overlay so identity copy stays legible against the 3D scene */
-  content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
-  background:linear-gradient(180deg,transparent 55%,rgba(6,0,14,.55) 85%,rgba(6,0,14,.95));
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
 }
 
 /* (Former 2D pool / candle / reflection CSS lived here — removed when the hero
@@ -1766,11 +1758,11 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
     <!-- THE WALKER — Personal Chamber -->
     <div id="screen-riftwalk" class="screen">
+      <canvas id="walker-3d-canvas"></canvas>
       <div class="walker-inner">
 
-        <!-- HERO: REFLECTIVE POOL CHAMBER (3D scene) -->
+        <!-- HERO: identity card overlay (3D scene renders behind via fullscreen canvas) -->
         <section class="walker-hero">
-          <canvas id="walker-3d-canvas"></canvas>
           <div class="walker-identity">
             <div class="walker-eyebrow">The Walker</div>
             <div class="walker-title" id="walker-title-display">Initiate</div>
@@ -4653,7 +4645,7 @@ window.WalkerScene = (function(){
     if (initialized) return;
     if (typeof THREE === 'undefined') { console.warn('[WalkerScene] Three.js not available'); return; }
     canvas = document.getElementById('walker-3d-canvas');
-    container = document.querySelector('#screen-riftwalk .walker-hero');
+    container = document.getElementById('screen-riftwalk');
     if (!canvas || !container) return;
 
     let w = container.clientWidth, h = container.clientHeight;
