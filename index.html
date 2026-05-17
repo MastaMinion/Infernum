@@ -686,115 +686,29 @@ body{font-family:var(--body);color:var(--text);position:relative}
 #screen-riftwalk > *{position:relative;z-index:1}
 .walker-inner{padding:18px 14px 100px;max-width:560px;margin:0 auto}
 
-/* ─── HERO: REFLECTIVE POOL CHAMBER ─── */
+/* ─── HERO: REFLECTIVE POOL CHAMBER (3D scene) ─── */
 .walker-hero{
   position:relative;width:100%;height:380px;
   margin-bottom:16px;border-radius:14px;overflow:hidden;
-  /* IMAGE SLOT: assets/ui/riftwalk_bg.jpg — top-down stone chamber + pool (MJ)
-     Fallback gradient stays beneath in case the asset hasn't been dropped in yet. */
+  /* Dark fallback if the 3D scene fails to render. The canvas covers when ready. */
   background:
-    url('assets/ui/riftwalk_bg.jpg') center center/cover no-repeat,
     radial-gradient(ellipse at 50% 70%,rgba(60,20,90,.18) 0%,transparent 60%),
     radial-gradient(ellipse at 50% 20%,rgba(8,4,20,.6) 0%,transparent 50%),
     linear-gradient(180deg,#0a0518 0%,#06000e 60%,#000 100%);
   border:0.5px solid rgba(124,58,237,.25);
   box-shadow:inset 0 0 80px rgba(0,0,0,.7);
 }
+#walker-3d-canvas{
+  position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;
+}
 .walker-hero::before{
-  /* Bottom-fade so the identity overlay text below stays legible against the MJ image */
-  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  /* Bottom-fade overlay so identity copy stays legible against the 3D scene */
+  content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
   background:linear-gradient(180deg,transparent 55%,rgba(6,0,14,.55) 85%,rgba(6,0,14,.95));
 }
 
-/* the pool — transparent tint+effects container layered over the MJ chamber image */
-.pool{
-  position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);
-  width:68%;aspect-ratio:1.42;border-radius:50%;z-index:2;
-  background:transparent;
-  overflow:hidden;
-  pointer-events:none;
-  /* faint inner rim glow so the pool reads even if the MJ asset is missing */
-  box-shadow:inset 0 0 24px rgba(0,0,0,.45);
-}
-/* tinted-water variants — subtle overlays that blend with the MJ pool below */
-.pool[data-tint="void"]{
-  background:radial-gradient(ellipse at 50% 50%,rgba(124,58,237,.06),transparent 70%);
-}
-.pool[data-tint="blood"]{
-  background:radial-gradient(ellipse at 50% 50%,rgba(244,63,94,.16),transparent 70%);
-  box-shadow:inset 0 0 36px rgba(244,63,94,.18),inset 0 0 80px rgba(120,10,20,.25);
-}
-.pool[data-tint="starlit"]{
-  background:radial-gradient(ellipse at 50% 50%,rgba(99,102,241,.18),transparent 70%);
-  box-shadow:inset 0 0 36px rgba(99,102,241,.18),inset 0 0 80px rgba(20,20,90,.25);
-}
-.pool[data-tint="goldfire"]{
-  background:radial-gradient(ellipse at 50% 50%,rgba(251,191,36,.18),transparent 70%);
-  box-shadow:inset 0 0 36px rgba(251,191,36,.22),inset 0 0 80px rgba(120,70,0,.25);
-}
-
-/* slow ripple rings */
-.pool::before, .pool::after{
-  content:'';position:absolute;left:50%;top:50%;
-  width:55%;aspect-ratio:1.42;border-radius:50%;
-  border:1px solid rgba(192,132,252,.16);
-  transform:translate(-50%,-50%) scale(0.4);
-  opacity:0;
-  animation:poolRipple 7s ease-out infinite;
-}
-.pool::after{animation-delay:-3.5s;border-color:rgba(192,132,252,.08)}
-@keyframes poolRipple{
-  0%{transform:translate(-50%,-50%) scale(0.2);opacity:0}
-  20%{opacity:.55}
-  100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}
-}
-
-/* avatar reflection — sits inside the pool */
-.pool-reflection{
-  position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);
-  width:50%;aspect-ratio:1;border-radius:50%;z-index:3;
-  display:flex;align-items:center;justify-content:center;
-  filter:blur(0.4px) brightness(.78) contrast(.92);
-  opacity:.88;pointer-events:none;
-}
-.avatar-silhouette{
-  font-size:5.5rem;line-height:1;opacity:.55;
-  background:linear-gradient(180deg,rgba(192,132,252,.6),rgba(124,58,237,.2));
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  transform:scaleY(-0.9);  /* upside-down reflection */
-  animation:reflectionDrift 5.5s ease-in-out infinite;
-}
-@keyframes reflectionDrift{
-  0%,100%{transform:scaleY(-0.9) translateX(0)}
-  50%{transform:scaleY(-0.9) translateX(3px)}
-}
-
-/* candles around the pool rim — DISABLED when the MJ chamber asset is in place
-   (the MJ image has 5 candles baked in). Add class `no-mj-bg` on .walker-hero
-   to re-enable them as a CSS-only fallback when the asset is missing. */
-.candle{display:none}
-.walker-hero.no-mj-bg .candle{
-  display:block;
-  position:absolute;width:8px;height:14px;border-radius:50% 50% 30% 30%;
-  background:linear-gradient(180deg,#fbbf24,#7c2d12);
-  z-index:4;box-shadow:0 0 8px rgba(251,191,36,.6),0 0 16px rgba(251,191,36,.3);
-  animation:candleFlicker 1.8s ease-in-out infinite;
-}
-.candle::after{
-  content:'';position:absolute;left:50%;top:-6px;transform:translateX(-50%);
-  width:3px;height:6px;border-radius:50% 50% 30% 30%;
-  background:radial-gradient(circle at 50% 80%,#fff7c0,#fbbf24,transparent);
-  box-shadow:0 0 6px #fbbf24;
-}
-@keyframes candleFlicker{
-  0%,100%{opacity:.92;transform:scale(1)}
-  50%{opacity:1;transform:scale(1.05)}
-}
-.candle.c1{left:14%;top:38%}
-.candle.c2{right:14%;top:38%;animation-delay:-.3s}
-.candle.c3{left:24%;top:64%;animation-delay:-.6s}
-.candle.c4{right:24%;top:64%;animation-delay:-.9s}
-.candle.c5{left:50%;top:72%;margin-left:-4px;animation-delay:-1.2s}
+/* (Former 2D pool / candle / reflection CSS lived here — removed when the hero
+   became a 3D scene. WalkerScene renders all of that now via Three.js.) */
 
 /* identity panel — sits at bottom of hero, layered on top */
 .walker-identity{
@@ -1854,18 +1768,9 @@ body{font-family:var(--body);color:var(--text);position:relative}
     <div id="screen-riftwalk" class="screen">
       <div class="walker-inner">
 
-        <!-- HERO: REFLECTIVE POOL CHAMBER -->
+        <!-- HERO: REFLECTIVE POOL CHAMBER (3D scene) -->
         <section class="walker-hero">
-          <div class="pool" id="walker-pool" data-tint="void">
-            <div class="pool-reflection">
-              <span class="avatar-silhouette" id="walker-avatar-silhouette">⌖</span>
-            </div>
-          </div>
-          <span class="candle c1"></span>
-          <span class="candle c2"></span>
-          <span class="candle c3"></span>
-          <span class="candle c4"></span>
-          <span class="candle c5"></span>
+          <canvas id="walker-3d-canvas"></canvas>
           <div class="walker-identity">
             <div class="walker-eyebrow">The Walker</div>
             <div class="walker-title" id="walker-title-display">Initiate</div>
@@ -2323,6 +2228,23 @@ function switchScreen(name, btnEl){
   }
   if(name==='summon' && window.SummonScene) {
     requestAnimationFrame(()=>window.SummonScene.init());
+  }
+
+  // 3D scene lifecycle for the Walker (riftwalk) screen
+  if(prevName==='riftwalk' && name!=='riftwalk' && window.WalkerScene) {
+    window.WalkerScene.destroy();
+  }
+  if(name==='riftwalk' && window.WalkerScene) {
+    requestAnimationFrame(()=>{
+      window.WalkerScene.init();
+      // Push current cosmetics into the freshly-initialised scene
+      if(S.walker){
+        const poolTint=(S.walker.cosmetics.pool||'pool:void').split(':')[1] || 'void';
+        const glyph = (typeof WALKER_AVATAR_GLYPHS!=='undefined' && WALKER_AVATAR_GLYPHS[S.walker.cosmetics.hood]) || '⌖';
+        window.WalkerScene.applyPoolTint(poolTint);
+        window.WalkerScene.applyAvatarGlyph(glyph);
+      }
+    });
   }
 }
 
@@ -3659,12 +3581,11 @@ function renderWalker(){
   const xpMax = walkerXpMax();
   document.getElementById('walker-xp-max').textContent = xpMax;
   document.getElementById('walker-xp-fill').style.width = Math.min(100, (w.xp/xpMax)*100)+'%';
-  // Pool tint
+  // Cosmetics now drive the 3D scene
   const poolTint=(w.cosmetics.pool||'pool:void').split(':')[1] || 'void';
-  document.getElementById('walker-pool').setAttribute('data-tint', poolTint);
-  // Avatar silhouette glyph reflects equipped hood
+  if(window.WalkerScene && window.WalkerScene.applyPoolTint) window.WalkerScene.applyPoolTint(poolTint);
   const glyph=WALKER_AVATAR_GLYPHS[w.cosmetics.hood] || '⌖';
-  document.getElementById('walker-avatar-silhouette').textContent = glyph;
+  if(window.WalkerScene && window.WalkerScene.applyAvatarGlyph) window.WalkerScene.applyAvatarGlyph(glyph);
   // Hub-side label
   const hubLvl=document.getElementById('hub-walker-lvl');
   if(hubLvl) hubLvl.textContent='LVL '+w.level;
@@ -4691,6 +4612,413 @@ window.SummonScene = (function(){
     }
   }
   return { init, destroy, refreshScrolls };
+})();
+</script>
+
+<script>
+// ═══════════════════════════════════════════
+// WALKER SCREEN — 3D ENVIRONMENT (Three.js r128)
+// Personal chamber with reflective pool: stone basin, water surface,
+// five candles with flickering point lights, sigil-carved rim,
+// avatar reflection beneath the surface, smoke wisps, idle camera sway.
+// Pool tint cosmetics drive the water material's tint color.
+// Avatar hood cosmetic drives the silhouette texture under the water.
+// ═══════════════════════════════════════════
+window.WalkerScene = (function(){
+  const isMobile = window.innerWidth < 680;
+  const COUNT_SMOKE = isMobile ? 30 : 60;
+  const N_CANDLES = 5;
+
+  let scene, camera, renderer, canvas, container;
+  let basinGroup, waterMesh, waterMaterial, floorMesh;
+  let candles = []; // {body, flame, light, basePos, flickerPhase}
+  let avatarMesh, avatarTexture, avatarCanvas, avatarCtx;
+  let smokeSystem;
+  let ambient, keyLight;
+  let clock, animationId;
+  let mouseX = 0, mouseY = 0;
+  let initialized = false;
+  let currentTint = 'void';
+  let currentGlyph = '⌖';
+
+  // Pool-tint palette → { water base color, water emissive, candle light color, ambient tint }
+  const TINTS = {
+    void:     { water:0x0a0420, emissive:0x4c1d95, candle:0xffb04a, ambient:0x4422aa },
+    blood:    { water:0x1a0606, emissive:0x9f1239, candle:0xff8060, ambient:0x6a1530 },
+    starlit:  { water:0x080820, emissive:0x4c4cff, candle:0xa0c4ff, ambient:0x303080 },
+    goldfire: { water:0x1a1000, emissive:0xb45309, candle:0xffd060, ambient:0x6a4a10 },
+  };
+
+  function init(){
+    if (initialized) return;
+    if (typeof THREE === 'undefined') { console.warn('[WalkerScene] Three.js not available'); return; }
+    canvas = document.getElementById('walker-3d-canvas');
+    container = document.querySelector('#screen-riftwalk .walker-hero');
+    if (!canvas || !container) return;
+
+    let w = container.clientWidth, h = container.clientHeight;
+    if (w < 50 || h < 50) { requestAnimationFrame(init); return; }
+
+    // ── Scene + atmospheric fog ──
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x06000e);
+    scene.fog = new THREE.FogExp2(0x0a0418, 0.085);
+
+    // Chamber image as scene background — sits behind everything, fills the canvas
+    new THREE.TextureLoader().load('assets/ui/riftwalk_bg.jpg', function(tex){
+      tex.encoding = THREE.sRGBEncoding;
+      if (scene) scene.background = tex;
+    });
+
+    // ── Camera: high and slightly forward, looking down into the pool ──
+    camera = new THREE.PerspectiveCamera(38, w/h, 0.1, 50);
+    camera.position.set(0, 3.4, 3.4);
+    camera.lookAt(0, 0, 0);
+
+    // ── Renderer with cinematic tone mapping ──
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: true });
+    renderer.setSize(w, h, false);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+
+    // ── Textures ──
+    const stoneTex = createStoneTexture();
+    const flameTex = createFlameTexture();
+    const smokeTex = createSoftCircleTexture();
+
+    // ── Lights (start at void tint; updated by applyPoolTint) ──
+    const palette = TINTS[currentTint];
+    ambient = new THREE.AmbientLight(palette.ambient, 0.35);
+    scene.add(ambient);
+
+    // Subtle cool key from above, to give shape to the stone rim
+    keyLight = new THREE.DirectionalLight(0x8888ff, 0.18);
+    keyLight.position.set(-2, 6, 2);
+    scene.add(keyLight);
+
+    // ── Stone floor (extends well beyond camera frustum, swallowed by fog) ──
+    const floorGeo = new THREE.CircleGeometry(8, 48);
+    const floorMat = new THREE.MeshStandardMaterial({
+      map: stoneTex, color: 0x2a1f3a, roughness: 0.95, metalness: 0.05,
+    });
+    floorMesh = new THREE.Mesh(floorGeo, floorMat);
+    floorMesh.rotation.x = -Math.PI / 2;
+    floorMesh.position.y = -0.02;
+    scene.add(floorMesh);
+
+    // ── Pool basin: rim torus + inner cylindrical wall ──
+    basinGroup = new THREE.Group();
+    const rimGeo = new THREE.TorusGeometry(1.6, 0.16, 12, 64);
+    const rimMat = new THREE.MeshStandardMaterial({
+      map: stoneTex, color: 0x3a2a55, roughness: 0.85, metalness: 0.1,
+      emissive: 0x1a0f30, emissiveIntensity: 0.15,
+    });
+    const rim = new THREE.Mesh(rimGeo, rimMat);
+    rim.rotation.x = Math.PI / 2;
+    rim.position.y = 0.04;
+    basinGroup.add(rim);
+
+    // Inner basin wall (gives the pool depth)
+    const wallGeo = new THREE.CylinderGeometry(1.5, 1.4, 0.5, 48, 1, true);
+    const wallMat = new THREE.MeshStandardMaterial({
+      color: 0x0a0418, roughness: 1.0, metalness: 0.0, side: THREE.BackSide,
+    });
+    const wall = new THREE.Mesh(wallGeo, wallMat);
+    wall.position.y = -0.22;
+    basinGroup.add(wall);
+    scene.add(basinGroup);
+
+    // ── Water surface: highly reflective disc, picks up candle highlights ──
+    const waterGeo = new THREE.CircleGeometry(1.48, 64);
+    waterMaterial = new THREE.MeshStandardMaterial({
+      color: palette.water,
+      metalness: 0.95,
+      roughness: 0.18,
+      emissive: palette.emissive,
+      emissiveIntensity: 0.06,
+      transparent: true,
+      opacity: 0.92,
+    });
+    waterMesh = new THREE.Mesh(waterGeo, waterMaterial);
+    waterMesh.rotation.x = -Math.PI / 2;
+    waterMesh.position.y = 0.0;
+    scene.add(waterMesh);
+
+    // ── Avatar reflection plane: sits beneath the water, glyph drawn to canvas texture ──
+    avatarCanvas = document.createElement('canvas');
+    avatarCanvas.width = 512; avatarCanvas.height = 512;
+    avatarCtx = avatarCanvas.getContext('2d');
+    redrawAvatarTexture(currentGlyph);
+    avatarTexture = new THREE.CanvasTexture(avatarCanvas);
+    avatarTexture.encoding = THREE.sRGBEncoding;
+    const avatarGeo = new THREE.PlaneGeometry(1.5, 1.5);
+    const avatarMat = new THREE.MeshBasicMaterial({
+      map: avatarTexture, transparent: true, opacity: 0.55, depthWrite: false,
+    });
+    avatarMesh = new THREE.Mesh(avatarGeo, avatarMat);
+    avatarMesh.rotation.x = -Math.PI / 2;
+    avatarMesh.position.y = -0.35;
+    scene.add(avatarMesh);
+
+    // ── Candles around the rim ──
+    candles = [];
+    for (let i = 0; i < N_CANDLES; i++){
+      const a = (i / N_CANDLES) * Math.PI * 2 - Math.PI / 2;
+      const r = 1.6;
+      const x = Math.cos(a) * r;
+      const z = Math.sin(a) * r;
+
+      // Body (small ivory cylinder)
+      const bodyGeo = new THREE.CylinderGeometry(0.06, 0.07, 0.28, 10);
+      const bodyMat = new THREE.MeshStandardMaterial({
+        color: 0xeae0c4, roughness: 0.65, metalness: 0.02,
+        emissive: 0x3a2a10, emissiveIntensity: 0.1,
+      });
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.position.set(x, 0.20, z);
+      scene.add(body);
+
+      // Flame (sprite)
+      const flameMat = new THREE.SpriteMaterial({
+        map: flameTex, color: palette.candle,
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      });
+      const flame = new THREE.Sprite(flameMat);
+      flame.scale.set(0.22, 0.32, 1);
+      flame.position.set(x, 0.42, z);
+      scene.add(flame);
+
+      // Point light at the flame
+      const light = new THREE.PointLight(palette.candle, 1.4, 4.0, 1.8);
+      light.position.set(x, 0.45, z);
+      scene.add(light);
+
+      candles.push({ body, flame, light, basePos:{x,y:0.45,z}, flickerPhase: Math.random()*Math.PI*2 });
+    }
+
+    // ── Smoke particle system rising from the water ──
+    smokeSystem = makeSmokeSystem(smokeTex, COUNT_SMOKE);
+    scene.add(smokeSystem.points);
+
+    // ── Resize handling ──
+    window.addEventListener('resize', onResize);
+
+    clock = new THREE.Clock();
+    initialized = true;
+    animate();
+  }
+
+  function onResize(){
+    if (!renderer || !container) return;
+    const w = container.clientWidth, h = container.clientHeight;
+    if (w < 50 || h < 50) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+  }
+
+  // Procedural textures (canvas-based, no external assets) ────────────────
+  function createStoneTexture(){
+    const c = document.createElement('canvas'); c.width = 256; c.height = 256;
+    const ctx = c.getContext('2d');
+    // Dark base with mottled noise + faint purple wash
+    ctx.fillStyle = '#1a1126'; ctx.fillRect(0,0,256,256);
+    for (let i = 0; i < 1400; i++){
+      const x = Math.random()*256, y = Math.random()*256;
+      const v = 20 + Math.random()*60;
+      ctx.fillStyle = `rgba(${v+20},${v+10},${v+40},${0.12+Math.random()*0.25})`;
+      ctx.fillRect(x, y, 1.5, 1.5);
+    }
+    // Cracks
+    for (let i = 0; i < 12; i++){
+      ctx.strokeStyle = `rgba(0,0,0,${0.18+Math.random()*0.2})`;
+      ctx.lineWidth = 0.6 + Math.random();
+      ctx.beginPath();
+      let x = Math.random()*256, y = Math.random()*256;
+      ctx.moveTo(x, y);
+      for (let s = 0; s < 5; s++){
+        x += (Math.random()-0.5)*40;
+        y += (Math.random()-0.5)*40;
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(3, 3);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  function createFlameTexture(){
+    const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(64, 64, 4, 64, 64, 60);
+    g.addColorStop(0,    'rgba(255,255,220,1)');
+    g.addColorStop(0.25, 'rgba(255,200,120,0.85)');
+    g.addColorStop(0.6,  'rgba(255,120,40,0.35)');
+    g.addColorStop(1,    'rgba(255,80,20,0)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,128,128);
+    const tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  function createSoftCircleTexture(){
+    const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(32,32,1,32,32,30);
+    g.addColorStop(0,'rgba(255,255,255,0.7)');
+    g.addColorStop(0.5,'rgba(255,255,255,0.2)');
+    g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,64,64);
+    return new THREE.CanvasTexture(c);
+  }
+
+  function makeSmokeSystem(tex, count){
+    const positions = new Float32Array(count * 3);
+    const lifes = new Float32Array(count);
+    for (let i = 0; i < count; i++){
+      const a = Math.random() * Math.PI * 2;
+      const r = Math.random() * 1.3;
+      positions[i*3+0] = Math.cos(a) * r;
+      positions[i*3+1] = Math.random() * 1.5;
+      positions[i*3+2] = Math.sin(a) * r;
+      lifes[i] = Math.random();
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({
+      map: tex, color: 0xb098d8, size: 0.45,
+      transparent: true, opacity: 0.18, depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    return { points: new THREE.Points(geo, mat), geo, lifes, count };
+  }
+
+  function updateSmoke(sys, dt, t){
+    const pos = sys.geo.attributes.position.array;
+    for (let i = 0; i < sys.count; i++){
+      sys.lifes[i] += dt * 0.12;
+      if (sys.lifes[i] > 1){
+        // respawn near water surface
+        const a = Math.random()*Math.PI*2, r = Math.random()*1.3;
+        pos[i*3+0] = Math.cos(a)*r;
+        pos[i*3+1] = 0.05;
+        pos[i*3+2] = Math.sin(a)*r;
+        sys.lifes[i] = 0;
+      } else {
+        pos[i*3+1] += dt * 0.22;
+        pos[i*3+0] += Math.sin(t*0.4 + i)*dt*0.05;
+      }
+    }
+    sys.geo.attributes.position.needsUpdate = true;
+  }
+
+  function redrawAvatarTexture(glyph){
+    const W = avatarCanvas.width, H = avatarCanvas.height;
+    avatarCtx.clearRect(0,0,W,H);
+    // Subtle radial wash so the silhouette has a halo
+    const grad = avatarCtx.createRadialGradient(W/2, H/2, 30, W/2, H/2, W/2);
+    grad.addColorStop(0,'rgba(192,132,252,0.18)');
+    grad.addColorStop(1,'rgba(0,0,0,0)');
+    avatarCtx.fillStyle = grad; avatarCtx.fillRect(0,0,W,H);
+    // Glyph centered
+    avatarCtx.font = 'bold 320px Georgia, serif';
+    avatarCtx.fillStyle = 'rgba(192,132,252,0.82)';
+    avatarCtx.textAlign = 'center';
+    avatarCtx.textBaseline = 'middle';
+    avatarCtx.shadowColor = 'rgba(124,58,237,0.7)';
+    avatarCtx.shadowBlur = 30;
+    avatarCtx.fillText(glyph, W/2, H/2);
+    if (avatarTexture) avatarTexture.needsUpdate = true;
+  }
+
+  // Public hooks ──────────────────────────────────────────────────────────
+  function applyPoolTint(tint){
+    currentTint = tint;
+    const p = TINTS[tint] || TINTS.void;
+    if (waterMaterial){
+      waterMaterial.color.setHex(p.water);
+      waterMaterial.emissive.setHex(p.emissive);
+    }
+    if (ambient) ambient.color.setHex(p.ambient);
+    candles.forEach(c => {
+      c.light.color.setHex(p.candle);
+      if (c.flame.material) c.flame.material.color.setHex(p.candle);
+    });
+  }
+
+  function applyAvatarGlyph(glyph){
+    currentGlyph = glyph;
+    if (avatarCtx) redrawAvatarTexture(glyph);
+  }
+
+  function animate(){
+    if (!initialized) return;
+    animationId = requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    const dt = Math.min(clock.getDelta(), 0.1);
+
+    // Candle flicker (light intensity + flame scale + subtle position jitter)
+    candles.forEach(c => {
+      const f = c.flickerPhase;
+      const flicker = 1.2 + Math.sin(t*8 + f)*0.18 + Math.sin(t*13.3 + f*1.7)*0.10;
+      c.light.intensity = flicker;
+      const s = 0.22 + Math.sin(t*9 + f)*0.018;
+      c.flame.scale.set(s, s*1.45, 1);
+      c.flame.position.y = c.basePos.y + Math.sin(t*6 + f)*0.012;
+    });
+
+    // Avatar drift (slow rotation + slight bob — looks like underwater currents)
+    if (avatarMesh){
+      avatarMesh.rotation.z = Math.sin(t*0.18)*0.06;
+      avatarMesh.position.y = -0.35 + Math.sin(t*0.5)*0.015;
+    }
+
+    // Smoke
+    if (smokeSystem) updateSmoke(smokeSystem, dt, t);
+
+    // Camera idle sway
+    const targetX = Math.sin(t*0.22)*0.18 + mouseX*0.25;
+    const targetY = 3.4 + Math.cos(t*0.28)*0.08 + mouseY*0.12;
+    camera.position.x += (targetX - camera.position.x)*0.03;
+    camera.position.y += (targetY - camera.position.y)*0.03;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+  }
+
+  function destroy(){
+    if (animationId) cancelAnimationFrame(animationId);
+    animationId = null;
+    window.removeEventListener('resize', onResize);
+
+    if (scene){
+      scene.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material){
+          if (obj.material.map) obj.material.map.dispose();
+          if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+          else obj.material.dispose();
+        }
+      });
+    }
+    if (renderer){
+      renderer.dispose();
+      renderer.forceContextLoss();
+    }
+
+    scene = null; camera = null; renderer = null;
+    basinGroup = null; waterMesh = null; waterMaterial = null; floorMesh = null;
+    candles = []; avatarMesh = null; avatarTexture = null; avatarCanvas = null; avatarCtx = null;
+    smokeSystem = null; ambient = null; keyLight = null;
+    initialized = false;
+  }
+
+  return { init, destroy, applyPoolTint, applyAvatarGlyph };
 })();
 </script>
 </body>
