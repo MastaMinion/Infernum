@@ -4717,6 +4717,7 @@ window.WalkerScene = (function(){
     raycaster = new THREE.Raycaster();
     ndc = new THREE.Vector2();
     buildStatCards();
+    loadNavImages();
 
     // Pointer events on the canvas for hover/click on stat cards
     canvas.addEventListener('mousemove', onCanvasMouseMove, {passive:true});
@@ -4871,6 +4872,26 @@ window.WalkerScene = (function(){
     {id:'journal', label:'Journal', icon:'❡'},
   ];
   let activeNavIdx = 0;
+  // Loaded keyed PNGs per section id — populated async by loadNavImages().
+  // drawNavCard falls back to the unicode glyph until the image loads.
+  const navImages = {};
+  function loadNavImages(){
+    NAV_SECTIONS.forEach(section => {
+      if (navImages[section.id]) return; // already loaded
+      const img = new Image();
+      img.onload = () => {
+        navImages[section.id] = img;
+        // Redraw this card once its image is available
+        const card = statCards.find(c => c.section.id === section.id);
+        if (card){
+          drawNavCard(card.ctx, card.canvas, card.section, NAV_SECTIONS[activeNavIdx] && NAV_SECTIONS[activeNavIdx].id === section.id);
+          card.texture.needsUpdate = true;
+        }
+      };
+      img.onerror = () => { /* leave fallback glyph in place */ };
+      img.src = 'assets/ui/nav_' + section.id + '.png';
+    });
+  }
 
   function buildStatCards(){
     const cardW = 0.78, cardH = 1.0;
@@ -4949,13 +4970,31 @@ window.WalkerScene = (function(){
     ctx.fillStyle = vg; ctx.fillRect(0,0,W,H);
 
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    // Big icon glyph (center-ish, upper)
-    ctx.fillStyle = isActive ? 'rgba(251,191,36,0.95)' : 'rgba(192,132,252,0.92)';
-    ctx.font = 'bold 150px Cinzel, Georgia, serif';
-    ctx.shadowColor = isActive ? 'rgba(251,191,36,0.7)' : 'rgba(124,58,237,0.5)';
-    ctx.shadowBlur = 30;
-    ctx.fillText(section.icon, W/2, H/2 - 25);
-    ctx.shadowBlur = 0;
+    // Image area (upper portion, reserves bottom ~110px for label + tagline)
+    const imgTop = 22, imgBot = H - 108;
+    const imgAreaH = imgBot - imgTop, imgAreaW = W - 56;
+    const navImg = navImages[section.id];
+    if (navImg && navImg.complete && navImg.naturalWidth > 0){
+      // Fit-contain into the area, centered
+      const iw = navImg.naturalWidth, ih = navImg.naturalHeight;
+      const s = Math.min(imgAreaW / iw, imgAreaH / ih);
+      const dw = iw * s, dh = ih * s;
+      const dx = (W - dw) / 2;
+      const dy = imgTop + (imgAreaH - dh) / 2;
+      ctx.save();
+      ctx.shadowColor = isActive ? 'rgba(251,191,36,0.55)' : 'rgba(124,58,237,0.40)';
+      ctx.shadowBlur = isActive ? 26 : 18;
+      ctx.drawImage(navImg, dx, dy, dw, dh);
+      ctx.restore();
+    } else {
+      // Fallback: unicode glyph while the PNG is still loading (or if it failed)
+      ctx.fillStyle = isActive ? 'rgba(251,191,36,0.95)' : 'rgba(192,132,252,0.92)';
+      ctx.font = 'bold 150px Cinzel, Georgia, serif';
+      ctx.shadowColor = isActive ? 'rgba(251,191,36,0.7)' : 'rgba(124,58,237,0.5)';
+      ctx.shadowBlur = 30;
+      ctx.fillText(section.icon, W/2, (imgTop + imgBot) / 2);
+      ctx.shadowBlur = 0;
+    }
     // Label (bottom)
     ctx.fillStyle = isActive ? 'rgba(255,240,200,0.95)' : 'rgba(190,170,220,0.85)';
     ctx.font = 'bold 38px Cinzel, Georgia, serif';
