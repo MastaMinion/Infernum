@@ -789,10 +789,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
   color:var(--muted);text-transform:uppercase;margin-bottom:10px;
   padding-bottom:6px;border-bottom:0.5px solid var(--border);
 }
-
-/* The HTML stats grid is replaced by 3D stat cards rendered in WalkerScene.
-   Keep the section title + prose visible; hide the grid. */
-.walker-stats-grid{display:none}
 .walker-panel-prose{
   font-size:.55rem;color:var(--muted);line-height:1.55;
   font-style:italic;text-align:center;padding:0 14px;
@@ -3703,6 +3699,7 @@ function walkerLog(text){
 function switchWalkerTab(tab, btnEl){
   document.querySelectorAll('.walker-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.querySelectorAll('.walker-panel').forEach(p=>p.classList.toggle('active', p.dataset.tabPanel===tab));
+  if(window.WalkerScene && window.WalkerScene.setActiveNav) window.WalkerScene.setActiveNav(tab);
 }
 
 // Talent investment
@@ -4724,6 +4721,10 @@ window.WalkerScene = (function(){
     // Pointer events on the canvas for hover/click on stat cards
     canvas.addEventListener('mousemove', onCanvasMouseMove, {passive:true});
     canvas.addEventListener('mouseleave', onCanvasMouseLeave, {passive:true});
+    canvas.addEventListener('click', onCanvasClick);
+    // Initial active state — sync to current HTML active tab
+    const activeTabBtn = document.querySelector('.walker-tab.active');
+    setActiveNav(activeTabBtn ? activeTabBtn.dataset.tab : 'stats');
 
     // ── Resize handling ──
     window.addEventListener('resize', onResize);
@@ -4860,16 +4861,24 @@ window.WalkerScene = (function(){
   }
 
   // Public hooks ──────────────────────────────────────────────────────────
-  // ─── 3D stat cards (selections like rifts/scrolls) ───
+  // ─── 3D navigation cards — one per tab section, click to enter that screen ───
+  const NAV_SECTIONS = [
+    {id:'stats',   label:'Stats',   icon:'◆'},
+    {id:'gear',    label:'Gear',    icon:'♕'},
+    {id:'talents', label:'Talents', icon:'☥'},
+    {id:'bonds',   label:'Bonds',   icon:'✦'},
+    {id:'pacts',   label:'Pacts',   icon:'⊘'},
+    {id:'journal', label:'Journal', icon:'❡'},
+  ];
+  let activeNavIdx = 0;
+
   function buildStatCards(){
-    if (typeof WALKER_STATS === 'undefined') return;
     const cardW = 0.78, cardH = 1.0;
-    // 3x2 grid floating above the painted pool, in front of the camera
     const cols = 3, rows = 2;
     const xSpread = 0.95, ySpread = 1.15;
-    const gridZ = 1.2;   // forward of pool (z=0), well in front of camera at z=5
-    const gridY = 1.7;   // sits above the painted pool, in upper-mid of view
-    WALKER_STATS.forEach((stat, i) => {
+    const gridZ = 1.2;
+    const gridY = 1.7;
+    NAV_SECTIONS.forEach((section, i) => {
       const col = i % cols, row = Math.floor(i / cols);
       const c = document.createElement('canvas');
       c.width = 320; c.height = 400;
@@ -4885,9 +4894,10 @@ window.WalkerScene = (function(){
       const y = gridY - row * ySpread;
       mesh.position.set(x, y, gridZ);
       mesh.userData.idx = i;
+      mesh.userData.sectionId = section.id;
       scene.add(mesh);
 
-      // Underglow plane behind the card for the hover/active lerp
+      // Underglow plane for hover / active lerp
       const glowC = document.createElement('canvas');
       glowC.width = 256; glowC.height = 256;
       const gctx = glowC.getContext('2d');
@@ -4909,71 +4919,65 @@ window.WalkerScene = (function(){
       statCards.push({
         mesh, canvas:c, ctx, texture:tex,
         glow, glowOpacity: 0, glowTarget: 0,
-        baseY: y, baseX: x, phase: Math.random()*Math.PI*2, stat,
+        baseY: y, baseX: x, phase: Math.random()*Math.PI*2, section,
       });
+      drawNavCard(ctx, c, section, false);
+      tex.needsUpdate = true;
     });
-    refreshStatCardTextures();
   }
 
-  function drawStatCard(ctx, canvas, stat, value){
+  function drawNavCard(ctx, canvas, section, isActive){
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0,0,W,H);
     // Rounded dark background
     const r = 18;
-    ctx.fillStyle = 'rgba(8,2,20,0.92)';
+    ctx.fillStyle = isActive ? 'rgba(20,8,45,0.95)' : 'rgba(8,2,20,0.88)';
     ctx.beginPath();
     ctx.moveTo(r,0); ctx.lineTo(W-r,0); ctx.quadraticCurveTo(W,0,W,r);
     ctx.lineTo(W,H-r); ctx.quadraticCurveTo(W,H,W-r,H);
     ctx.lineTo(r,H); ctx.quadraticCurveTo(0,H,0,H-r);
     ctx.lineTo(0,r); ctx.quadraticCurveTo(0,0,r,0);
     ctx.closePath(); ctx.fill();
-    // Purple border with corner accent
-    ctx.strokeStyle = 'rgba(124,58,237,0.55)';
-    ctx.lineWidth = 2;
+    // Border — gold if active, purple otherwise
+    ctx.strokeStyle = isActive ? 'rgba(251,191,36,0.75)' : 'rgba(124,58,237,0.55)';
+    ctx.lineWidth = isActive ? 3 : 2;
     ctx.stroke();
-    // Inner glow vignette
+    // Inner vignette
     const vg = ctx.createRadialGradient(W/2, H/2, 40, W/2, H/2, W*0.75);
-    vg.addColorStop(0, 'rgba(124,58,237,0.06)');
+    vg.addColorStop(0, isActive ? 'rgba(251,191,36,0.08)' : 'rgba(124,58,237,0.06)');
     vg.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = vg; ctx.fillRect(0,0,W,H);
-    // Label (top, small caps, gold-ish)
+
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(180,160,210,0.75)';
-    ctx.font = 'bold 26px Cinzel, Georgia, serif';
-    ctx.fillText(stat.label, W/2, 60);
-    // Value (huge, purple, centered)
-    ctx.fillStyle = 'rgba(192,132,252,1)';
-    ctx.font = 'bold 100px Cinzel, Georgia, serif';
-    ctx.fillText(value.toFixed(2), W/2, H/2 - 10);
-    // × multiplier suffix (small)
-    ctx.fillStyle = 'rgba(150,140,180,0.8)';
-    ctx.font = 'bold 36px Cinzel, Georgia, serif';
-    ctx.fillText('×', W/2 + 100, H/2 - 30);
-    // Description (bottom, italic, wrapped)
-    ctx.fillStyle = 'rgba(160,150,190,0.65)';
-    ctx.font = 'italic 20px "EB Garamond", Georgia, serif';
-    const words = stat.desc.split(' ');
-    let line = '', y = H - 75;
-    const maxW = W - 40;
-    words.forEach(word => {
-      const test = line + word + ' ';
-      if (ctx.measureText(test).width > maxW && line.length){
-        ctx.fillText(line.trim(), W/2, y);
-        line = word + ' '; y += 26;
-      } else {
-        line = test;
-      }
+    // Big icon glyph (center-ish, upper)
+    ctx.fillStyle = isActive ? 'rgba(251,191,36,0.95)' : 'rgba(192,132,252,0.92)';
+    ctx.font = 'bold 150px Cinzel, Georgia, serif';
+    ctx.shadowColor = isActive ? 'rgba(251,191,36,0.7)' : 'rgba(124,58,237,0.5)';
+    ctx.shadowBlur = 30;
+    ctx.fillText(section.icon, W/2, H/2 - 25);
+    ctx.shadowBlur = 0;
+    // Label (bottom)
+    ctx.fillStyle = isActive ? 'rgba(255,240,200,0.95)' : 'rgba(190,170,220,0.85)';
+    ctx.font = 'bold 38px Cinzel, Georgia, serif';
+    ctx.fillText(section.label.toUpperCase(), W/2, H - 70);
+    // Tagline
+    ctx.fillStyle = isActive ? 'rgba(251,191,36,0.6)' : 'rgba(150,140,180,0.55)';
+    ctx.font = 'italic 18px "EB Garamond", Georgia, serif';
+    ctx.fillText('— enter —', W/2, H - 35);
+  }
+
+  function setActiveNav(sectionId){
+    activeNavIdx = NAV_SECTIONS.findIndex(s => s.id === sectionId);
+    if (activeNavIdx < 0) activeNavIdx = 0;
+    // Redraw card textures with new active state
+    statCards.forEach((c, i) => {
+      drawNavCard(c.ctx, c.canvas, c.section, i === activeNavIdx);
+      c.texture.needsUpdate = true;
     });
-    if (line.trim()) ctx.fillText(line.trim(), W/2, y);
   }
 
   function refreshStatCardTextures(){
-    if (typeof walkerStatValue !== 'function') return;
-    statCards.forEach(c => {
-      const v = walkerStatValue(c.stat.id);
-      drawStatCard(c.ctx, c.canvas, c.stat, v);
-      c.texture.needsUpdate = true;
-    });
+    // Nav cards don't depend on stat values — no-op kept for backwards-compat hook
   }
 
   function onCanvasMouseMove(e){
@@ -4985,8 +4989,23 @@ window.WalkerScene = (function(){
     const meshes = statCards.map(c => c.mesh);
     const hits = raycaster.intersectObjects(meshes, false);
     activeStatIndex = hits.length ? hits[0].object.userData.idx : -1;
+    canvas.style.cursor = activeStatIndex >= 0 ? 'pointer' : '';
   }
-  function onCanvasMouseLeave(){ activeStatIndex = -1; }
+  function onCanvasMouseLeave(){ activeStatIndex = -1; if(canvas) canvas.style.cursor = ''; }
+  function onCanvasClick(e){
+    if (!canvas || !raycaster || !camera || !statCards.length) return;
+    const rect = canvas.getBoundingClientRect();
+    ndc.x = ((e.clientX - rect.left)/rect.width)*2 - 1;
+    ndc.y = -((e.clientY - rect.top)/rect.height)*2 + 1;
+    raycaster.setFromCamera(ndc, camera);
+    const meshes = statCards.map(c => c.mesh);
+    const hits = raycaster.intersectObjects(meshes, false);
+    if (hits.length){
+      const sectionId = hits[0].object.userData.sectionId;
+      if (typeof switchWalkerTab === 'function') switchWalkerTab(sectionId, null);
+      setActiveNav(sectionId);
+    }
+  }
 
   function applyPoolTint(tint){
     currentTint = tint;
@@ -5065,6 +5084,8 @@ window.WalkerScene = (function(){
     if (canvas){
       canvas.removeEventListener('mousemove', onCanvasMouseMove);
       canvas.removeEventListener('mouseleave', onCanvasMouseLeave);
+      canvas.removeEventListener('click', onCanvasClick);
+      canvas.style.cursor = '';
     }
 
     if (scene){
@@ -5090,7 +5111,7 @@ window.WalkerScene = (function(){
     initialized = false;
   }
 
-  return { init, destroy, applyPoolTint, applyAvatarGlyph, refreshStatCards: refreshStatCardTextures };
+  return { init, destroy, applyPoolTint, applyAvatarGlyph, refreshStatCards: refreshStatCardTextures, setActiveNav };
 })();
 </script>
 </body>
