@@ -4622,11 +4622,12 @@ window.WalkerScene = (function(){
   const N_CANDLES = 5;
 
   let scene, camera, renderer, canvas, container;
-  let basinGroup, waterMesh, waterMaterial, floorMesh;
-  let candles = []; // {body, flame, light, basePos, flickerPhase}
+  let bgPlane;
   let avatarMesh, avatarTexture, avatarCanvas, avatarCtx;
   let smokeSystem;
-  let ambient, keyLight;
+  let ambient;
+  let candles = []; // legacy (now empty) — referenced by applyPoolTint
+  let waterMaterial; // legacy (now null) — referenced by applyPoolTint
   let clock, animationId;
   let mouseX = 0, mouseY = 0;
   let initialized = false;
@@ -4651,146 +4652,59 @@ window.WalkerScene = (function(){
     let w = container.clientWidth, h = container.clientHeight;
     if (w < 50 || h < 50) { requestAnimationFrame(init); return; }
 
-    // ── Scene + atmospheric fog ──
+    // ── Scene ──
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x06000e);
-    scene.fog = new THREE.FogExp2(0x0a0418, 0.085);
+    scene.fog = new THREE.FogExp2(0x06000e, 0.018);
 
-    // Chamber image as scene background — sits behind everything, fills the canvas
-    new THREE.TextureLoader().load('assets/ui/riftwalk_bg.jpg', function(tex){
-      tex.encoding = THREE.sRGBEncoding;
-      if (scene) scene.background = tex;
-    });
-
-    // ── Camera: high and slightly forward, looking down into the pool ──
-    camera = new THREE.PerspectiveCamera(38, w/h, 0.1, 50);
-    camera.position.set(0, 3.4, 3.4);
-    camera.lookAt(0, 0, 0);
+    // ── Camera: eye-level, looking forward at the painted chamber ──
+    camera = new THREE.PerspectiveCamera(42, w/h, 0.1, 200);
+    camera.position.set(0, 1.5, 5);
+    camera.lookAt(0, 0.5, -1);
 
     // ── Renderer with cinematic tone mapping ──
     renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: true });
     renderer.setSize(w, h, false);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMappingExposure = 1.4;
     renderer.outputEncoding = THREE.sRGBEncoding;
 
-    // ── Textures ──
-    const stoneTex = createStoneTexture();
-    const flameTex = createFlameTexture();
-    const smokeTex = createSoftCircleTexture();
-
-    // ── Lights (start at void tint; updated by applyPoolTint) ──
+    // ── Lights (illuminate 3D elements only; bg image is unlit MeshBasic) ──
     const palette = TINTS[currentTint];
-    ambient = new THREE.AmbientLight(palette.ambient, 0.35);
+    ambient = new THREE.AmbientLight(palette.ambient, 0.6);
     scene.add(ambient);
 
-    // Subtle cool key from above, to give shape to the stone rim
-    keyLight = new THREE.DirectionalLight(0x8888ff, 0.18);
-    keyLight.position.set(-2, 6, 2);
-    scene.add(keyLight);
-
-    // ── Stone floor (extends well beyond camera frustum, swallowed by fog) ──
-    const floorGeo = new THREE.CircleGeometry(8, 48);
-    const floorMat = new THREE.MeshStandardMaterial({
-      map: stoneTex, color: 0x2a1f3a, roughness: 0.95, metalness: 0.05,
+    // ── Backdrop: riftwalk_bg.jpg IS the destination chamber.
+    // The pool, candles, stone, sigils are baked into this image —
+    // we don't render 3D copies on top (same pattern as SummonScene). ──
+    new THREE.TextureLoader().load('assets/ui/riftwalk_bg.jpg', function(tex){
+      tex.encoding = THREE.sRGBEncoding;
+      const bgGeo = new THREE.PlaneGeometry(54, 36);  // oversized 3:2 to match source aspect
+      const bgMat = new THREE.MeshBasicMaterial({ map: tex, fog: false });
+      bgPlane = new THREE.Mesh(bgGeo, bgMat);
+      bgPlane.position.set(0, 0.5, -19);
+      scene.add(bgPlane);
     });
-    floorMesh = new THREE.Mesh(floorGeo, floorMat);
-    floorMesh.rotation.x = -Math.PI / 2;
-    floorMesh.position.y = -0.02;
-    scene.add(floorMesh);
 
-    // ── Pool basin: rim torus + inner cylindrical wall ──
-    basinGroup = new THREE.Group();
-    const rimGeo = new THREE.TorusGeometry(1.6, 0.16, 12, 64);
-    const rimMat = new THREE.MeshStandardMaterial({
-      map: stoneTex, color: 0x3a2a55, roughness: 0.85, metalness: 0.1,
-      emissive: 0x1a0f30, emissiveIntensity: 0.15,
-    });
-    const rim = new THREE.Mesh(rimGeo, rimMat);
-    rim.rotation.x = Math.PI / 2;
-    rim.position.y = 0.04;
-    basinGroup.add(rim);
-
-    // Inner basin wall (gives the pool depth)
-    const wallGeo = new THREE.CylinderGeometry(1.5, 1.4, 0.5, 48, 1, true);
-    const wallMat = new THREE.MeshStandardMaterial({
-      color: 0x0a0418, roughness: 1.0, metalness: 0.0, side: THREE.BackSide,
-    });
-    const wall = new THREE.Mesh(wallGeo, wallMat);
-    wall.position.y = -0.22;
-    basinGroup.add(wall);
-    scene.add(basinGroup);
-
-    // ── Water surface: highly reflective disc, picks up candle highlights ──
-    const waterGeo = new THREE.CircleGeometry(1.48, 64);
-    waterMaterial = new THREE.MeshStandardMaterial({
-      color: palette.water,
-      metalness: 0.95,
-      roughness: 0.18,
-      emissive: palette.emissive,
-      emissiveIntensity: 0.06,
-      transparent: true,
-      opacity: 0.92,
-    });
-    waterMesh = new THREE.Mesh(waterGeo, waterMaterial);
-    waterMesh.rotation.x = -Math.PI / 2;
-    waterMesh.position.y = 0.0;
-    scene.add(waterMesh);
-
-    // ── Avatar reflection plane: sits beneath the water, glyph drawn to canvas texture ──
+    // ── Avatar reflection: faint floating layer where the painted pool sits ──
     avatarCanvas = document.createElement('canvas');
     avatarCanvas.width = 512; avatarCanvas.height = 512;
     avatarCtx = avatarCanvas.getContext('2d');
     redrawAvatarTexture(currentGlyph);
     avatarTexture = new THREE.CanvasTexture(avatarCanvas);
     avatarTexture.encoding = THREE.sRGBEncoding;
-    const avatarGeo = new THREE.PlaneGeometry(1.5, 1.5);
+    const avatarGeo = new THREE.PlaneGeometry(2.4, 2.4);
     const avatarMat = new THREE.MeshBasicMaterial({
-      map: avatarTexture, transparent: true, opacity: 0.55, depthWrite: false,
+      map: avatarTexture, transparent: true, opacity: 0.42, depthWrite: false,
+      blending: THREE.AdditiveBlending, fog: false,
     });
     avatarMesh = new THREE.Mesh(avatarGeo, avatarMat);
-    avatarMesh.rotation.x = -Math.PI / 2;
-    avatarMesh.position.y = -0.35;
+    avatarMesh.position.set(0, 0.2, -2);
     scene.add(avatarMesh);
 
-    // ── Candles around the rim ──
-    candles = [];
-    for (let i = 0; i < N_CANDLES; i++){
-      const a = (i / N_CANDLES) * Math.PI * 2 - Math.PI / 2;
-      const r = 1.6;
-      const x = Math.cos(a) * r;
-      const z = Math.sin(a) * r;
-
-      // Body (small ivory cylinder)
-      const bodyGeo = new THREE.CylinderGeometry(0.06, 0.07, 0.28, 10);
-      const bodyMat = new THREE.MeshStandardMaterial({
-        color: 0xeae0c4, roughness: 0.65, metalness: 0.02,
-        emissive: 0x3a2a10, emissiveIntensity: 0.1,
-      });
-      const body = new THREE.Mesh(bodyGeo, bodyMat);
-      body.position.set(x, 0.20, z);
-      scene.add(body);
-
-      // Flame (sprite)
-      const flameMat = new THREE.SpriteMaterial({
-        map: flameTex, color: palette.candle,
-        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-      });
-      const flame = new THREE.Sprite(flameMat);
-      flame.scale.set(0.22, 0.32, 1);
-      flame.position.set(x, 0.42, z);
-      scene.add(flame);
-
-      // Point light at the flame
-      const light = new THREE.PointLight(palette.candle, 1.4, 4.0, 1.8);
-      light.position.set(x, 0.45, z);
-      scene.add(light);
-
-      candles.push({ body, flame, light, basePos:{x,y:0.45,z}, flickerPhase: Math.random()*Math.PI*2 });
-    }
-
-    // ── Smoke particle system rising from the water ──
+    // ── Smoke particles drifting across the painted chamber ──
+    const smokeTex = createSoftCircleTexture();
     smokeSystem = makeSmokeSystem(smokeTex, COUNT_SMOKE);
     scene.add(smokeSystem.points);
 
