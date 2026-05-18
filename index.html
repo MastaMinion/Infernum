@@ -4973,11 +4973,11 @@ window.WalkerScene = (function(){
   }
 
   function buildStatCards(){
-    const cardW = 0.78, cardH = 1.0;
+    const cardW = 0.86, cardH = 1.10;
     const cols = 3, rows = 2;
-    const xSpread = 0.95, ySpread = 1.15;
+    const xSpread = 1.05, ySpread = 1.28;
     const gridZ = 1.2;
-    const gridY = 1.7;
+    const gridY = 1.5;
     NAV_SECTIONS.forEach((section, i) => {
       const col = i % cols, row = Math.floor(i / cols);
       const c = document.createElement('canvas');
@@ -4997,14 +4997,14 @@ window.WalkerScene = (function(){
       mesh.userData.sectionId = section.id;
       scene.add(mesh);
 
-      // Underglow plane for hover / active lerp
+      // Underglow plane for hover / active lerp — gold to match the card aesthetic
       const glowC = document.createElement('canvas');
       glowC.width = 256; glowC.height = 256;
       const gctx = glowC.getContext('2d');
       const grad = gctx.createRadialGradient(128,128,20,128,128,128);
-      grad.addColorStop(0, 'rgba(192,132,252,0.85)');
-      grad.addColorStop(0.5, 'rgba(124,58,237,0.35)');
-      grad.addColorStop(1, 'rgba(124,58,237,0)');
+      grad.addColorStop(0, 'rgba(255,210,90,0.85)');
+      grad.addColorStop(0.5, 'rgba(251,191,36,0.35)');
+      grad.addColorStop(1, 'rgba(251,191,36,0)');
       gctx.fillStyle = grad; gctx.fillRect(0,0,256,256);
       const glowTex = new THREE.CanvasTexture(glowC);
       const glowMat = new THREE.MeshBasicMaterial({
