@@ -953,93 +953,93 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
 /* Talents */
 /* ─── TALENT TREE — Six Syllables of the Binding Word + locked 7th ─── */
+/* Layout: vertical stack of full-width branches. Each branch is a horizontal row
+   with a header on the left and its 6 nodes flowing left-to-right by tier
+   (Tier 1 → Tier 4 → Capstone). User scrolls down through all 7 branches. */
 .walker-talents{
-  display:grid;
-  /* 7 columns: six unlockable branches + the sealed "Unspoken" column at the end.
-     min(0) lets columns shrink, and overflow-x:auto lets the whole row scroll horizontally
-     when the viewport is too narrow (mobile / sub-720px). */
-  grid-template-columns:repeat(7, minmax(150px, 1fr));
-  gap:10px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
   margin-top:6px;
-  overflow-x:auto;
-  padding-bottom:8px;
-  scrollbar-width:thin;
 }
-.walker-talents::-webkit-scrollbar{height:6px}
-.walker-talents::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.4);border-radius:3px}
 .talent-branch{
+  display:grid;
+  grid-template-columns:160px 1fr;
+  gap:20px;
+  align-items:center;
   background:rgba(8,2,20,0.78);
   border:1px solid rgba(var(--branch-glow), 0.35);
-  border-radius:10px;
-  padding:12px 8px 14px;
+  border-radius:12px;
+  padding:16px 18px;
   position:relative;
-  min-width:0;
 }
 .talent-branch::before{
-  content:'';position:absolute;inset:0;border-radius:10px;
-  background:radial-gradient(circle at top, rgba(var(--branch-glow),0.10), transparent 60%);
+  content:'';position:absolute;inset:0;border-radius:12px;
+  background:radial-gradient(ellipse at left, rgba(var(--branch-glow),0.12), transparent 60%);
   pointer-events:none;
 }
-.talent-branch-header{text-align:center;margin-bottom:14px;position:relative}
+.talent-branch-header{text-align:center;position:relative;padding:0 4px}
 .talent-branch-syllable{
-  font-family:var(--serif);font-size:.42rem;letter-spacing:.3em;
-  color:rgba(var(--branch-glow),0.65);text-transform:lowercase;margin-bottom:4px;
+  font-family:var(--serif);font-size:.46rem;letter-spacing:.32em;
+  color:rgba(var(--branch-glow),0.7);text-transform:lowercase;margin-bottom:6px;
 }
 .talent-branch-icon{
-  font-size:22px;color:var(--branch-color);margin-bottom:4px;line-height:1;
-  text-shadow:0 0 12px rgba(var(--branch-glow),0.55);
+  font-size:30px;color:var(--branch-color);margin-bottom:6px;line-height:1;
+  text-shadow:0 0 16px rgba(var(--branch-glow),0.6);
 }
 .talent-branch-name{
-  font-family:var(--serif);font-size:.6rem;letter-spacing:.2em;
-  color:var(--branch-color);text-transform:uppercase;margin-bottom:5px;
+  font-family:var(--serif);font-size:.7rem;letter-spacing:.22em;
+  color:var(--branch-color);text-transform:uppercase;margin-bottom:7px;
 }
 .talent-branch-desc{
-  font-size:.42rem;color:var(--muted);font-style:italic;line-height:1.4;padding:0 2px;
+  font-size:.5rem;color:var(--muted);font-style:italic;line-height:1.45;
 }
+
+/* Nodes flow left-to-right: 4 columns (Tier 1, Tier 2, Keystone, Capstone) × 2 rows for the paired Tier 1/2 nodes.
+   Tier 3 and Tier 4 each span both rows (centered vertically). */
 .talent-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  grid-template-rows:auto auto auto auto;
-  gap:16px 6px;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  grid-template-rows:1fr 1fr;
+  gap:10px 26px;
   position:relative;
 }
 .talent-node{
   background:rgba(6,0,14,0.72);
   border:1px solid rgba(var(--branch-glow),0.28);
   border-radius:7px;
-  padding:7px 4px 6px;
+  padding:8px 6px 7px;
   cursor:pointer;
   text-align:center;
   transition:all .22s ease;
   position:relative;
   min-width:0;
 }
-.talent-node.col-0{grid-column:1}
-.talent-node.col-1{grid-column:2}
-.talent-node.col-mid{grid-column:1 / span 2}
-.talent-node.tier-1{grid-row:1}
-.talent-node.tier-2{grid-row:2}
-.talent-node.tier-3{grid-row:3}
-.talent-node.tier-4{grid-row:4}
-/* Connector lines drawn as ::before/::after going up to parent tier */
-.talent-node.tier-2::before, .talent-node.tier-4::before{
-  content:'';position:absolute;top:-14px;left:50%;
-  width:2px;height:14px;
-  background:rgba(var(--branch-glow),0.35);
-  transform:translateX(-50%);
+/* tier maps to column index, col-0/col-1 (legacy data field) maps to row index */
+.talent-node.tier-1.col-0{grid-column:1;grid-row:1}
+.talent-node.tier-1.col-1{grid-column:1;grid-row:2}
+.talent-node.tier-2.col-0{grid-column:2;grid-row:1}
+.talent-node.tier-2.col-1{grid-column:2;grid-row:2}
+.talent-node.tier-3{grid-column:3;grid-row:1 / span 2}
+.talent-node.tier-4{grid-column:4;grid-row:1 / span 2}
+
+/* Connector lines flowing left-to-right between tiers */
+.talent-node.tier-2::before{
+  content:'';position:absolute;top:50%;left:-22px;
+  width:22px;height:2px;background:rgba(var(--branch-glow),0.35);
+  transform:translateY(-50%);
 }
-.talent-node.tier-3::before{
-  content:'';position:absolute;top:-14px;left:25%;
-  width:2px;height:14px;
-  background:rgba(var(--branch-glow),0.35);
-  transform:translateX(-50%);
+.talent-node.tier-2::after{
+  content:'';position:absolute;top:50%;right:-22px;
+  width:22px;height:2px;background:rgba(var(--branch-glow),0.35);
+  transform:translateY(-50%);
 }
-.talent-node.tier-3::after{
-  content:'';position:absolute;top:-14px;right:25%;
-  width:2px;height:14px;
-  background:rgba(var(--branch-glow),0.35);
-  transform:translateX(50%);
+.talent-node.tier-3::before, .talent-node.tier-4::before{
+  content:'';position:absolute;top:50%;left:-22px;
+  width:22px;height:2px;background:rgba(var(--branch-glow),0.35);
+  transform:translateY(-50%);
 }
+
 .talent-node.locked{opacity:0.38;cursor:not-allowed;filter:saturate(0.4)}
 .talent-node.available{border-color:rgba(var(--branch-glow),0.55)}
 .talent-node.available:hover{
@@ -1057,21 +1057,22 @@ body{font-family:var(--body);color:var(--text);position:relative}
   text-shadow:0 0 12px rgba(251,191,36,0.78);
 }
 .talent-node-icon{
-  font-size:16px;color:var(--branch-color);margin-bottom:2px;
+  font-size:18px;color:var(--branch-color);margin-bottom:3px;
   line-height:1;text-shadow:0 0 8px rgba(var(--branch-glow),0.4);
 }
 .talent-node-name{
-  font-family:var(--serif);font-size:.42rem;letter-spacing:.08em;
-  color:var(--text);text-transform:uppercase;margin-bottom:2px;line-height:1.15;
+  font-family:var(--serif);font-size:.46rem;letter-spacing:.08em;
+  color:var(--text);text-transform:uppercase;margin-bottom:3px;line-height:1.15;
 }
 .talent-node-desc{
-  font-size:.38rem;color:var(--muted);line-height:1.32;font-style:italic;
+  font-size:.4rem;color:var(--muted);line-height:1.35;font-style:italic;
 }
 .talent-node-check{
-  position:absolute;top:2px;right:4px;
-  font-size:10px;color:var(--gold);font-weight:bold;
+  position:absolute;top:3px;right:5px;
+  font-size:11px;color:var(--gold);font-weight:bold;
 }
-/* The Unspoken — locked seventh column */
+
+/* The Unspoken — locked seventh branch, same row format */
 .talent-branch-locked{
   background:rgba(10,8,18,0.86);
   border-color:rgba(120,120,120,0.4);
@@ -1079,30 +1080,41 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 .talent-branch-locked .talent-branch-icon,
 .talent-branch-locked .talent-branch-name,
-.talent-branch-locked .talent-branch-syllable{opacity:0.55}
+.talent-branch-locked .talent-branch-syllable{opacity:0.6}
 .talent-locked-seal{
-  text-align:center;padding:30px 4px;
-  border:1px dashed rgba(180,180,180,0.3);
+  text-align:center;padding:24px 20px;
+  border:1px dashed rgba(180,180,180,0.28);
   border-radius:8px;background:rgba(0,0,0,0.4);
-  margin-top:8px;
+  display:flex;align-items:center;justify-content:center;gap:18px;
 }
 .talent-locked-glyph{
-  font-size:32px;color:rgba(200,200,210,0.65);
-  text-shadow:0 0 14px rgba(180,180,200,0.35);
-  margin-bottom:8px;line-height:1;
+  font-size:36px;color:rgba(200,200,210,0.65);
+  text-shadow:0 0 14px rgba(180,180,200,0.35);line-height:1;
 }
+.talent-locked-text{text-align:left}
 .talent-locked-label{
-  font-family:var(--serif);font-size:.52rem;letter-spacing:.28em;
-  color:rgba(220,220,230,0.8);text-transform:uppercase;margin-bottom:4px;
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.28em;
+  color:rgba(220,220,230,0.8);text-transform:uppercase;margin-bottom:5px;
 }
 .talent-locked-sub{
-  font-size:.4rem;color:var(--muted);font-style:italic;letter-spacing:.18em;
+  font-size:.46rem;color:var(--muted);font-style:italic;letter-spacing:.18em;
 }
 .tt-points-pill{
   display:inline-block;font-size:.5rem;padding:5px 12px;
   background:rgba(251,191,36,.08);border:0.5px solid rgba(251,191,36,.2);
   color:var(--gold);border-radius:4px;letter-spacing:.18em;
   font-family:var(--serif);text-transform:uppercase;
+}
+
+/* Narrow viewports — header drops above nodes instead of left-of */
+@media (max-width: 640px){
+  .talent-branch{grid-template-columns:1fr;gap:12px}
+  .talent-branch-header{text-align:center}
+  .talent-grid{gap:8px 18px}
+  .talent-node.tier-2::before,
+  .talent-node.tier-2::after,
+  .talent-node.tier-3::before,
+  .talent-node.tier-4::before{display:none}
 }
 
 /* Soul Bonds */
@@ -4031,8 +4043,10 @@ function renderWalkerTalents(){
           </div>
           <div class="talent-locked-seal">
             <div class="talent-locked-glyph">🜸</div>
-            <div class="talent-locked-label">Sealed</div>
-            <div class="talent-locked-sub">Season 2</div>
+            <div class="talent-locked-text">
+              <div class="talent-locked-label">Sealed</div>
+              <div class="talent-locked-sub">Season 2 — The Descent</div>
+            </div>
           </div>
         </div>`;
     }
