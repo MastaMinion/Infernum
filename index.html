@@ -930,26 +930,169 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 
 /* Gear slots */
-.walker-gear-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+/* ─── GEAR SYSTEM ─── */
+/* Equipped slot row — 6 small cards across the top of the gear panel */
+.walker-gear-equipped{
+  display:grid;grid-template-columns:repeat(6, minmax(0,1fr));gap:8px;
+  margin:14px 0 18px;
 }
-.gear-slot{
-  background:rgba(6,0,14,.65);border:0.5px solid var(--border);
-  border-radius:7px;padding:10px 8px;text-align:center;
-  cursor:pointer;transition:all .2s;position:relative;
-  aspect-ratio:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
+.gear-eqslot{
+  position:relative;background:rgba(6,0,14,0.7);
+  border:1px solid var(--border);border-radius:8px;
+  padding:10px 6px 8px;text-align:center;cursor:pointer;
+  transition:all .2s ease;min-width:0;
 }
-.gear-slot:hover{border-color:rgba(192,132,252,.4);background:rgba(124,58,237,.06)}
-.gear-slot-icon{font-size:1.5rem;opacity:.6;margin-bottom:5px}
-.gear-slot-label{
-  font-family:var(--serif);font-size:.5rem;color:var(--muted);
-  letter-spacing:.18em;text-transform:uppercase;
+.gear-eqslot:hover{border-color:rgba(192,132,252,0.4);transform:translateY(-1px)}
+.gear-eqslot.empty{opacity:0.6}
+.gear-eqslot.filled{
+  border:1px solid rgba(var(--rar-glow),0.7);
+  background:linear-gradient(180deg, rgba(var(--rar-glow),0.08), rgba(6,0,14,0.85));
+  box-shadow:0 0 10px rgba(var(--rar-glow),0.25);
+  opacity:1;
 }
-.gear-slot.empty{opacity:.55}
-.gear-slot.filled{border-color:rgba(192,132,252,.35);background:rgba(124,58,237,.08)}
-.gear-slot.filled .gear-slot-icon{opacity:.95;color:var(--purple)}
-.gear-slot.filled .gear-slot-label{color:var(--text)}
+.gear-eqslot-rar{
+  font-family:var(--serif);font-size:.4rem;letter-spacing:.22em;
+  color:var(--rar-color);text-transform:uppercase;margin-bottom:3px;
+}
+.gear-eqslot-icon{font-size:22px;line-height:1;margin-bottom:4px;color:var(--text);opacity:0.85}
+.gear-eqslot.filled .gear-eqslot-icon{color:var(--rar-color);text-shadow:0 0 10px rgba(var(--rar-glow),0.55)}
+.gear-eqslot-label{
+  font-family:var(--serif);font-size:.46rem;letter-spacing:.16em;
+  color:var(--muted);text-transform:uppercase;
+}
+.gear-eqslot-empty{
+  font-size:.42rem;color:var(--muted);font-style:italic;margin-top:3px;
+}
+.gear-eqslot-primary{
+  font-size:.42rem;color:var(--gold);font-weight:600;margin-top:4px;
+  letter-spacing:.04em;
+}
+
+/* Filter pill row */
+.walker-gear-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-bottom:10px;flex-wrap:wrap;
+}
+.walker-gear-filters{display:flex;gap:5px;flex-wrap:wrap}
+.gear-filter-pill{
+  font-family:var(--serif);font-size:.48rem;letter-spacing:.18em;
+  padding:5px 10px;border-radius:5px;cursor:pointer;
+  background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);
+  color:var(--muted);text-transform:uppercase;transition:all .15s ease;
+}
+.gear-filter-pill:hover{background:rgba(124,58,237,0.15);color:var(--text)}
+.gear-filter-pill.active{
+  background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.6);
+  color:var(--gold);
+}
+.walker-gear-count{
+  font-size:.48rem;color:var(--muted);font-style:italic;letter-spacing:.1em;
+}
+
+/* Inventory grid */
+.walker-gear-inventory{
+  display:grid;grid-template-columns:repeat(auto-fill, minmax(180px,1fr));gap:10px;
+}
+.gear-inv-empty{
+  grid-column:1/-1;text-align:center;padding:40px 20px;
+  font-size:.55rem;color:var(--muted);font-style:italic;
+  border:1px dashed var(--border);border-radius:8px;line-height:1.6;
+}
+.gear-card{
+  background:rgba(6,0,14,0.78);
+  border:1px solid rgba(var(--rar-glow),0.5);
+  border-radius:9px;padding:10px 10px 8px;
+  position:relative;transition:all .2s ease;
+}
+.gear-card::before{
+  content:'';position:absolute;inset:0;border-radius:9px;
+  background:radial-gradient(circle at top, rgba(var(--rar-glow),0.10), transparent 70%);
+  pointer-events:none;
+}
+.gear-card:hover{
+  border-color:rgba(var(--rar-glow),0.85);
+  box-shadow:0 0 14px rgba(var(--rar-glow),0.4);
+  transform:translateY(-1px);
+}
+.gear-card.equipped{
+  border-color:rgba(251,191,36,0.85);
+  box-shadow:0 0 12px rgba(251,191,36,0.35);
+}
+.gear-card.equipped::after{
+  content:'EQUIPPED';position:absolute;top:6px;right:6px;
+  font-family:var(--serif);font-size:.36rem;letter-spacing:.2em;
+  color:var(--gold);
+}
+.gear-card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:7px;position:relative;
+}
+.gear-card-rarity{
+  font-family:var(--serif);font-size:.42rem;letter-spacing:.22em;
+  color:var(--rar-color);text-transform:uppercase;
+}
+.gear-card-slot{
+  font-size:.46rem;color:var(--muted);
+  font-family:var(--body);
+}
+.gear-card-primary{
+  display:flex;align-items:baseline;gap:6px;margin-bottom:8px;
+  padding:6px 8px;border-radius:6px;
+  background:rgba(var(--rar-glow),0.10);
+  border-left:2px solid var(--rar-color);
+}
+.gear-card-primary-val{
+  font-family:var(--serif);font-size:1.05rem;color:var(--rar-color);
+  font-weight:600;line-height:1;
+  text-shadow:0 0 10px rgba(var(--rar-glow),0.5);
+}
+.gear-card-primary-stat{
+  font-family:var(--serif);font-size:.5rem;letter-spacing:.18em;
+  color:var(--text);text-transform:uppercase;
+}
+.gear-card-subs{
+  display:flex;flex-direction:column;gap:3px;margin-bottom:9px;
+  padding:0 2px;
+}
+.gear-sub{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:.46rem;color:var(--muted);
+  padding:2px 0;
+  border-bottom:0.5px solid rgba(255,255,255,0.04);
+}
+.gear-sub:last-child{border-bottom:0}
+.gear-sub-val{color:var(--text);font-weight:600}
+.gear-sub-none{
+  font-size:.44rem;color:var(--muted);font-style:italic;text-align:center;
+  padding:4px 0;
+}
+.gear-card-actions{display:flex;gap:5px}
+.gear-btn{
+  flex:1;font-family:var(--serif);font-size:.46rem;letter-spacing:.18em;
+  padding:6px 8px;border-radius:5px;cursor:pointer;
+  background:rgba(124,58,237,0.1);border:1px solid var(--border);
+  color:var(--text);text-transform:uppercase;transition:all .15s ease;
+}
+.gear-btn:hover{background:rgba(124,58,237,0.2);border-color:rgba(192,132,252,0.5)}
+.gear-btn-equip{
+  background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.4);color:var(--gold);
+}
+.gear-btn-equip:hover{background:rgba(251,191,36,0.18);border-color:rgba(251,191,36,0.7)}
+.gear-btn-unequip{
+  background:rgba(192,132,252,0.08);border-color:rgba(192,132,252,0.4);color:var(--purple);
+}
+.gear-btn-discard{
+  flex:0 0 32px;padding:6px 0;
+  background:rgba(244,63,94,0.05);border-color:rgba(244,63,94,0.25);color:rgba(244,63,94,0.7);
+  font-size:.6rem;letter-spacing:0;
+}
+.gear-btn-discard:hover{background:rgba(244,63,94,0.18);border-color:rgba(244,63,94,0.6);color:rgba(244,63,94,1)}
+
+/* Narrow viewport: 3-up equipped row instead of 6-up */
+@media (max-width: 640px){
+  .walker-gear-equipped{grid-template-columns:repeat(3, minmax(0,1fr))}
+  .walker-gear-inventory{grid-template-columns:repeat(auto-fill, minmax(150px,1fr))}
+}
 
 /* Talents */
 /* ─── TALENT TREE — Six Syllables of the Binding Word + locked 7th ─── */
@@ -2063,10 +2206,17 @@ body{font-family:var(--body);color:var(--text);position:relative}
         <!-- GEAR -->
         <section class="walker-panel" data-tab-panel="gear">
           <div class="walker-section-title">Equipment <span id="gear-fill-count" style="color:var(--purple);font-style:italic">— 0/6 forged</span></div>
-          <div class="walker-gear-grid" id="walker-gear-grid"></div>
           <p class="walker-panel-prose">
-            Forged equipment drops from realm conquests. Each piece carries its own bound stat.
+            Forged equipment drops from realm conquests. Each piece carries a primary stat plus substats. Perfect rolls take many drops.
           </p>
+          <!-- Equipped slots: 6 across, click an inventory item below to equip into its slot -->
+          <div class="walker-gear-equipped" id="walker-gear-equipped"></div>
+          <!-- Inventory: scrollable grid of all owned pieces. Filter by slot via the filter strip. -->
+          <div class="walker-gear-toolbar">
+            <div class="walker-gear-filters" id="walker-gear-filters"></div>
+            <div class="walker-gear-count" id="walker-gear-count"></div>
+          </div>
+          <div class="walker-gear-inventory" id="walker-gear-inventory"></div>
         </section>
 
         <!-- TALENTS -->
@@ -2184,6 +2334,9 @@ body{font-family:var(--body);color:var(--text);position:relative}
         <button class="test-btn" data-cheat="soul">+50 Soul</button>
         <button class="test-btn" data-cheat="dups">+1 Each Duplicate</button>
         <button class="test-btn" data-cheat="seedall">Seed Full Codex</button>
+        <button class="test-btn" data-cheat="gear">+1 Gear Drop</button>
+        <button class="test-btn" data-cheat="gear10">+10 Gear Drops</button>
+        <button class="test-btn" data-cheat="gearleg">+1 Legendary+</button>
         <button class="test-btn danger" data-cheat="wipe">Wipe Vessel</button>
       </div>
     </div>
@@ -2320,6 +2473,7 @@ let S={
     cosmetics:{robe:'robe:novice',hood:'hood:none',aura:'aura:pale',pool:'pool:void'},
     ownedCosmetics:['robe:novice','hood:none','aura:pale','pool:void'],
     equipped:{crown:null,pendant:null,robe:null,gloves:null,sash:null,tome:null},
+    inventory:[], // gear items: {id, slot, rarity, primary:{stat,value}, subs:[{stat,value}], obtained}
     talents:{points:0, ranks:{binder:0,warden:0,voidtouched:0,ascendant:0}},
     bonds:[null,null,null],
     pacts:{},
@@ -2354,6 +2508,9 @@ const WALKER_STATS=[
   {id:'focus', label:'FOCUS', desc:'Crit chance bonus'},
   {id:'will',  label:'WILL',  desc:'Status resistance'},
 ];
+// ─── GEAR SYSTEM ───
+// Equipment slots — each slot accepts a piece of that type. Slot type is fixed; primary stat
+// rolls randomly per drop (per design: "any slot can roll any stat — affinities float").
 const WALKER_GEAR=[
   {id:'crown',  label:'Crown',  icon:'♕'},
   {id:'pendant',label:'Pendant',icon:'❖'},
@@ -2362,6 +2519,130 @@ const WALKER_GEAR=[
   {id:'sash',   label:'Sash',   icon:'∽'},
   {id:'tome',   label:'Tome',   icon:'❡'},
 ];
+
+// Walker stats are defined above (WALKER_STATS). Each piece of gear has one primary stat
+// (random per drop) and some number of substats determined by rarity.
+
+// Rarity tiers — substat count and primary roll multiplier scale with rarity.
+// "Perfect rolls take a lot of drops" — Legendary+ rolls all 4-5 substats at the top of the range.
+const GEAR_RARITIES=[
+  {id:'common',    label:'Common',    color:'#888780', glow:'136,135,128', substats:0, weight:55},
+  {id:'uncommon',  label:'Uncommon',  color:'#14b8a6', glow:'20,184,166',  substats:1, weight:25},
+  {id:'rare',      label:'Rare',      color:'#60a5fa', glow:'96,165,250',  substats:2, weight:12},
+  {id:'epic',      label:'Epic',      color:'#c084fc', glow:'192,132,252', substats:3, weight:5},
+  {id:'legendary', label:'Legendary', color:'#f43f5e', glow:'244,63,94',   substats:4, weight:2.5},
+  {id:'mythic',    label:'Mythic',    color:'#fbbf24', glow:'251,191,36',  substats:5, weight:0.5},
+];
+
+// Roll-range tables — primary and substat values (in percent) per rarity.
+// Range width gates "perfect rolls" — a Mythic with primary at 36% and all 5 substats at 14% is
+// the platonic ideal. Each substat is independent so reaching that takes many drops.
+const STAT_ROLL_RANGES={
+  common:    { primary:[3, 6],   sub:[1, 3] },
+  uncommon:  { primary:[5, 10],  sub:[2, 5] },
+  rare:      { primary:[8, 14],  sub:[3, 7] },
+  epic:      { primary:[12, 20], sub:[4, 9] },
+  legendary: { primary:[18, 28], sub:[5, 12] },
+  mythic:    { primary:[26, 38], sub:[7, 16] },
+};
+
+function _rngInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function _rngPick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function _rngWeighted(items){
+  // items: [{...,weight:n}] — returns one weighted by .weight
+  const total = items.reduce((a,x)=>a+x.weight, 0);
+  let roll = Math.random()*total;
+  for(const it of items){ roll -= it.weight; if(roll<=0) return it; }
+  return items[items.length-1];
+}
+
+// Roll a fresh piece of gear. Returns the item object (does not add to inventory).
+// rarityBias: optional weight override array of {id, weight} pairs to alter drop chances per source.
+function rollGear(opts){
+  opts = opts || {};
+  const slot = opts.slot || _rngPick(WALKER_GEAR).id;
+  const rarityPool = opts.rarityBias || GEAR_RARITIES;
+  const rarity = _rngWeighted(rarityPool);
+  const range = STAT_ROLL_RANGES[rarity.id];
+  // Primary stat — random pick from all stats
+  const primaryStatDef = _rngPick(WALKER_STATS);
+  const primaryValue = _rngInt(range.primary[0], range.primary[1]);
+  // Substats — distinct stats, none matching primary
+  const available = WALKER_STATS.filter(s => s.id !== primaryStatDef.id).slice();
+  const subs = [];
+  for(let i=0;i<rarity.substats && available.length;i++){
+    const idx = Math.floor(Math.random()*available.length);
+    const statDef = available.splice(idx,1)[0];
+    subs.push({ stat: statDef.id, value: _rngInt(range.sub[0], range.sub[1]) });
+  }
+  // Unique id
+  const id = 'g_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7);
+  return {
+    id, slot, rarity: rarity.id,
+    primary: { stat: primaryStatDef.id, value: primaryValue },
+    subs,
+    obtained: Date.now(),
+  };
+}
+
+// Grant a drop into the inventory and return the new item (or null if rejected).
+function grantGearDrop(opts){
+  if(!S.walker.inventory) S.walker.inventory = [];
+  const item = rollGear(opts);
+  S.walker.inventory.push(item);
+  walkerLog?.(`Acquired ${GEAR_RARITIES.find(r=>r.id===item.rarity).label} ${WALKER_GEAR.find(g=>g.id===item.slot).label} — +${item.primary.value}% ${item.primary.stat}.`);
+  save();
+  return item;
+}
+
+function gearById(id){
+  return (S.walker.inventory||[]).find(it => it.id === id) || null;
+}
+function equipGear(itemId){
+  const item = gearById(itemId);
+  if(!item) return false;
+  S.walker.equipped[item.slot] = itemId;
+  save();
+  return true;
+}
+function unequipSlot(slot){
+  if(S.walker.equipped[slot]){
+    S.walker.equipped[slot] = null;
+    save();
+    return true;
+  }
+  return false;
+}
+function discardGear(itemId){
+  const inv = S.walker.inventory || [];
+  const i = inv.findIndex(it => it.id === itemId);
+  if(i < 0) return false;
+  // Unequip if equipped
+  for(const slot of Object.keys(S.walker.equipped||{})){
+    if(S.walker.equipped[slot] === itemId) S.walker.equipped[slot] = null;
+  }
+  inv.splice(i, 1);
+  save();
+  return true;
+}
+// Aggregate total bonus % to a stat from all equipped gear (primary + substats sum).
+function walkerGearBonus(statId){
+  let total = 0;
+  const eq = S.walker.equipped || {};
+  for(const slot of Object.keys(eq)){
+    const id = eq[slot]; if(!id) continue;
+    const item = gearById(id); if(!item) continue;
+    if(item.primary.stat === statId) total += item.primary.value;
+    for(const s of (item.subs||[])){ if(s.stat === statId) total += s.value; }
+  }
+  return total;
+}
+function gearRarityDef(id){ return GEAR_RARITIES.find(r => r.id === id) || GEAR_RARITIES[0]; }
+function statDef(id){ return WALKER_STATS.find(s => s.id === id) || WALKER_STATS[0]; }
+function gearItemTotal(item){
+  // Total stat % across primary + substats — used for sorting / "score"
+  return (item.primary?.value||0) + (item.subs||[]).reduce((a,s)=>a+(s.value||0),0);
+}
 // Walker talent tree — Six Syllables of the Binding Word.
 // Per GDD lore: the binding word has seven syllables; the seventh is never spoken.
 // Six unlockable branches + one locked "Unspoken" column reserved for Season 2.
@@ -3296,6 +3577,18 @@ window.INF=(function(){
     if(S.echoesAccum.void==null)S.echoesAccum.void=0;
     if(S.echoesAccum.rift==null)S.echoesAccum.rift=0;
     if(S.echoesAccum.soul==null)S.echoesAccum.soul=0;
+    // Walker gear migration — inventory + equipped slot cleanup
+    if(S.walker){
+      if(!Array.isArray(S.walker.inventory)) S.walker.inventory = [];
+      if(!S.walker.equipped) S.walker.equipped = {crown:null,pendant:null,robe:null,gloves:null,sash:null,tome:null};
+      // Strip equipped item-ids that no longer exist in inventory (orphaned references).
+      const invIds = new Set(S.walker.inventory.map(it => it.id));
+      for(const slot of Object.keys(S.walker.equipped)){
+        const id = S.walker.equipped[slot];
+        // Truthy non-string legacy "filled" markers get cleared too.
+        if(id && (typeof id !== 'string' || !invIds.has(id))) S.walker.equipped[slot] = null;
+      }
+    }
     let changed=false;const now=Date.now();
     for(const k of Object.keys(S.collection)){
       const v=S.collection[k];
@@ -3884,6 +4177,22 @@ window.INF=(function(){
         S.collection[d.name]={count:3,seals:1,unchainTier:'none',acquiredAt:now};
       }
     }
+    else if(kind==='gear'){
+      if(typeof grantGearDrop === 'function') grantGearDrop();
+    }
+    else if(kind==='gear10'){
+      if(typeof grantGearDrop === 'function'){ for(let i=0;i<10;i++) grantGearDrop(); }
+    }
+    else if(kind==='gearleg'){
+      // Bias toward Legendary+ for quick perfect-roll testing
+      if(typeof grantGearDrop === 'function'){
+        const biased = [
+          {id:'legendary', weight:60},
+          {id:'mythic', weight:40},
+        ].map(b => Object.assign({}, GEAR_RARITIES.find(r => r.id === b.id), {weight: b.weight}));
+        grantGearDrop({ rarityBias: biased });
+      }
+    }
     else if(kind==='wipe'){
       if(!confirm('Wipe all bound demons and echoes from this vessel?'))return;
       for(const k of Object.keys(S.collection))delete S.collection[k];
@@ -3894,6 +4203,7 @@ window.INF=(function(){
     if(typeof renderCodex==='function')renderCodex();
     renderEchoes();
     if(typeof updateUI==='function')updateUI();
+    if(typeof renderWalker==='function')renderWalker();
     if(openName)renderDetail();
   }
 
@@ -3950,7 +4260,7 @@ window.INF=(function(){
 function walkerXpMax(){ return 100 + 60 * S.walker.level * S.walker.level; }
 
 function walkerStatValue(statId){
-  // base 1.00x + 0.05x per Walker level + 0.10x per relevant talent rank + gear/pact contributions later
+  // base 1.00x + 0.05x per Walker level + talent ranks + equipped gear primary/substats
   const lvl=S.walker.level;
   let mult = 1.00 + (lvl-1)*0.05;
   const tr = S.walker.talents.ranks;
@@ -3958,6 +4268,8 @@ function walkerStatValue(statId){
   if(statId==='ward'  || statId==='vigor') mult += (tr.warden||0)*0.04;
   if(statId==='tempo' || statId==='focus') mult += (tr.voidtouched||0)*0.04;
   if(statId==='power' || statId==='focus') mult += (tr.ascendant||0)*0.05;
+  // Gear contribution — primary + substats summed across all equipped pieces, as a % bonus
+  if(typeof walkerGearBonus === 'function') mult += walkerGearBonus(statId) / 100;
   return mult;
 }
 
@@ -4003,20 +4315,103 @@ function renderWalkerStats(){
   }).join('');
 }
 
+// Inventory filter state — which slot type is being shown (or 'all')
+let gearFilter = 'all';
+function setGearFilter(slot){ gearFilter = slot; renderWalkerGear(); }
+
 function renderWalkerGear(){
-  const root=document.getElementById('walker-gear-grid'); if(!root) return;
-  const eq=S.walker.equipped;
-  let filled=0;
-  root.innerHTML = WALKER_GEAR.map(g=>{
-    const has = !!eq[g.id];
-    if(has) filled++;
-    return `<div class="gear-slot ${has?'filled':'empty'}" onclick="openGearSlot('${g.id}')">
-      <span class="gear-slot-icon">${g.icon}</span>
-      <span class="gear-slot-label">${g.label}</span>
-    </div>`;
-  }).join('');
-  const fc=document.getElementById('gear-fill-count');
-  if(fc) fc.textContent='— '+filled+'/6 forged';
+  const eqRoot = document.getElementById('walker-gear-equipped');
+  const invRoot = document.getElementById('walker-gear-inventory');
+  const filtRoot = document.getElementById('walker-gear-filters');
+  const countEl = document.getElementById('walker-gear-count');
+  if(!eqRoot && !invRoot) return; // fallback to legacy grid if either missing — bail
+  const eq = S.walker.equipped || {};
+  const inv = S.walker.inventory || [];
+  let filled = 0;
+  // ── Equipped slots row ──
+  if(eqRoot){
+    eqRoot.innerHTML = WALKER_GEAR.map(g => {
+      const itemId = eq[g.id];
+      const item = itemId ? gearById(itemId) : null;
+      if(item) filled++;
+      if(!item){
+        return `<div class="gear-eqslot empty" onclick="setGearFilter('${g.id}')" title="${g.label} — empty">
+          <div class="gear-eqslot-icon">${g.icon}</div>
+          <div class="gear-eqslot-label">${g.label}</div>
+          <div class="gear-eqslot-empty">empty</div>
+        </div>`;
+      }
+      const rar = gearRarityDef(item.rarity);
+      const pStat = statDef(item.primary.stat);
+      return `<div class="gear-eqslot filled" style="--rar-glow:${rar.glow};--rar-color:${rar.color}" onclick="unequipSlot('${g.id}');renderWalker();" title="${rar.label} ${g.label} — click to unequip">
+        <div class="gear-eqslot-rar">${rar.label}</div>
+        <div class="gear-eqslot-icon">${g.icon}</div>
+        <div class="gear-eqslot-label">${g.label}</div>
+        <div class="gear-eqslot-primary">+${item.primary.value}% ${pStat.label}</div>
+      </div>`;
+    }).join('');
+  }
+  const fc = document.getElementById('gear-fill-count');
+  if(fc) fc.textContent = '— '+filled+'/6 forged';
+
+  // ── Filter strip ──
+  if(filtRoot){
+    const pills = [{id:'all', label:'All'}, ...WALKER_GEAR.map(g=>({id:g.id,label:g.label}))];
+    filtRoot.innerHTML = pills.map(p => `
+      <button class="gear-filter-pill ${gearFilter===p.id?'active':''}" onclick="setGearFilter('${p.id}')">${p.label}</button>
+    `).join('');
+  }
+
+  // ── Inventory grid ──
+  if(invRoot){
+    const filtered = gearFilter === 'all' ? inv : inv.filter(it => it.slot === gearFilter);
+    // Sort by rarity (rare first) then by total stat
+    const rarityRank = {mythic:6,legendary:5,epic:4,rare:3,uncommon:2,common:1};
+    filtered.sort((a,b) => {
+      const ra = rarityRank[a.rarity]||0, rb = rarityRank[b.rarity]||0;
+      if(rb !== ra) return rb - ra;
+      return gearItemTotal(b) - gearItemTotal(a);
+    });
+    if(countEl) countEl.textContent = `${filtered.length} item${filtered.length===1?'':'s'}`;
+    if(filtered.length === 0){
+      invRoot.innerHTML = `<div class="gear-inv-empty">No equipment ${gearFilter==='all'?'forged yet':'of this type'}. Equipment drops from realm conquests.</div>`;
+    } else {
+      invRoot.innerHTML = filtered.map(it => {
+        const rar = gearRarityDef(it.rarity);
+        const slot = WALKER_GEAR.find(g => g.id === it.slot);
+        const pStat = statDef(it.primary.stat);
+        const equipped = eq[it.slot] === it.id;
+        const subsHtml = (it.subs||[]).map(s => {
+          const sd = statDef(s.stat);
+          return `<div class="gear-sub"><span>${sd.label}</span><span class="gear-sub-val">+${s.value}%</span></div>`;
+        }).join('');
+        return `<div class="gear-card ${equipped?'equipped':''}" style="--rar-glow:${rar.glow};--rar-color:${rar.color}">
+          <div class="gear-card-head">
+            <span class="gear-card-rarity">${rar.label}</span>
+            <span class="gear-card-slot">${slot.icon} ${slot.label}</span>
+          </div>
+          <div class="gear-card-primary">
+            <span class="gear-card-primary-val">+${it.primary.value}%</span>
+            <span class="gear-card-primary-stat">${pStat.label}</span>
+          </div>
+          <div class="gear-card-subs">${subsHtml || '<div class="gear-sub-none">— no substats —</div>'}</div>
+          <div class="gear-card-actions">
+            ${equipped
+              ? `<button class="gear-btn gear-btn-unequip" onclick="unequipSlot('${it.slot}');renderWalker();">Unequip</button>`
+              : `<button class="gear-btn gear-btn-equip" onclick="equipGear('${it.id}');renderWalker();">Equip</button>`}
+            <button class="gear-btn gear-btn-discard" onclick="confirmDiscardGear('${it.id}')" title="Discard">✕</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+
+function confirmDiscardGear(id){
+  if(confirm('Discard this piece of equipment? This cannot be undone.')){
+    discardGear(id);
+    renderWalker();
+  }
 }
 
 function renderWalkerTalents(){
