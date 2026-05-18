@@ -822,11 +822,54 @@ body{font-family:var(--body);color:var(--text);position:relative}
    The DOM nodes are kept so switchWalkerTab() (called from canvas clicks and other entry points) can still toggle
    .active classes without errors, and so WalkerScene.init() can read the initial .walker-tab.active dataset.
    The Identity Editor and Aesthetic Shop modals are still accessible via openIdentityEditor() / openAestheticShop()
-   from elsewhere in the app (their buttons inside .walker-hero are hidden along with the rest of the hero). */
+   from elsewhere in the app (their buttons inside .walker-hero are hidden along with the rest of the hero).
+   When a 3D nav card is clicked, openWalkerPage() adds .walker-page-open to #screen-riftwalk and the
+   matching .walker-panel becomes a full-screen page (rules further down override these hide rules). */
 .walker-hero,
 .walker-tabs,
 .walker-panel,
 .walker-panel.active{display:none !important}
+
+/* ─── PAGE OVERLAY — opened when a 3D nav card is clicked ─── */
+#screen-riftwalk.walker-page-open .walker-inner{
+  display:block !important;
+  position:fixed;inset:0;z-index:40;
+  max-width:none;
+  padding:64px 24px 100px;
+  background:
+    radial-gradient(ellipse at top, rgba(20,8,45,0.94), transparent 60%),
+    rgba(6,0,14,0.97);
+  overflow-y:auto;
+  animation:walkerPageIn .28s ease-out;
+}
+#screen-riftwalk.walker-page-open .walker-panel.active{
+  display:block !important;
+  max-width:720px;margin:0 auto;
+  animation:fadeUp .3s ease-out;
+}
+.walker-page-back{
+  display:none;
+  position:fixed;top:18px;left:18px;z-index:41;
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.22em;
+  color:rgba(251,191,36,0.85);text-transform:uppercase;cursor:pointer;
+  padding:10px 18px;border-radius:8px;
+  background:rgba(8,2,20,0.88);
+  border:1px solid rgba(251,191,36,0.5);
+  transition:all .2s ease;
+}
+.walker-page-back:hover{
+  background:rgba(20,10,38,0.94);
+  border-color:rgba(251,191,36,0.95);
+  box-shadow:0 0 18px rgba(251,191,36,0.45);
+  color:rgba(255,225,150,1);
+}
+#screen-riftwalk.walker-page-open .walker-page-back{display:block;}
+/* Hide the floating Identity / Aesthetics rail while a page is open */
+#screen-riftwalk.walker-page-open .wfab-rail{display:none !important;}
+@keyframes walkerPageIn{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
 
 .walker-tabs-original-styles-kept-for-reference{
   display:flex;gap:2px;margin-bottom:18px;overflow-x:auto;
@@ -1823,6 +1866,9 @@ body{font-family:var(--body);color:var(--text);position:relative}
     <!-- THE WALKER — Personal Chamber -->
     <div id="screen-riftwalk" class="screen">
       <canvas id="walker-3d-canvas"></canvas>
+
+      <!-- Back button shown only when a page overlay is open -->
+      <button class="walker-page-back" onclick="closeWalkerPage()">← back</button>
 
       <!-- Walker floating action rail — neutral class names, CSS background-images, no img/aria-label
            hooks that ad-blockers tend to match against. -->
@@ -3780,6 +3826,19 @@ function switchWalkerTab(tab, btnEl){
   if(window.WalkerScene && window.WalkerScene.setActiveNav) window.WalkerScene.setActiveNav(tab);
 }
 
+// ─── Walker page overlay ───
+// Click on a 3D nav card opens the matching .walker-panel as a full-screen page.
+// The cards / 3D canvas stay in the DOM behind the overlay (z-index:40 < canvas which is at z-index:0 fixed,
+// but the overlay's solid bg covers them). closeWalkerPage() just drops the class to return to cards.
+function openWalkerPage(sectionId){
+  switchWalkerTab(sectionId, null);
+  if(typeof renderWalker === 'function') renderWalker();
+  document.getElementById('screen-riftwalk').classList.add('walker-page-open');
+}
+function closeWalkerPage(){
+  document.getElementById('screen-riftwalk').classList.remove('walker-page-open');
+}
+
 // Talent investment
 function investTalent(id){
   if(S.walker.talents.points<=0){
@@ -5127,8 +5186,10 @@ window.WalkerScene = (function(){
     const hits = raycaster.intersectObjects(meshes, false);
     if (hits.length){
       const sectionId = hits[0].object.userData.sectionId;
-      if (typeof switchWalkerTab === 'function') switchWalkerTab(sectionId, null);
       setActiveNav(sectionId);
+      // Open the section as a full-screen page
+      if (typeof openWalkerPage === 'function') openWalkerPage(sectionId);
+      else if (typeof switchWalkerTab === 'function') switchWalkerTab(sectionId, null);
     }
   }
 
