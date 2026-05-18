@@ -762,7 +762,17 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 
 /* ─── TABS ─── */
-.walker-tabs{
+/* Walker HTML overlay is fully hidden — the 3D nav cards in WalkerScene are the entire Walker screen.
+   The DOM nodes are kept so switchWalkerTab() (called from canvas clicks and other entry points) can still toggle
+   .active classes without errors, and so WalkerScene.init() can read the initial .walker-tab.active dataset.
+   The Identity Editor and Aesthetic Shop modals are still accessible via openIdentityEditor() / openAestheticShop()
+   from elsewhere in the app (their buttons inside .walker-hero are hidden along with the rest of the hero). */
+.walker-hero,
+.walker-tabs,
+.walker-panel,
+.walker-panel.active{display:none !important}
+
+.walker-tabs-original-styles-kept-for-reference{
   display:flex;gap:2px;margin-bottom:18px;overflow-x:auto;
   scrollbar-width:none;
 }
@@ -778,8 +788,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .walker-tab.active{color:var(--purple);border-bottom-color:var(--purple)}
 
 /* ─── PANELS ─── */
-.walker-panel{display:none;animation:fadeUp .3s ease-out}
-.walker-panel.active{display:block}
 @keyframes fadeUp{
   from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:translateY(0)}
