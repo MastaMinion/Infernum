@@ -1854,14 +1854,14 @@ body{font-family:var(--body);color:var(--text);position:relative}
       <!-- Floating action rail — image-driven buttons (keyed MJ assets in assets/ui/btn_*.png).
            Unicode glyph behind the <img> shows through if the image hasn't loaded / fails. -->
       <div class="walker-floating-actions">
-        <button class="walker-img-btn" onclick="openIdentityEditor()" aria-label="Identity">
+        <button class="walker-img-btn" onclick="openIdentityEditor()" title="Open Identity Editor">
           <div class="walker-img-btn-art">
             <span class="walker-img-btn-fallback">⚙</span>
             <img src="assets/ui/btn_identity.png" alt="" onerror="this.style.display='none'">
           </div>
           <div class="walker-img-btn-label">Identity</div>
         </button>
-        <button class="walker-img-btn walker-img-btn-aesthetic" onclick="openAestheticShop()" aria-label="Aesthetics">
+        <button class="walker-img-btn walker-img-btn-aesthetic" onclick="openAestheticShop()" title="Open Aesthetic Shop">
           <div class="walker-img-btn-art">
             <span class="walker-img-btn-fallback">✦</span>
             <img src="assets/ui/btn_aesthetics.png" alt="" onerror="this.style.display='none'">
