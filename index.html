@@ -4770,21 +4770,9 @@ window.WalkerScene = (function(){
       if (scene) scene.background = tex;
     });
 
-    // ── Avatar reflection: faint floating layer where the painted pool sits ──
-    avatarCanvas = document.createElement('canvas');
-    avatarCanvas.width = 512; avatarCanvas.height = 512;
-    avatarCtx = avatarCanvas.getContext('2d');
-    redrawAvatarTexture(currentGlyph);
-    avatarTexture = new THREE.CanvasTexture(avatarCanvas);
-    avatarTexture.encoding = THREE.sRGBEncoding;
-    const avatarGeo = new THREE.PlaneGeometry(2.4, 2.4);
-    const avatarMat = new THREE.MeshBasicMaterial({
-      map: avatarTexture, transparent: true, opacity: 0.42, depthWrite: false,
-      blending: THREE.AdditiveBlending, fog: false,
-    });
-    avatarMesh = new THREE.Mesh(avatarGeo, avatarMat);
-    avatarMesh.position.set(0, 0.2, -2);
-    scene.add(avatarMesh);
+    // ── Avatar reflection plane removed per design — the painted chamber's pool stays empty.
+    //    avatarMesh / avatarCanvas / avatarCtx left as null/undefined; applyAvatarGlyph()
+    //    and the animate-loop sway are both guarded by `if (avatarMesh)` / `if (avatarCtx)`.
 
     // ── Smoke particles drifting across the painted chamber ──
     const smokeTex = createSoftCircleTexture();
@@ -4973,9 +4961,9 @@ window.WalkerScene = (function(){
   }
 
   function buildStatCards(){
-    const cardW = 0.86, cardH = 1.10;
+    const cardW = 0.80, cardH = 1.02;
     const cols = 3, rows = 2;
-    const xSpread = 1.05, ySpread = 1.28;
+    const xSpread = 1.00, ySpread = 1.22;
     const gridZ = 1.2;
     const gridY = 1.5;
     NAV_SECTIONS.forEach((section, i) => {
