@@ -742,6 +742,89 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .walker-actions{
   display:flex;gap:8px;justify-content:center;
 }
+/* Floating action rail for Walker screen — bottom-right, above the bottom nav.
+   Stays visible because it lives outside .walker-inner (which is fully hidden via .walker-hero / .walker-tabs / .walker-panel rules below). */
+.walker-floating-actions{
+  position:absolute;
+  right:18px;bottom:18px;
+  display:flex;flex-direction:column;gap:10px;
+  z-index:20;
+  pointer-events:auto;
+}
+/* Image-driven Walker action buttons — small vertical cards: keyed MJ asset on top, label below.
+   Mirrors the 3D nav-card visual register (dark rounded bg, purple border default, accent on hover).
+   The <img> falls back to display:none on error and the unicode glyph behind it shows through. */
+.walker-img-btn{
+  position:relative;
+  width:88px;height:108px;
+  padding:6px 6px 0;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  background:rgba(8,2,20,0.88);
+  border:1px solid rgba(124,58,237,0.45);
+  border-radius:10px;
+  cursor:pointer;
+  transition:all .22s ease;
+  overflow:hidden;
+  font-family:var(--serif);
+}
+.walker-img-btn::before{
+  /* Soft vignette inside */
+  content:"";position:absolute;inset:0;border-radius:10px;
+  background:radial-gradient(circle at center, rgba(124,58,237,0.10), transparent 70%);
+  pointer-events:none;
+}
+.walker-img-btn:hover{
+  border-color:rgba(192,132,252,0.85);
+  box-shadow:0 0 18px rgba(124,58,237,0.45);
+  transform:translateY(-1px);
+}
+.walker-img-btn-art{
+  position:relative;
+  width:72px;height:64px;
+  display:flex;align-items:center;justify-content:center;
+  margin-top:4px;
+}
+.walker-img-btn-art img{
+  max-width:100%;max-height:100%;
+  object-fit:contain;
+  filter:drop-shadow(0 0 8px rgba(124,58,237,0.55));
+}
+.walker-img-btn-fallback{
+  /* Shown behind the <img>; visible only when img fails / hasn't loaded */
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:34px;
+  color:rgba(192,132,252,0.92);
+  text-shadow:0 0 12px rgba(124,58,237,0.6);
+  z-index:0;
+}
+.walker-img-btn-art img{z-index:1;}
+.walker-img-btn-label{
+  position:relative;
+  margin-top:auto;padding:4px 0 8px;
+  font-size:.5rem;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(190,170,220,0.9);
+}
+.walker-img-btn-aesthetic{
+  border-color:rgba(251,191,36,0.45);
+}
+.walker-img-btn-aesthetic::before{
+  background:radial-gradient(circle at center, rgba(251,191,36,0.10), transparent 70%);
+}
+.walker-img-btn-aesthetic:hover{
+  border-color:rgba(251,191,36,0.85);
+  box-shadow:0 0 18px rgba(251,191,36,0.45);
+}
+.walker-img-btn-aesthetic .walker-img-btn-fallback{
+  color:rgba(251,191,36,0.95);
+  text-shadow:0 0 12px rgba(251,191,36,0.55);
+}
+.walker-img-btn-aesthetic .walker-img-btn-art img{
+  filter:drop-shadow(0 0 8px rgba(251,191,36,0.55));
+}
+.walker-img-btn-aesthetic .walker-img-btn-label{
+  color:rgba(255,225,150,0.92);
+}
 .walker-btn{
   font-family:var(--serif);font-size:.55rem;letter-spacing:.22em;
   color:var(--text);text-transform:uppercase;cursor:pointer;
@@ -1767,6 +1850,26 @@ body{font-family:var(--body);color:var(--text);position:relative}
     <!-- THE WALKER — Personal Chamber -->
     <div id="screen-riftwalk" class="screen">
       <canvas id="walker-3d-canvas"></canvas>
+
+      <!-- Floating action rail — image-driven buttons (keyed MJ assets in assets/ui/btn_*.png).
+           Unicode glyph behind the <img> shows through if the image hasn't loaded / fails. -->
+      <div class="walker-floating-actions">
+        <button class="walker-img-btn" onclick="openIdentityEditor()" aria-label="Identity">
+          <div class="walker-img-btn-art">
+            <span class="walker-img-btn-fallback">⚙</span>
+            <img src="assets/ui/btn_identity.png" alt="" onerror="this.style.display='none'">
+          </div>
+          <div class="walker-img-btn-label">Identity</div>
+        </button>
+        <button class="walker-img-btn walker-img-btn-aesthetic" onclick="openAestheticShop()" aria-label="Aesthetics">
+          <div class="walker-img-btn-art">
+            <span class="walker-img-btn-fallback">✦</span>
+            <img src="assets/ui/btn_aesthetics.png" alt="" onerror="this.style.display='none'">
+          </div>
+          <div class="walker-img-btn-label">Aesthetics</div>
+        </button>
+      </div>
+
       <div class="walker-inner">
 
         <!-- HERO: identity card overlay (3D scene renders behind via fullscreen canvas) -->
