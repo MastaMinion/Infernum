@@ -952,30 +952,151 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .gear-slot.filled .gear-slot-label{color:var(--text)}
 
 /* Talents */
+/* ─── TALENT TREE — Six Syllables of the Binding Word + locked 7th ─── */
 .walker-talents{
-  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  display:grid;
+  /* 7 columns: six unlockable branches + the sealed "Unspoken" column at the end.
+     min(0) lets columns shrink, and overflow-x:auto lets the whole row scroll horizontally
+     when the viewport is too narrow (mobile / sub-720px). */
+  grid-template-columns:repeat(7, minmax(150px, 1fr));
+  gap:10px;
+  margin-top:6px;
+  overflow-x:auto;
+  padding-bottom:8px;
+  scrollbar-width:thin;
 }
-.talent-tree-branch{
-  background:rgba(6,0,14,.65);border:0.5px solid var(--border);
-  border-radius:8px;padding:14px 10px;cursor:pointer;transition:all .2s;
+.walker-talents::-webkit-scrollbar{height:6px}
+.walker-talents::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.4);border-radius:3px}
+.talent-branch{
+  background:rgba(8,2,20,0.78);
+  border:1px solid rgba(var(--branch-glow), 0.35);
+  border-radius:10px;
+  padding:12px 8px 14px;
+  position:relative;
+  min-width:0;
+}
+.talent-branch::before{
+  content:'';position:absolute;inset:0;border-radius:10px;
+  background:radial-gradient(circle at top, rgba(var(--branch-glow),0.10), transparent 60%);
+  pointer-events:none;
+}
+.talent-branch-header{text-align:center;margin-bottom:14px;position:relative}
+.talent-branch-syllable{
+  font-family:var(--serif);font-size:.42rem;letter-spacing:.3em;
+  color:rgba(var(--branch-glow),0.65);text-transform:lowercase;margin-bottom:4px;
+}
+.talent-branch-icon{
+  font-size:22px;color:var(--branch-color);margin-bottom:4px;line-height:1;
+  text-shadow:0 0 12px rgba(var(--branch-glow),0.55);
+}
+.talent-branch-name{
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.2em;
+  color:var(--branch-color);text-transform:uppercase;margin-bottom:5px;
+}
+.talent-branch-desc{
+  font-size:.42rem;color:var(--muted);font-style:italic;line-height:1.4;padding:0 2px;
+}
+.talent-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:auto auto auto auto;
+  gap:16px 6px;
+  position:relative;
+}
+.talent-node{
+  background:rgba(6,0,14,0.72);
+  border:1px solid rgba(var(--branch-glow),0.28);
+  border-radius:7px;
+  padding:7px 4px 6px;
+  cursor:pointer;
   text-align:center;
+  transition:all .22s ease;
+  position:relative;
+  min-width:0;
 }
-.talent-tree-branch:hover{border-color:rgba(192,132,252,.4)}
-.talent-tree-branch.invested{
-  border-color:rgba(192,132,252,.5);background:rgba(124,58,237,.08);
+.talent-node.col-0{grid-column:1}
+.talent-node.col-1{grid-column:2}
+.talent-node.col-mid{grid-column:1 / span 2}
+.talent-node.tier-1{grid-row:1}
+.talent-node.tier-2{grid-row:2}
+.talent-node.tier-3{grid-row:3}
+.talent-node.tier-4{grid-row:4}
+/* Connector lines drawn as ::before/::after going up to parent tier */
+.talent-node.tier-2::before, .talent-node.tier-4::before{
+  content:'';position:absolute;top:-14px;left:50%;
+  width:2px;height:14px;
+  background:rgba(var(--branch-glow),0.35);
+  transform:translateX(-50%);
 }
-.tt-icon{font-size:1.6rem;display:block;margin-bottom:8px;line-height:1}
-.tt-name{
-  font-family:var(--serif);font-size:.7rem;letter-spacing:.15em;
-  color:var(--text);text-transform:uppercase;margin-bottom:8px;
+.talent-node.tier-3::before{
+  content:'';position:absolute;top:-14px;left:25%;
+  width:2px;height:14px;
+  background:rgba(var(--branch-glow),0.35);
+  transform:translateX(-50%);
 }
-.tt-rank{
-  font-family:var(--serif);font-size:.55rem;letter-spacing:.2em;
-  color:var(--purple);margin-bottom:6px;
+.talent-node.tier-3::after{
+  content:'';position:absolute;top:-14px;right:25%;
+  width:2px;height:14px;
+  background:rgba(var(--branch-glow),0.35);
+  transform:translateX(50%);
 }
-.tt-desc{
-  font-size:.55rem;color:var(--muted);line-height:1.5;
-  font-family:var(--body);font-style:italic;
+.talent-node.locked{opacity:0.38;cursor:not-allowed;filter:saturate(0.4)}
+.talent-node.available{border-color:rgba(var(--branch-glow),0.55)}
+.talent-node.available:hover{
+  border-color:rgba(var(--branch-glow),1);
+  box-shadow:0 0 14px rgba(var(--branch-glow),0.55);
+  transform:translateY(-1px);
+}
+.talent-node.invested{
+  border-color:rgba(251,191,36,0.85);
+  background:linear-gradient(180deg, rgba(28,18,52,0.92), rgba(8,2,20,0.78));
+  box-shadow:0 0 12px rgba(251,191,36,0.32);
+}
+.talent-node.invested .talent-node-icon{
+  color:rgba(255,225,150,1);
+  text-shadow:0 0 12px rgba(251,191,36,0.78);
+}
+.talent-node-icon{
+  font-size:16px;color:var(--branch-color);margin-bottom:2px;
+  line-height:1;text-shadow:0 0 8px rgba(var(--branch-glow),0.4);
+}
+.talent-node-name{
+  font-family:var(--serif);font-size:.42rem;letter-spacing:.08em;
+  color:var(--text);text-transform:uppercase;margin-bottom:2px;line-height:1.15;
+}
+.talent-node-desc{
+  font-size:.38rem;color:var(--muted);line-height:1.32;font-style:italic;
+}
+.talent-node-check{
+  position:absolute;top:2px;right:4px;
+  font-size:10px;color:var(--gold);font-weight:bold;
+}
+/* The Unspoken — locked seventh column */
+.talent-branch-locked{
+  background:rgba(10,8,18,0.86);
+  border-color:rgba(120,120,120,0.4);
+  filter:saturate(0.4);
+}
+.talent-branch-locked .talent-branch-icon,
+.talent-branch-locked .talent-branch-name,
+.talent-branch-locked .talent-branch-syllable{opacity:0.55}
+.talent-locked-seal{
+  text-align:center;padding:30px 4px;
+  border:1px dashed rgba(180,180,180,0.3);
+  border-radius:8px;background:rgba(0,0,0,0.4);
+  margin-top:8px;
+}
+.talent-locked-glyph{
+  font-size:32px;color:rgba(200,200,210,0.65);
+  text-shadow:0 0 14px rgba(180,180,200,0.35);
+  margin-bottom:8px;line-height:1;
+}
+.talent-locked-label{
+  font-family:var(--serif);font-size:.52rem;letter-spacing:.28em;
+  color:rgba(220,220,230,0.8);text-transform:uppercase;margin-bottom:4px;
+}
+.talent-locked-sub{
+  font-size:.4rem;color:var(--muted);font-style:italic;letter-spacing:.18em;
 }
 .tt-points-pill{
   display:inline-block;font-size:.5rem;padding:5px 12px;
@@ -2229,12 +2350,133 @@ const WALKER_GEAR=[
   {id:'sash',   label:'Sash',   icon:'∽'},
   {id:'tome',   label:'Tome',   icon:'❡'},
 ];
+// Walker talent tree — Six Syllables of the Binding Word.
+// Per GDD lore: the binding word has seven syllables; the seventh is never spoken.
+// Six unlockable branches + one locked "Unspoken" column reserved for Season 2.
+// This structure is era-agnostic by design — every Rift Walker across every civilization
+// spoke the same word, so the tree carries cleanly into the Plague / Sumerian / Industrial
+// / cross-IP eras laid out in the GDD release calendar.
+//
+// Structure per branch: 6 nodes across 4 tiers (2/2/1/1) — Tier 1 entries, Tier 2 deepens,
+// Tier 3 keystone (requires either Tier 2), Tier 4 capstone (requires keystone).
+// All nodes binary, 1 talent point each. Total invested if completed: 36 points across 6 branches.
+//
+// Effect tags reference the `effects` field — read by other systems via talentEffect(id).
+const WALKER_TALENT_TREE = {
+  call: {
+    name:'The Call',    syllable:'i.',  icon:'⌬', color:'#fcd34d', glow:'251,191,36',
+    desc:'Speaking. Initiation. The first sound that opens the rift.',
+    nodes:[
+      { id:'call_1a', tier:1, col:0,     name:'First Breath',     icon:'◊', desc:'Bound demons crit +3%.',                                       requires:null,            effects:{critPct:3} },
+      { id:'call_1b', tier:1, col:1,     name:'Sharpened Tongue', icon:'⌖', desc:'First attack each battle deals +20%.',                         requires:null,            effects:{firstHitPct:20} },
+      { id:'call_2a', tier:2, col:0,     name:'Resonance',        icon:'∿', desc:'Crits restore 5% IE.',                                         requires:'call_1a',       effects:{critIE:5} },
+      { id:'call_2b', tier:2, col:1,     name:'Quickened Word',   icon:'⚡', desc:'Pity counters fill 10% faster.',                              requires:'call_1b',       effects:{pityRatePct:10} },
+      { id:'call_3',  tier:3, col:'mid', name:"Sovereign's Voice",icon:'☥', desc:'Keystone — bound demons act +15% sooner on turn one.',         requires:'call_2a|call_2b', effects:{firstTurnTempo:15} },
+      { id:'call_4',  tier:4, col:'mid', name:'The First Word',   icon:'♛', desc:'Capstone — first crit each battle deals triple damage.',      requires:'call_3',        effects:{firstCritTripleDamage:true} },
+    ],
+  },
+  echo: {
+    name:'The Echo',    syllable:'ii.', icon:'∿', color:'#c4b5fd', glow:'139,92,246',
+    desc:'Recognition. Repetition. The word carried back across rifts.',
+    nodes:[
+      { id:'echo_1a', tier:1, col:0,     name:'Familiar Tongue',  icon:'◌', desc:'Whisper Scroll grants +1 free pull per day.',                  requires:null,            effects:{whisperFreeDaily:1} },
+      { id:'echo_1b', tier:1, col:1,     name:'Dim Recall',       icon:'⌗', desc:'Duplicate demons yield +25% Echoes.',                          requires:null,            effects:{dupeEchoPct:25} },
+      { id:'echo_2a', tier:2, col:0,     name:'Lingering Word',   icon:'⌬', desc:'Whisper-rift rates +25% on Twilight & Infernal scrolls.',      requires:'echo_1a',       effects:{whisperRiftPct:25} },
+      { id:'echo_2b', tier:2, col:1,     name:'Hollow Memory',    icon:'☉', desc:'Pity counters bleed 5% across scrolls when not used.',         requires:'echo_1b',       effects:{pityBleedPct:5} },
+      { id:'echo_3',  tier:3, col:'mid', name:'Echo Twice',       icon:'⌘', desc:'Keystone — every 10th summon yields a free duplicate.',         requires:'echo_2a|echo_2b', effects:{tenthSummonFreeDupe:true} },
+      { id:'echo_4',  tier:4, col:'mid', name:'The Word Returned',icon:'♞', desc:'Capstone — once per session, repeat the last pull for free.', requires:'echo_3',        effects:{repeatLastPullOncePerSession:true} },
+    ],
+  },
+  mark: {
+    name:'The Mark',    syllable:'iii.',icon:'⊕', color:'#fca5a5', glow:'220,38,38',
+    desc:'The binding scar. Both parties marked. Neither leaves whole.',
+    nodes:[
+      { id:'mark_1a', tier:1, col:0,     name:'Sealed Flesh',     icon:'◍', desc:'Bound demons +6% HP.',                                         requires:null,            effects:{hpPct:6} },
+      { id:'mark_1b', tier:1, col:1,     name:'Iron Will',        icon:'⚖', desc:'Bound demons +8% status resistance.',                          requires:null,            effects:{statusResPct:8} },
+      { id:'mark_2a', tier:2, col:0,     name:'Slow Bleed',       icon:'⌭', desc:'Bound demons regenerate 2% HP per turn.',                      requires:'mark_1a',       effects:{regenPctTurn:2} },
+      { id:'mark_2b', tier:2, col:1,     name:'Cleansing Mark',   icon:'✧', desc:'Auto-cleanse one debuff every 4 turns.',                       requires:'mark_1b',       effects:{cleanseEveryTurns:4} },
+      { id:'mark_3',  tier:3, col:'mid', name:'Branded Soul',     icon:'⛨', desc:'Keystone — first lethal hit per battle is blocked.',           requires:'mark_2a|mark_2b', effects:{blockFirstLethal:true} },
+      { id:'mark_4',  tier:4, col:'mid', name:'The Mark Endures', icon:'♔', desc:'Capstone — once per realm, fully revive a fallen demon at 50% HP.', requires:'mark_3',     effects:{realmReviveOnce:true} },
+    ],
+  },
+  tribute: {
+    name:'The Tribute', syllable:'iv.', icon:'◈', color:'#fde68a', glow:'234,179,8',
+    desc:'What is paid. The transaction underwriting every binding.',
+    nodes:[
+      { id:'trib_1a', tier:1, col:0,     name:'Smaller Offering', icon:'◇', desc:'Scroll costs reduced 5%.',                                     requires:null,            effects:{scrollCostPct:-5} },
+      { id:'trib_1b', tier:1, col:1,     name:'Greater Yield',    icon:'⊡', desc:'Garrison income +10%.',                                        requires:null,            effects:{garrisonPct:10} },
+      { id:'trib_2a', tier:2, col:0,     name:'Generous Tribute', icon:'⌑', desc:'Shard drops from battles +20%.',                              requires:'trib_1a',       effects:{battleShardPct:20} },
+      { id:'trib_2b', tier:2, col:1,     name:'Compounding Debt', icon:'⌒', desc:'Garrison accumulation cap +25%.',                              requires:'trib_1b',       effects:{garrisonCapPct:25} },
+      { id:'trib_3',  tier:3, col:'mid', name:'Tribute Bond',     icon:'☥', desc:'Keystone — garrison collections have 10% chance of bonus pull credit.', requires:'trib_2a|trib_2b', effects:{garrisonBonusPullChancePct:10} },
+      { id:'trib_4',  tier:4, col:'mid', name:'The Tribute Owed', icon:'♛', desc:'Capstone — once per day, claim doubled garrison income.',      requires:'trib_3',        effects:{garrisonDoubleOncePerDay:true} },
+    ],
+  },
+  memory: {
+    name:'The Memory',  syllable:'v.',  icon:'⊛', color:'#a5f3fc', glow:'34,211,238',
+    desc:'What the demon brings. Every binding inherits everything they were.',
+    nodes:[
+      { id:'mem_1a',  tier:1, col:0,     name:'Whispered Knowledge', icon:'◯', desc:'Void Echo generation +15%.',                                requires:null,            effects:{voidEchoPct:15} },
+      { id:'mem_1b',  tier:1, col:1,     name:'Deep Memory',         icon:'◉', desc:'Rift Echo generation +15%.',                                requires:null,            effects:{riftEchoPct:15} },
+      { id:'mem_2a',  tier:2, col:0,     name:'Codex Recall',        icon:'⌘', desc:'Codex completion bonuses +50%.',                            requires:'mem_1a',        effects:{codexBonusPct:50} },
+      { id:'mem_2b',  tier:2, col:1,     name:'Soul Memory',         icon:'⌬', desc:'Soul Echo generation +20%.',                                requires:'mem_1b',        effects:{soulEchoPct:20} },
+      { id:'mem_3',   tier:3, col:'mid', name:'Inherited Lore',      icon:'⊘', desc:'Keystone — Soulbound duplicates grant +5 bonus Soul Echoes.', requires:'mem_2a|mem_2b', effects:{soulboundDupeBonus:5} },
+      { id:'mem_4',   tier:4, col:'mid', name:'The Memory Remembers',icon:'♚', desc:'Capstone — fully-decoded codex entries grant a permanent passive bonus.', requires:'mem_3',  effects:{decodedCodexPassive:true} },
+    ],
+  },
+  pact: {
+    name:'The Pact',    syllable:'vi.', icon:'⊗', color:'#f0abfc', glow:'192,38,211',
+    desc:'Mutual surrender. The deepest syllable. Both names spoken together.',
+    nodes:[
+      { id:'pact_1a', tier:1, col:0,     name:'Inner Vow',        icon:'◆', desc:'Walker Power +5%.',                                            requires:null,            effects:{walkerPowerPct:5} },
+      { id:'pact_1b', tier:1, col:1,     name:'Outer Vow',        icon:'◈', desc:'Walker Ward +5%.',                                             requires:null,            effects:{walkerWardPct:5} },
+      { id:'pact_2a', tier:2, col:0,     name:'First Pact',       icon:'⊙', desc:'Sanctum Ability cooldowns reduced 10%.',                       requires:'pact_1a',       effects:{sanctumCdPct:-10} },
+      { id:'pact_2b', tier:2, col:1,     name:'Second Pact',      icon:'⊚', desc:'Bonded demons gain +25% to all stats.',                        requires:'pact_1b',       effects:{bondedStatPct:25} },
+      { id:'pact_3',  tier:3, col:'mid', name:'Sealed Pact',      icon:'⛧', desc:'Keystone — Sanctum Ability available one turn earlier.',       requires:'pact_2a|pact_2b', effects:{sanctumTurnEarlier:1} },
+      { id:'pact_4',  tier:4, col:'mid', name:'The Final Pact',   icon:'♜', desc:'Capstone — Rift Abilities can be used twice per realm.',       requires:'pact_3',        effects:{riftAbilityDoubleUse:true} },
+    ],
+  },
+  // The seventh, unspoken syllable. Locked. Reserved for Season 2 reveal per GDD.
+  unspoken: {
+    name:'The Unspoken', syllable:'vii.', icon:'⊘', color:'#525252', glow:'82,82,82',
+    desc:'The seventh syllable. Never spoken. Sealed beyond this binding.',
+    locked:true,
+    nodes:[],
+  },
+};
+// Legacy flat array kept for migration / save-state compatibility; new tree is the source of truth.
 const WALKER_TALENTS=[
   {id:'binder',     icon:'🔗', name:'Binder',       desc:'Bonds cost less · demons act sooner · pity counters fill faster.'},
   {id:'warden',     icon:'🛡', name:'Warden',       desc:'Defensive buffs · HP regen · status cleansing for your party.'},
   {id:'voidtouched',icon:'✦', name:'Void-Touched', desc:'IE generation +15% per rank · dark damage scaling · forbidden spell unlocks.'},
   {id:'ascendant',  icon:'☥', name:'Ascendant',    desc:'High-risk, high-reward · crits cascade · revive at 1 HP once per battle.'},
 ];
+
+// Helper: returns the effects object for a node if invested, or null. Other systems read this
+// to determine whether a passive is active (e.g. garrison income tick, summon pity step, etc.).
+function talentEffect(nodeId){
+  if(!S.walker || !S.walker.talents || !S.walker.talents.ranks) return null;
+  if((S.walker.talents.ranks[nodeId]||0) <= 0) return null;
+  for(const branch of Object.values(WALKER_TALENT_TREE)){
+    if(branch.locked) continue;
+    const n = (branch.nodes||[]).find(x => x.id === nodeId);
+    if(n) return n.effects || {};
+  }
+  return null;
+}
+// Convenience: aggregate a numeric effect across all invested nodes (e.g. total garrison %).
+function talentTotalEffect(key){
+  let total = 0;
+  if(!S.walker || !S.walker.talents || !S.walker.talents.ranks) return 0;
+  for(const branch of Object.values(WALKER_TALENT_TREE)){
+    if(branch.locked) continue;
+    for(const n of (branch.nodes||[])){
+      if((S.walker.talents.ranks[n.id]||0) > 0 && n.effects && typeof n.effects[key] === 'number'){
+        total += n.effects[key];
+      }
+    }
+  }
+  return total;
+}
 const WALKER_PACTS=[
   {id:'silence',   icon:'⊘', name:'Vow of Silence',    desc:'Cannot use the Whisper rift. In return, all summons +25% Power.'},
   {id:'blood',     icon:'⚗', name:'Pact of Blood',     desc:'Lose 10% party HP each battle start. Damage dealt +50%.'},
@@ -3002,19 +3244,32 @@ window.INF=(function(){
   function applyUpgrade(name,upg){
     const e=getEntry(name);if(!e||!upg)return false;
     if(!canAfford(upg,name))return false;
+    // Walker XP is granted ONLY on Unchain advances — that's the true "demon leveled up" event
+    // gated by duplicate-pulling. Seal advances are pure Echo-spending decisions within a phase
+    // and don't represent ascension. Tier scaling is steep so Sin Lords and Voids dominate XP:
+    // Shade Unchain = 250 XP, Imp = 500, Fiend = 1k, Greater = 2k, Archdemon = 4k, Sin Lord = 8k, Void = 16k.
+    // Fully ascending one demon (4 Unchain advances) yields 4× the per-phase value above.
+    const TIER_XP_MULT = { shade:1, imp:2, fiend:4, greater:8, archdemon:16, sinlord:32, void:64 };
+    const def = DEMONS.find(d => d.name === name);
+    const slug = def ? (TIER_SLUGS[def.tier] || 'shade') : 'shade';
+    const tierMult = TIER_XP_MULT[slug] || 1;
+    let xpGrant = 0;
     if(upg.kind==='seal'){
       const c=upg.cost;
       S.echoes.void-=(c.void||0);
       S.echoes.rift-=(c.rift||0);
       S.echoes.soul-=(c.soul||0);
       e.seals=upg.targetSeal;
+      // No Walker XP for Seal advances — those don't represent ascension.
     }else if(upg.kind==='unchain'){
       e.count-=(upg.cost.dup||0);
       S.echoes.soul-=(upg.cost.soul||0);
       e.unchainTier=upg.target;
       e.seals=1; // each unchain tier has its own 6 seals — reset on transition
+      xpGrant = 250 * tierMult;
     }
     save();
+    if(xpGrant > 0 && typeof walkerGainXp === 'function') walkerGainXp(xpGrant);
     return true;
   }
 
@@ -3674,7 +3929,13 @@ window.INF=(function(){
 // ═══════════════════════════════════════════
 // THE WALKER — render + interactions
 // ═══════════════════════════════════════════
-function walkerXpMax(){ return 100 + (S.walker.level-1)*40; }
+// Walker XP curve — quadratic so leveling slows dramatically as the Walker advances.
+// Early levels feel snappy (L1→L2 = 160 XP) but late levels are a true grind
+// (L20→L21 = 24,100 XP). Cumulative to L25 ≈ 296,500 XP — fully maxing the entire
+// 28-demon Y1 roster (every Seal + every Unchain) yields roughly 250,000 XP, so a
+// completionist Y1 player lands around Walker L24-26. New eras / IP add the headroom
+// to reach L30+ and complete the talent tree.
+function walkerXpMax(){ return 100 + 60 * S.walker.level * S.walker.level; }
 
 function walkerStatValue(statId){
   // base 1.00x + 0.05x per Walker level + 0.10x per relevant talent rank + gear/pact contributions later
@@ -3747,16 +4008,60 @@ function renderWalkerGear(){
 }
 
 function renderWalkerTalents(){
-  const root=document.getElementById('walker-talents'); if(!root) return;
-  document.getElementById('talent-pts-avail').textContent = S.walker.talents.points;
-  root.innerHTML = WALKER_TALENTS.map(t=>{
-    const rank=S.walker.talents.ranks[t.id]||0;
-    return `<div class="talent-tree-branch ${rank>0?'invested':''}" onclick="investTalent('${t.id}')">
-      <span class="tt-icon">${t.icon}</span>
-      <span class="tt-name">${t.name}</span>
-      <div class="tt-rank">RANK ${rank}</div>
-      <div class="tt-desc">${t.desc}</div>
-    </div>`;
+  const root = document.getElementById('walker-talents');
+  if(!root) return;
+  const ptsEl = document.getElementById('talent-pts-avail');
+  if(ptsEl) ptsEl.textContent = S.walker.talents.points;
+  const ranks = S.walker.talents.ranks || {};
+  const isInvested = id => (ranks[id]||0) > 0;
+  const isAvailable = node => {
+    if(!node.requires) return true;
+    return node.requires.split('|').some(isInvested);
+  };
+  root.innerHTML = Object.entries(WALKER_TALENT_TREE).map(([branchId, b]) => {
+    // Locked syllable branch (The Unspoken) — render a sealed placeholder column
+    if(b.locked){
+      return `
+        <div class="talent-branch talent-branch-locked" style="--branch-glow:${b.glow};--branch-color:${b.color}">
+          <div class="talent-branch-header">
+            <div class="talent-branch-syllable">${b.syllable}</div>
+            <div class="talent-branch-icon">${b.icon}</div>
+            <div class="talent-branch-name">${b.name}</div>
+            <div class="talent-branch-desc">${b.desc}</div>
+          </div>
+          <div class="talent-locked-seal">
+            <div class="talent-locked-glyph">🜸</div>
+            <div class="talent-locked-label">Sealed</div>
+            <div class="talent-locked-sub">Season 2</div>
+          </div>
+        </div>`;
+    }
+    return `
+      <div class="talent-branch" style="--branch-glow:${b.glow};--branch-color:${b.color}">
+        <div class="talent-branch-header">
+          <div class="talent-branch-syllable">${b.syllable}</div>
+          <div class="talent-branch-icon">${b.icon}</div>
+          <div class="talent-branch-name">${b.name}</div>
+          <div class="talent-branch-desc">${b.desc}</div>
+        </div>
+        <div class="talent-grid">
+          ${b.nodes.map(n => {
+            const invested = isInvested(n.id);
+            const available = invested || isAvailable(n);
+            const state = invested ? 'invested' : (available ? 'available' : 'locked');
+            const colCls = n.col==='mid' ? 'col-mid' : ('col-'+n.col);
+            return `
+              <div class="talent-node tier-${n.tier} ${colCls} ${state}"
+                   data-id="${n.id}"
+                   onclick="investTalentNode('${n.id}')">
+                <div class="talent-node-icon">${n.icon}</div>
+                <div class="talent-node-name">${n.name}</div>
+                <div class="talent-node-desc">${n.desc}</div>
+                ${invested ? '<div class="talent-node-check">✓</div>' : ''}
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
   }).join('');
 }
 
@@ -3842,16 +4147,32 @@ function closeWalkerPage(){
 }
 
 // Talent investment
-function investTalent(id){
+function investTalentNode(id){
   if(S.walker.talents.points<=0){
     showSummonResultText?.('NO POINTS','Level up to earn talent points','#888780');
     return;
   }
-  S.walker.talents.ranks[id]=(S.walker.talents.ranks[id]||0)+1;
+  // Locate the node + its branch
+  let node = null;
+  for(const b of Object.values(WALKER_TALENT_TREE)){
+    const n = b.nodes.find(x => x.id === id);
+    if(n){ node = n; break; }
+  }
+  if(!node) return;
+  const ranks = S.walker.talents.ranks || (S.walker.talents.ranks = {});
+  if((ranks[id]||0) > 0) return; // already invested — nothing to do
+  const prereqsMet = !node.requires || node.requires.split('|').some(r => (ranks[r]||0) > 0);
+  if(!prereqsMet){
+    showSummonResultText?.('LOCKED','Invest in a required talent first','#888780');
+    return;
+  }
+  ranks[id] = 1;
   S.walker.talents.points--;
   save();
   renderWalker();
 }
+// Legacy entry point — kept for any old onclick="investTalent('binder')" handlers in saved HTML.
+function investTalent(id){ investTalentNode(id); }
 
 // Pact toggle
 function togglePact(id){
