@@ -960,15 +960,74 @@ body{font-family:var(--body);color:var(--text);position:relative}
   font-family:var(--serif);font-size:.46rem;letter-spacing:.16em;
   color:var(--muted);text-transform:uppercase;
 }
-.gear-eqslot-empty{
-  font-size:.42rem;color:var(--muted);font-style:italic;margin-top:3px;
-}
+.gear-eqslot-empty{font-size:.42rem;color:var(--muted);font-style:italic;margin-top:3px}
 .gear-eqslot-primary{
-  font-size:.42rem;color:var(--gold);font-weight:600;margin-top:4px;
-  letter-spacing:.04em;
+  font-size:.42rem;color:var(--gold);font-weight:600;margin-top:4px;letter-spacing:.04em;
+}
+.gear-eqslot-runes{display:flex;justify-content:center;gap:6px;margin-top:4px}
+.gear-eqslot-rune-dot{font-size:11px;line-height:1}
+.gear-eqslot-rune-dot.on{color:var(--gold);text-shadow:0 0 6px rgba(251,191,36,0.7)}
+.gear-eqslot-rune-dot.off{color:rgba(120,120,140,0.45)}
+.gear-eqslot-set{
+  font-family:var(--serif);font-size:.42rem;letter-spacing:.16em;
+  text-transform:uppercase;margin-top:4px;font-weight:500;
 }
 
-/* Filter pill row */
+/* ─── Active set bonuses summary ─── */
+.gear-sets-list{
+  display:flex;flex-direction:column;gap:8px;margin-bottom:6px;
+}
+.gear-set-row{
+  background:rgba(6,0,14,0.72);
+  border:1px solid rgba(var(--set-glow),0.35);
+  border-radius:8px;padding:10px 12px;
+  position:relative;
+}
+.gear-set-row::before{
+  content:'';position:absolute;inset:0;border-radius:8px;
+  background:radial-gradient(ellipse at left, rgba(var(--set-glow),0.10), transparent 60%);
+  pointer-events:none;
+}
+.gear-set-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:7px;position:relative;
+}
+.gear-set-name{
+  font-family:var(--serif);font-size:.65rem;letter-spacing:.22em;
+  color:var(--set-color);text-transform:uppercase;
+}
+.gear-set-count{
+  font-family:var(--serif);font-size:.5rem;letter-spacing:.15em;
+  color:var(--gold);
+}
+.gear-set-tiers{display:flex;flex-direction:column;gap:5px}
+.gear-set-tier{
+  display:flex;align-items:flex-start;gap:8px;
+  font-size:.48rem;line-height:1.45;
+  padding:5px 6px;border-radius:5px;
+  background:rgba(255,255,255,0.02);
+}
+.gear-set-tier.on{background:rgba(var(--set-glow),0.12);color:var(--text)}
+.gear-set-tier.off{opacity:0.4}
+.gear-set-tier-pip{
+  flex:0 0 18px;height:18px;border-radius:50%;
+  background:rgba(var(--set-glow),0.2);
+  border:1px solid rgba(var(--set-glow),0.5);
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:.46rem;font-weight:600;
+  color:var(--set-color);
+}
+.gear-set-tier.on .gear-set-tier-pip{
+  background:rgba(var(--set-glow),0.6);color:#0c0418;
+  box-shadow:0 0 6px rgba(var(--set-glow),0.55);
+}
+.gear-set-tier-text{flex:1}
+.gear-set-cost{
+  margin-top:3px;font-size:.42rem;font-style:italic;
+  color:rgba(244,63,94,0.85);letter-spacing:.05em;
+}
+
+/* ─── Filter strip ─── */
 .walker-gear-toolbar{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   margin-bottom:10px;flex-wrap:wrap;
@@ -985,13 +1044,11 @@ body{font-family:var(--body);color:var(--text);position:relative}
   background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.6);
   color:var(--gold);
 }
-.walker-gear-count{
-  font-size:.48rem;color:var(--muted);font-style:italic;letter-spacing:.1em;
-}
+.walker-gear-count{font-size:.48rem;color:var(--muted);font-style:italic;letter-spacing:.1em}
 
-/* Inventory grid */
+/* ─── Gear inventory cards ─── */
 .walker-gear-inventory{
-  display:grid;grid-template-columns:repeat(auto-fill, minmax(180px,1fr));gap:10px;
+  display:grid;grid-template-columns:repeat(auto-fill, minmax(200px,1fr));gap:10px;
 }
 .gear-inv-empty{
   grid-column:1/-1;text-align:center;padding:40px 20px;
@@ -1025,47 +1082,70 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 .gear-card-head{
   display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:7px;position:relative;
+  margin-bottom:6px;position:relative;
 }
 .gear-card-rarity{
   font-family:var(--serif);font-size:.42rem;letter-spacing:.22em;
   color:var(--rar-color);text-transform:uppercase;
 }
-.gear-card-slot{
-  font-size:.46rem;color:var(--muted);
-  font-family:var(--body);
+.gear-card-slot{font-size:.46rem;color:var(--muted);font-family:var(--body)}
+.gear-card-setbadge{
+  display:inline-block;font-family:var(--serif);font-size:.4rem;
+  letter-spacing:.22em;text-transform:uppercase;
+  padding:2px 7px;border-radius:3px;border:1px solid;
+  background:rgba(0,0,0,0.3);margin-bottom:7px;
 }
-.gear-card-primary{
-  display:flex;align-items:baseline;gap:6px;margin-bottom:8px;
+.gear-card-base{
+  display:flex;align-items:baseline;gap:7px;margin-bottom:8px;
   padding:6px 8px;border-radius:6px;
   background:rgba(var(--rar-glow),0.10);
-  border-left:2px solid var(--rar-color);
+  border-left:2px solid var(--rar-color);position:relative;
 }
-.gear-card-primary-val{
+.gear-card-base-tier{
+  font-family:var(--serif);font-size:.34rem;letter-spacing:.24em;
+  color:var(--muted);text-transform:uppercase;
+}
+.gear-card-base-val{
   font-family:var(--serif);font-size:1.05rem;color:var(--rar-color);
   font-weight:600;line-height:1;
   text-shadow:0 0 10px rgba(var(--rar-glow),0.5);
 }
-.gear-card-primary-stat{
+.gear-card-base-name{
   font-family:var(--serif);font-size:.5rem;letter-spacing:.18em;
   color:var(--text);text-transform:uppercase;
 }
-.gear-card-subs{
-  display:flex;flex-direction:column;gap:3px;margin-bottom:9px;
-  padding:0 2px;
+.gear-card-runes{
+  display:flex;flex-direction:column;gap:5px;margin-bottom:9px;
 }
-.gear-sub{
-  display:flex;justify-content:space-between;align-items:center;
-  font-size:.46rem;color:var(--muted);
-  padding:2px 0;
-  border-bottom:0.5px solid rgba(255,255,255,0.04);
+.gear-rune-slot{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  padding:6px 8px;border-radius:5px;cursor:pointer;
+  border:1px dashed rgba(192,132,252,0.25);
+  background:rgba(255,255,255,0.015);
+  transition:all .15s ease;font-size:.46rem;
 }
-.gear-sub:last-child{border-bottom:0}
-.gear-sub-val{color:var(--text);font-weight:600}
-.gear-sub-none{
-  font-size:.44rem;color:var(--muted);font-style:italic;text-align:center;
-  padding:4px 0;
+.gear-rune-slot:hover{
+  border-color:rgba(192,132,252,0.6);
+  background:rgba(124,58,237,0.08);
 }
+.gear-rune-slot.filled{
+  border:1px solid rgba(var(--rar-glow),0.6);
+  background:rgba(var(--rar-glow),0.08);
+}
+.gear-rune-slot.filled:hover{
+  border-color:rgba(244,63,94,0.7);background:rgba(244,63,94,0.08);
+}
+.gear-rune-slot-label{
+  font-family:var(--serif);font-size:.4rem;letter-spacing:.22em;
+  color:var(--muted);text-transform:uppercase;flex:0 0 auto;
+}
+.gear-rune-slot.filled .gear-rune-slot-label{color:var(--rar-color)}
+.gear-rune-slot-val{color:var(--text);font-weight:600;flex:1;text-align:right}
+.gear-rune-slot-subs{font-size:.4rem;color:var(--muted);flex:0 0 auto;font-style:italic}
+.gear-rune-slot-empty{
+  color:var(--muted);font-style:italic;font-size:.44rem;flex:1;text-align:right;
+}
+
 .gear-card-actions{display:flex;gap:5px}
 .gear-btn{
   flex:1;font-family:var(--serif);font-size:.46rem;letter-spacing:.18em;
@@ -1088,10 +1168,126 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 .gear-btn-discard:hover{background:rgba(244,63,94,0.18);border-color:rgba(244,63,94,0.6);color:rgba(244,63,94,1)}
 
-/* Narrow viewport: 3-up equipped row instead of 6-up */
+/* ─── Rune inventory ─── */
+.walker-rune-inventory{
+  display:grid;grid-template-columns:repeat(auto-fill, minmax(170px,1fr));gap:8px;
+  margin-bottom:8px;
+}
+.rune-card{
+  background:rgba(6,0,14,0.78);
+  border:1px solid rgba(var(--rar-glow),0.5);
+  border-radius:8px;padding:8px 9px;
+  position:relative;transition:all .2s ease;
+}
+.rune-card:hover{border-color:rgba(var(--rar-glow),0.85);box-shadow:0 0 12px rgba(var(--rar-glow),0.35)}
+.rune-card.slotted{
+  border-color:rgba(251,191,36,0.6);
+  box-shadow:0 0 8px rgba(251,191,36,0.25);
+}
+.rune-card-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:6px;
+}
+.rune-card-tier{
+  font-family:var(--serif);font-size:.4rem;letter-spacing:.22em;
+  color:var(--text);text-transform:uppercase;
+}
+.rune-card-rarity{
+  font-family:var(--serif);font-size:.4rem;letter-spacing:.2em;
+  color:var(--rar-color);text-transform:uppercase;
+}
+.rune-card-primary{
+  display:flex;align-items:baseline;gap:5px;margin-bottom:6px;
+  padding:5px 7px;border-radius:5px;
+  background:rgba(var(--rar-glow),0.10);
+  border-left:2px solid var(--rar-color);
+}
+.rune-card-primary-val{
+  font-family:var(--serif);font-size:.9rem;color:var(--rar-color);
+  font-weight:600;line-height:1;
+  text-shadow:0 0 8px rgba(var(--rar-glow),0.5);
+}
+.rune-card-primary-stat{
+  font-family:var(--serif);font-size:.46rem;letter-spacing:.18em;
+  color:var(--text);text-transform:uppercase;
+}
+.rune-card-subs{display:flex;flex-direction:column;gap:2px;margin-bottom:7px;padding:0 2px}
+.rune-sub{
+  display:flex;justify-content:space-between;
+  font-size:.42rem;color:var(--muted);padding:1px 0;
+}
+.rune-sub-val{color:var(--text);font-weight:600}
+.rune-sub-none{font-size:.42rem;color:var(--muted);font-style:italic;text-align:center;padding:3px 0}
+.rune-card-actions{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.rune-card-slotted-tag{
+  font-family:var(--serif);font-size:.36rem;letter-spacing:.22em;
+  color:var(--gold);text-transform:uppercase;
+}
+
+/* ─── Rune picker modal ─── */
+.walker-rune-picker{display:none}
+.walker-rune-picker.open{
+  display:block;position:fixed;inset:0;z-index:100;
+}
+.rune-picker-backdrop{
+  position:absolute;inset:0;background:rgba(0,0,0,0.72);
+  backdrop-filter:blur(6px);
+}
+.rune-picker-panel{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  background:rgba(8,2,20,0.96);
+  border:1px solid rgba(192,132,252,0.5);
+  border-radius:10px;
+  padding:18px 18px 16px;
+  width:90%;max-width:520px;max-height:80vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 0 40px rgba(124,58,237,0.4);
+}
+.rune-picker-head{
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--serif);font-size:.7rem;letter-spacing:.22em;
+  color:var(--gold);text-transform:uppercase;margin-bottom:12px;
+  padding-bottom:10px;border-bottom:1px solid rgba(192,132,252,0.25);
+}
+.rune-picker-close{
+  background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;
+  line-height:1;padding:0 4px;
+}
+.rune-picker-close:hover{color:var(--text)}
+.rune-picker-empty{
+  text-align:center;padding:30px 10px;color:var(--muted);font-style:italic;font-size:.55rem;
+}
+.rune-picker-list{
+  display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;
+}
+.rune-picker-item{
+  background:rgba(6,0,14,0.7);
+  border:1px solid rgba(var(--rar-glow),0.5);
+  border-radius:6px;padding:8px 10px;cursor:pointer;
+  transition:all .15s ease;
+}
+.rune-picker-item:hover{
+  border-color:rgba(var(--rar-glow),1);
+  background:rgba(var(--rar-glow),0.12);
+  transform:translateX(2px);
+}
+.rune-picker-item-rar{
+  font-family:var(--serif);font-size:.4rem;letter-spacing:.22em;
+  color:var(--rar-color);text-transform:uppercase;margin-bottom:3px;
+}
+.rune-picker-item-primary{
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.12em;
+  color:var(--text);font-weight:600;margin-bottom:3px;
+}
+.rune-picker-item-sub{
+  font-size:.44rem;color:var(--muted);
+}
+
+/* Narrow viewport */
 @media (max-width: 640px){
   .walker-gear-equipped{grid-template-columns:repeat(3, minmax(0,1fr))}
-  .walker-gear-inventory{grid-template-columns:repeat(auto-fill, minmax(150px,1fr))}
+  .walker-gear-inventory{grid-template-columns:repeat(auto-fill, minmax(160px,1fr))}
+  .walker-rune-inventory{grid-template-columns:repeat(auto-fill, minmax(140px,1fr))}
 }
 
 /* Talents */
@@ -2207,17 +2403,25 @@ body{font-family:var(--body);color:var(--text);position:relative}
         <section class="walker-panel" data-tab-panel="gear">
           <div class="walker-section-title">Equipment <span id="gear-fill-count" style="color:var(--purple);font-style:italic">— 0/6 forged</span></div>
           <p class="walker-panel-prose">
-            Forged equipment drops from realm conquests. Each piece carries a primary stat plus substats. Perfect rolls take many drops.
+            Each piece carries a fixed base stat and two rune slots — MAJOR and MINOR. Slot runes to add stats. Equipping 2 / 4 / 6 of the same Runeset activates increasingly strong bonuses (the 6-set is build-defining but always carries a cost).
           </p>
-          <!-- Equipped slots: 6 across, click an inventory item below to equip into its slot -->
+          <!-- Equipped slots: 6 across -->
           <div class="walker-gear-equipped" id="walker-gear-equipped"></div>
-          <!-- Inventory: scrollable grid of all owned pieces. Filter by slot via the filter strip. -->
+          <!-- Active set bonuses summary -->
+          <div id="walker-gear-sets"></div>
+          <!-- Gear inventory toolbar + grid -->
+          <div class="walker-section-title" style="margin-top:14px">Gear Inventory</div>
           <div class="walker-gear-toolbar">
             <div class="walker-gear-filters" id="walker-gear-filters"></div>
             <div class="walker-gear-count" id="walker-gear-count"></div>
           </div>
           <div class="walker-gear-inventory" id="walker-gear-inventory"></div>
+          <!-- Rune inventory -->
+          <div class="walker-section-title" style="margin-top:14px">Runes</div>
+          <div class="walker-rune-inventory" id="walker-rune-inventory"></div>
         </section>
+        <!-- Rune picker modal (lives at panel level so it overlays everything cleanly) -->
+        <div class="walker-rune-picker" id="walker-rune-picker"></div>
 
         <!-- TALENTS -->
         <section class="walker-panel" data-tab-panel="talents">
@@ -2337,6 +2541,9 @@ body{font-family:var(--body);color:var(--text);position:relative}
         <button class="test-btn" data-cheat="gear">+1 Gear Drop</button>
         <button class="test-btn" data-cheat="gear10">+10 Gear Drops</button>
         <button class="test-btn" data-cheat="gearleg">+1 Legendary+</button>
+        <button class="test-btn" data-cheat="rune">+1 Rune</button>
+        <button class="test-btn" data-cheat="rune10">+10 Runes</button>
+        <button class="test-btn" data-cheat="runeleg">+1 Legendary Rune</button>
         <button class="test-btn danger" data-cheat="wipe">Wipe Vessel</button>
       </div>
     </div>
@@ -2473,7 +2680,8 @@ let S={
     cosmetics:{robe:'robe:novice',hood:'hood:none',aura:'aura:pale',pool:'pool:void'},
     ownedCosmetics:['robe:novice','hood:none','aura:pale','pool:void'],
     equipped:{crown:null,pendant:null,robe:null,gloves:null,sash:null,tome:null},
-    inventory:[], // gear items: {id, slot, rarity, primary:{stat,value}, subs:[{stat,value}], obtained}
+    inventory:[],      // gear pieces: {id, slot, rarity, set, baseStat:{stat,value}, majorRune:runeId|null, minorRune:runeId|null, obtained}
+    runeInventory:[],  // runes: {id, runeTier:'major'|'minor', rarity, primary:{stat,value}, subs:[{stat,value}], obtained}
     talents:{points:0, ranks:{binder:0,warden:0,voidtouched:0,ascendant:0}},
     bonds:[null,null,null],
     pacts:{},
@@ -2523,125 +2731,300 @@ const WALKER_GEAR=[
 // Walker stats are defined above (WALKER_STATS). Each piece of gear has one primary stat
 // (random per drop) and some number of substats determined by rarity.
 
-// Rarity tiers — substat count and primary roll multiplier scale with rarity.
-// "Perfect rolls take a lot of drops" — Legendary+ rolls all 4-5 substats at the top of the range.
+// Rarity tiers — drop weight scales with rarity. Applies to both gear AND runes.
+// Mythic is rare enough that combining {desired set} + {ideal base stat} + {2 desired runes with
+// {desired rune stats} + {desired rune substats}} represents the long-tail grind for perfect builds.
 const GEAR_RARITIES=[
-  {id:'common',    label:'Common',    color:'#888780', glow:'136,135,128', substats:0, weight:55},
-  {id:'uncommon',  label:'Uncommon',  color:'#14b8a6', glow:'20,184,166',  substats:1, weight:25},
-  {id:'rare',      label:'Rare',      color:'#60a5fa', glow:'96,165,250',  substats:2, weight:12},
-  {id:'epic',      label:'Epic',      color:'#c084fc', glow:'192,132,252', substats:3, weight:5},
-  {id:'legendary', label:'Legendary', color:'#f43f5e', glow:'244,63,94',   substats:4, weight:2.5},
-  {id:'mythic',    label:'Mythic',    color:'#fbbf24', glow:'251,191,36',  substats:5, weight:0.5},
+  {id:'common',    label:'Common',    color:'#888780', glow:'136,135,128', weight:55},
+  {id:'uncommon',  label:'Uncommon',  color:'#14b8a6', glow:'20,184,166',  weight:25},
+  {id:'rare',      label:'Rare',      color:'#60a5fa', glow:'96,165,250',  weight:12},
+  {id:'epic',      label:'Epic',      color:'#c084fc', glow:'192,132,252', weight:5},
+  {id:'legendary', label:'Legendary', color:'#f43f5e', glow:'244,63,94',   weight:2.5},
+  {id:'mythic',    label:'Mythic',    color:'#fbbf24', glow:'251,191,36',  weight:0.5},
 ];
 
-// Roll-range tables — primary and substat values (in percent) per rarity.
-// Range width gates "perfect rolls" — a Mythic with primary at 36% and all 5 substats at 14% is
-// the platonic ideal. Each substat is independent so reaching that takes many drops.
+// Roll-range tables.
+//   gearBase: the gear piece's fixed base stat (rolled at drop, can't be changed).
+//   runeMajor: a major-tier rune's primary stat (slotted into the major rune slot).
+//   runeMinor: a minor-tier rune's primary stat.
+//   runeSub: a rune's substat value (each substat rolls independently).
 const STAT_ROLL_RANGES={
-  common:    { primary:[3, 6],   sub:[1, 3] },
-  uncommon:  { primary:[5, 10],  sub:[2, 5] },
-  rare:      { primary:[8, 14],  sub:[3, 7] },
-  epic:      { primary:[12, 20], sub:[4, 9] },
-  legendary: { primary:[18, 28], sub:[5, 12] },
-  mythic:    { primary:[26, 38], sub:[7, 16] },
+  common:    { gearBase:[3, 6],    runeMajor:[5, 10],   runeMinor:[2, 5],   runeSub:[1, 3] },
+  uncommon:  { gearBase:[5, 9],    runeMajor:[8, 14],   runeMinor:[3, 7],   runeSub:[2, 4] },
+  rare:      { gearBase:[8, 13],   runeMajor:[12, 20],  runeMinor:[5, 10],  runeSub:[3, 6] },
+  epic:      { gearBase:[12, 18],  runeMajor:[18, 28],  runeMinor:[7, 14],  runeSub:[4, 8] },
+  legendary: { gearBase:[18, 26],  runeMajor:[26, 40],  runeMinor:[10, 20], runeSub:[6, 11] },
+  mythic:    { gearBase:[26, 36],  runeMajor:[38, 56],  runeMinor:[16, 28], runeSub:[8, 16] },
 };
+
+// Substat count per rune rarity. Common runes have just a primary; Mythic runes roll the full 4-stat board.
+const RUNE_SUBSTAT_COUNTS = { common:0, uncommon:1, rare:2, epic:3, legendary:3, mythic:4 };
+
+// Runesets — each gear piece belongs to one set. Equipping 2 / 4 / 6 pieces of the same set
+// activates progressively stronger bonuses. The 6-set is build-defining but always carries a cost.
+// Six sets thematically mirror the Binding Word's six spoken syllables (per the talent tree),
+// so a player can stack set + matching talent branch for identity-aligned builds.
+const RUNESETS=[
+  {
+    id:'call', name:'Call', color:'#fcd34d', glow:'251,191,36',
+    desc:'Forged in the moment of speaking. Aggression made permanent.',
+    bonus2:{ label:'+12% Power.', effects:{power:12} },
+    bonus4:{ label:'+30% crit damage when bound demons act first in battle.', effects:{firstCritDmgPct:30} },
+    bonus6:{
+      label:'Bound demons attack twice on the opening turn.',
+      cost:'They take +50% damage during round one.',
+      effects:{firstTurnDoubleAttack:true, firstRoundDmgTakenPct:50},
+    },
+  },
+  {
+    id:'echo', name:'Echo', color:'#c4b5fd', glow:'139,92,246',
+    desc:'The word repeats. Each return carries a fragment of the last.',
+    bonus2:{ label:'Pity counters fill 8% faster.', effects:{pityRatePct:8} },
+    bonus4:{ label:'Whisper Scroll grants +1 free pull per day.', effects:{whisperFreeDaily:1} },
+    bonus6:{
+      label:'Every fifth summon yields a free duplicate.',
+      cost:'Pity counters reset on every Unchain.',
+      effects:{fifthSummonDupe:true, resetPityOnUnchain:true},
+    },
+  },
+  {
+    id:'mark', name:'Mark', color:'#fca5a5', glow:'220,38,38',
+    desc:'The scar that binds. Both parties marked. Neither leaves whole.',
+    bonus2:{ label:'+15% Vigor.', effects:{vigor:15} },
+    bonus4:{ label:'Bound demons regenerate 3% HP per turn.', effects:{regenPctTurn:3} },
+    bonus6:{
+      label:'All status effects are blocked during the first three turns.',
+      cost:'Power reduced by 25%.',
+      effects:{statusBlockFirstTurns:3, power:-25},
+    },
+  },
+  {
+    id:'tribute', name:'Tribute', color:'#fde68a', glow:'234,179,8',
+    desc:'What is paid is what is bound. The transaction beneath every word.',
+    bonus2:{ label:'+20% garrison income.', effects:{garrisonPct:20} },
+    bonus4:{ label:'Scroll costs reduced 10%.', effects:{scrollCostPct:-10} },
+    bonus6:{
+      label:'Garrison rates triple.',
+      cost:'Only the Whisper Scroll can be cast. All others are sealed.',
+      effects:{garrisonPct:200, whisperOnly:true},
+    },
+  },
+  {
+    id:'memory', name:'Memory', color:'#a5f3fc', glow:'34,211,238',
+    desc:'Every binding inherits everything the demon was.',
+    bonus2:{ label:'+15% Void Echo generation.', effects:{voidEchoPct:15} },
+    bonus4:{ label:'+15% Rift Echo generation.', effects:{riftEchoPct:15} },
+    bonus6:{
+      label:'All Echo generation doubled.',
+      cost:'Cannot stockpile more than 100 of any Echo type.',
+      effects:{allEchoPct:100, echoCap:100},
+    },
+  },
+  {
+    id:'pact', name:'Pact', color:'#f0abfc', glow:'192,38,211',
+    desc:'Mutual surrender. The deepest binding — both names spoken together.',
+    bonus2:{ label:'+8% Walker Power.', effects:{walkerPower:8} },
+    bonus4:{ label:'+8% Walker Ward.', effects:{walkerWard:8} },
+    bonus6:{
+      label:'Sanctum Abilities can be used twice per battle.',
+      cost:'Tempo reduced by 50% — demons act slower.',
+      effects:{sanctumDoubleUse:true, tempo:-50},
+    },
+  },
+];
+function runesetDef(id){ return RUNESETS.find(s => s.id === id) || RUNESETS[0]; }
+function gearRarityDef(id){ return GEAR_RARITIES.find(r => r.id === id) || GEAR_RARITIES[0]; }
+function statDef(id){ return WALKER_STATS.find(s => s.id === id) || WALKER_STATS[0]; }
 
 function _rngInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
 function _rngPick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 function _rngWeighted(items){
-  // items: [{...,weight:n}] — returns one weighted by .weight
   const total = items.reduce((a,x)=>a+x.weight, 0);
   let roll = Math.random()*total;
   for(const it of items){ roll -= it.weight; if(roll<=0) return it; }
   return items[items.length-1];
 }
 
-// Roll a fresh piece of gear. Returns the item object (does not add to inventory).
-// rarityBias: optional weight override array of {id, weight} pairs to alter drop chances per source.
+// ── GEAR ROLL ──
+// Each piece carries a fixed base stat + a runeset assignment + two empty rune slots (major/minor).
+// The slots are filled by slotting separately-dropped runes.
 function rollGear(opts){
   opts = opts || {};
   const slot = opts.slot || _rngPick(WALKER_GEAR).id;
   const rarityPool = opts.rarityBias || GEAR_RARITIES;
   const rarity = _rngWeighted(rarityPool);
   const range = STAT_ROLL_RANGES[rarity.id];
-  // Primary stat — random pick from all stats
-  const primaryStatDef = _rngPick(WALKER_STATS);
-  const primaryValue = _rngInt(range.primary[0], range.primary[1]);
-  // Substats — distinct stats, none matching primary
-  const available = WALKER_STATS.filter(s => s.id !== primaryStatDef.id).slice();
-  const subs = [];
-  for(let i=0;i<rarity.substats && available.length;i++){
-    const idx = Math.floor(Math.random()*available.length);
-    const statDef = available.splice(idx,1)[0];
-    subs.push({ stat: statDef.id, value: _rngInt(range.sub[0], range.sub[1]) });
-  }
-  // Unique id
+  const baseStatDef = _rngPick(WALKER_STATS);
+  const baseValue = _rngInt(range.gearBase[0], range.gearBase[1]);
+  const set = opts.setBias || _rngPick(RUNESETS).id;
   const id = 'g_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7);
   return {
-    id, slot, rarity: rarity.id,
+    id, slot, rarity: rarity.id, set,
+    baseStat: { stat: baseStatDef.id, value: baseValue },
+    majorRune: null, // runeId of a slotted major rune (or null)
+    minorRune: null, // runeId of a slotted minor rune (or null)
+    obtained: Date.now(),
+  };
+}
+function grantGearDrop(opts){
+  if(!S.walker.inventory) S.walker.inventory = [];
+  const item = rollGear(opts);
+  S.walker.inventory.push(item);
+  const slotLbl = WALKER_GEAR.find(g => g.id === item.slot).label;
+  const rarLbl = GEAR_RARITIES.find(r => r.id === item.rarity).label;
+  const setLbl = runesetDef(item.set).name;
+  walkerLog?.(`Acquired ${rarLbl} ${setLbl} ${slotLbl} — base +${item.baseStat.value}% ${item.baseStat.stat}.`);
+  save();
+  return item;
+}
+
+// ── RUNE ROLL ──
+// Runes are separate inventory items. Each rune has a tier (major/minor) which determines
+// which rune slot of a gear piece it can be slotted into. A rune carries a primary stat plus
+// 0-4 substats depending on rarity.
+function rollRune(opts){
+  opts = opts || {};
+  const runeTier = opts.runeTier || (Math.random() < 0.4 ? 'major' : 'minor'); // minor more common
+  const rarityPool = opts.rarityBias || GEAR_RARITIES;
+  const rarity = _rngWeighted(rarityPool);
+  const range = STAT_ROLL_RANGES[rarity.id];
+  const primaryStatDef = _rngPick(WALKER_STATS);
+  const primaryRange = runeTier === 'major' ? range.runeMajor : range.runeMinor;
+  const primaryValue = _rngInt(primaryRange[0], primaryRange[1]);
+  const subCount = RUNE_SUBSTAT_COUNTS[rarity.id] || 0;
+  const available = WALKER_STATS.filter(s => s.id !== primaryStatDef.id).slice();
+  const subs = [];
+  for(let i=0;i<subCount && available.length;i++){
+    const idx = Math.floor(Math.random()*available.length);
+    const def = available.splice(idx,1)[0];
+    subs.push({ stat: def.id, value: _rngInt(range.runeSub[0], range.runeSub[1]) });
+  }
+  const id = 'r_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7);
+  return {
+    id, runeTier, rarity: rarity.id,
     primary: { stat: primaryStatDef.id, value: primaryValue },
     subs,
     obtained: Date.now(),
   };
 }
-
-// Grant a drop into the inventory and return the new item (or null if rejected).
-function grantGearDrop(opts){
-  if(!S.walker.inventory) S.walker.inventory = [];
-  const item = rollGear(opts);
-  S.walker.inventory.push(item);
-  walkerLog?.(`Acquired ${GEAR_RARITIES.find(r=>r.id===item.rarity).label} ${WALKER_GEAR.find(g=>g.id===item.slot).label} — +${item.primary.value}% ${item.primary.stat}.`);
+function grantRuneDrop(opts){
+  if(!S.walker.runeInventory) S.walker.runeInventory = [];
+  const rune = rollRune(opts);
+  S.walker.runeInventory.push(rune);
+  const rarLbl = gearRarityDef(rune.rarity).label;
+  walkerLog?.(`Acquired ${rarLbl} ${rune.runeTier} rune — +${rune.primary.value}% ${rune.primary.stat}.`);
   save();
-  return item;
+  return rune;
 }
 
-function gearById(id){
-  return (S.walker.inventory||[]).find(it => it.id === id) || null;
-}
+// ── LOOKUPS ──
+function gearById(id){ return (S.walker.inventory||[]).find(it => it.id === id) || null; }
+function runeById(id){ return (S.walker.runeInventory||[]).find(r => r.id === id) || null; }
+
+// ── EQUIP / SLOT ──
 function equipGear(itemId){
   const item = gearById(itemId);
   if(!item) return false;
   S.walker.equipped[item.slot] = itemId;
-  save();
-  return true;
+  save(); return true;
 }
 function unequipSlot(slot){
-  if(S.walker.equipped[slot]){
-    S.walker.equipped[slot] = null;
-    save();
-    return true;
+  if(S.walker.equipped[slot]){ S.walker.equipped[slot] = null; save(); return true; }
+  return false;
+}
+// Slot a rune into a gear piece's major or minor rune slot.
+// slotKind: 'majorRune' | 'minorRune'.  Returns true on success.
+function slotRune(gearId, slotKind, runeId){
+  const item = gearById(gearId); if(!item) return false;
+  const rune = runeById(runeId); if(!rune) return false;
+  // Tier check — major rune can only go in majorRune slot, minor in minorRune.
+  if(slotKind === 'majorRune' && rune.runeTier !== 'major') return false;
+  if(slotKind === 'minorRune' && rune.runeTier !== 'minor') return false;
+  // If this rune was already slotted somewhere else, unslot it there first.
+  for(const it of (S.walker.inventory||[])){
+    if(it.majorRune === runeId) it.majorRune = null;
+    if(it.minorRune === runeId) it.minorRune = null;
   }
+  item[slotKind] = runeId;
+  save(); return true;
+}
+function unslotRune(gearId, slotKind){
+  const item = gearById(gearId); if(!item) return false;
+  if(item[slotKind]){ item[slotKind] = null; save(); return true; }
   return false;
 }
 function discardGear(itemId){
   const inv = S.walker.inventory || [];
-  const i = inv.findIndex(it => it.id === itemId);
-  if(i < 0) return false;
-  // Unequip if equipped
+  const i = inv.findIndex(it => it.id === itemId); if(i < 0) return false;
   for(const slot of Object.keys(S.walker.equipped||{})){
     if(S.walker.equipped[slot] === itemId) S.walker.equipped[slot] = null;
   }
-  inv.splice(i, 1);
-  save();
-  return true;
+  inv.splice(i, 1); save(); return true;
 }
-// Aggregate total bonus % to a stat from all equipped gear (primary + substats sum).
+function discardRune(runeId){
+  const inv = S.walker.runeInventory || [];
+  const i = inv.findIndex(r => r.id === runeId); if(i < 0) return false;
+  // Unslot from any gear piece using it
+  for(const it of (S.walker.inventory||[])){
+    if(it.majorRune === runeId) it.majorRune = null;
+    if(it.minorRune === runeId) it.minorRune = null;
+  }
+  inv.splice(i, 1); save(); return true;
+}
+
+// ── STAT AGGREGATION ──
+// Walker stat bonus = sum of equipped gear's baseStat + each slotted rune's primary + each slotted
+// rune's substats + active set bonuses' stat effects (set bonuses keyed by stat id).
 function walkerGearBonus(statId){
   let total = 0;
   const eq = S.walker.equipped || {};
   for(const slot of Object.keys(eq)){
     const id = eq[slot]; if(!id) continue;
     const item = gearById(id); if(!item) continue;
-    if(item.primary.stat === statId) total += item.primary.value;
-    for(const s of (item.subs||[])){ if(s.stat === statId) total += s.value; }
+    if(item.baseStat?.stat === statId) total += item.baseStat.value;
+    const major = item.majorRune ? runeById(item.majorRune) : null;
+    if(major){
+      if(major.primary.stat === statId) total += major.primary.value;
+      for(const s of (major.subs||[])){ if(s.stat === statId) total += s.value; }
+    }
+    const minor = item.minorRune ? runeById(item.minorRune) : null;
+    if(minor){
+      if(minor.primary.stat === statId) total += minor.primary.value;
+      for(const s of (minor.subs||[])){ if(s.stat === statId) total += s.value; }
+    }
+  }
+  for(const b of walkerSetBonuses()){
+    if(b.effects && typeof b.effects[statId] === 'number') total += b.effects[statId];
   }
   return total;
 }
-function gearRarityDef(id){ return GEAR_RARITIES.find(r => r.id === id) || GEAR_RARITIES[0]; }
-function statDef(id){ return WALKER_STATS.find(s => s.id === id) || WALKER_STATS[0]; }
+function walkerSetBonuses(){
+  const eq = S.walker.equipped || {};
+  const counts = {};
+  for(const slot of Object.keys(eq)){
+    const id = eq[slot]; if(!id) continue;
+    const item = gearById(id); if(!item || !item.set) continue;
+    counts[item.set] = (counts[item.set]||0) + 1;
+  }
+  const out = [];
+  for(const [setId, count] of Object.entries(counts)){
+    const def = runesetDef(setId);
+    if(count >= 2 && def.bonus2) out.push({ setId, name:def.name, tier:2, ...def.bonus2 });
+    if(count >= 4 && def.bonus4) out.push({ setId, name:def.name, tier:4, ...def.bonus4 });
+    if(count >= 6 && def.bonus6) out.push({ setId, name:def.name, tier:6, ...def.bonus6 });
+  }
+  return out;
+}
+function walkerSetFlag(key){ return walkerSetBonuses().some(b => b.effects && b.effects[key]); }
 function gearItemTotal(item){
-  // Total stat % across primary + substats — used for sorting / "score"
-  return (item.primary?.value||0) + (item.subs||[]).reduce((a,s)=>a+(s.value||0),0);
+  // Used only for inventory sort — count base + any slotted rune primaries (subs ignored for speed).
+  let v = item.baseStat?.value || 0;
+  if(item.majorRune){ const r = runeById(item.majorRune); if(r) v += r.primary.value; }
+  if(item.minorRune){ const r = runeById(item.minorRune); if(r) v += r.primary.value; }
+  return v;
+}
+function runeItemTotal(rune){
+  return (rune.primary?.value||0) + (rune.subs||[]).reduce((a,s)=>a+(s.value||0),0);
 }
 // Walker talent tree — Six Syllables of the Binding Word.
 // Per GDD lore: the binding word has seven syllables; the seventh is never spoken.
@@ -3577,16 +3960,50 @@ window.INF=(function(){
     if(S.echoesAccum.void==null)S.echoesAccum.void=0;
     if(S.echoesAccum.rift==null)S.echoesAccum.rift=0;
     if(S.echoesAccum.soul==null)S.echoesAccum.soul=0;
-    // Walker gear migration — inventory + equipped slot cleanup
+    // Walker gear migration — inventory + equipped slot cleanup + legacy shape upgrades.
+    // Saves may carry any of three historical shapes: {primary, subs}, {major, minor, set},
+    // or current {baseStat, majorRune, minorRune, set}. Normalize forward.
     if(S.walker){
       if(!Array.isArray(S.walker.inventory)) S.walker.inventory = [];
+      if(!Array.isArray(S.walker.runeInventory)) S.walker.runeInventory = [];
       if(!S.walker.equipped) S.walker.equipped = {crown:null,pendant:null,robe:null,gloves:null,sash:null,tome:null};
-      // Strip equipped item-ids that no longer exist in inventory (orphaned references).
+      for(const item of S.walker.inventory){
+        // V1 → V2: primary → major, first sub → minor
+        if(item.primary && !item.major){
+          item.major = item.primary;
+          delete item.primary;
+        }
+        if(!item.minor && Array.isArray(item.subs) && item.subs.length){
+          item.minor = item.subs[0];
+        }
+        if(item.subs) delete item.subs;
+        // V2 → V3 (current): major → baseStat, drop minor (replaced by slottable runes), add rune slots, ensure set
+        if(item.major && !item.baseStat){
+          item.baseStat = item.major;
+          delete item.major;
+        }
+        if(item.minor) delete item.minor;
+        if(!item.baseStat && typeof WALKER_STATS !== 'undefined'){
+          // Should never hit, but fall back to a tiny common roll
+          item.baseStat = { stat:'power', value:3 };
+        }
+        if(item.majorRune === undefined) item.majorRune = null;
+        if(item.minorRune === undefined) item.minorRune = null;
+        if(!item.set && typeof RUNESETS !== 'undefined'){
+          item.set = RUNESETS[Math.floor(Math.random()*RUNESETS.length)].id;
+        }
+      }
+      // Strip equipped item-ids that no longer exist in inventory.
       const invIds = new Set(S.walker.inventory.map(it => it.id));
       for(const slot of Object.keys(S.walker.equipped)){
         const id = S.walker.equipped[slot];
-        // Truthy non-string legacy "filled" markers get cleared too.
         if(id && (typeof id !== 'string' || !invIds.has(id))) S.walker.equipped[slot] = null;
+      }
+      // Strip rune ids from gear slots if the rune was deleted.
+      const runeIds = new Set(S.walker.runeInventory.map(r => r.id));
+      for(const it of S.walker.inventory){
+        if(it.majorRune && !runeIds.has(it.majorRune)) it.majorRune = null;
+        if(it.minorRune && !runeIds.has(it.minorRune)) it.minorRune = null;
       }
     }
     let changed=false;const now=Date.now();
@@ -4193,6 +4610,21 @@ window.INF=(function(){
         grantGearDrop({ rarityBias: biased });
       }
     }
+    else if(kind==='rune'){
+      if(typeof grantRuneDrop === 'function') grantRuneDrop();
+    }
+    else if(kind==='rune10'){
+      if(typeof grantRuneDrop === 'function'){ for(let i=0;i<10;i++) grantRuneDrop(); }
+    }
+    else if(kind==='runeleg'){
+      if(typeof grantRuneDrop === 'function'){
+        const biased = [
+          {id:'legendary', weight:60},
+          {id:'mythic', weight:40},
+        ].map(b => Object.assign({}, GEAR_RARITIES.find(r => r.id === b.id), {weight: b.weight}));
+        grantRuneDrop({ rarityBias: biased });
+      }
+    }
     else if(kind==='wipe'){
       if(!confirm('Wipe all bound demons and echoes from this vessel?'))return;
       for(const k of Object.keys(S.collection))delete S.collection[k];
@@ -4315,19 +4747,40 @@ function renderWalkerStats(){
   }).join('');
 }
 
-// Inventory filter state — which slot type is being shown (or 'all')
+// Inventory filter state — which slot type is being shown in the gear list (or 'all')
 let gearFilter = 'all';
 function setGearFilter(slot){ gearFilter = slot; renderWalkerGear(); }
+// Rune picker state — open against a specific gear piece + rune slot
+let runePicker = { gearId:null, slotKind:null };
+function openRunePicker(gearId, slotKind){
+  runePicker = { gearId, slotKind };
+  renderWalkerGear();
+}
+function closeRunePicker(){
+  runePicker = { gearId:null, slotKind:null };
+  renderWalkerGear();
+}
+function slotRuneFromPicker(runeId){
+  if(!runePicker.gearId) return;
+  slotRune(runePicker.gearId, runePicker.slotKind, runeId);
+  closeRunePicker();
+  renderWalker();
+}
 
 function renderWalkerGear(){
   const eqRoot = document.getElementById('walker-gear-equipped');
   const invRoot = document.getElementById('walker-gear-inventory');
   const filtRoot = document.getElementById('walker-gear-filters');
   const countEl = document.getElementById('walker-gear-count');
-  if(!eqRoot && !invRoot) return; // fallback to legacy grid if either missing — bail
+  const setRoot = document.getElementById('walker-gear-sets');
+  const runeRoot = document.getElementById('walker-rune-inventory');
+  const pickerRoot = document.getElementById('walker-rune-picker');
+  if(!eqRoot && !invRoot) return;
   const eq = S.walker.equipped || {};
   const inv = S.walker.inventory || [];
+  const runeInv = S.walker.runeInventory || [];
   let filled = 0;
+
   // ── Equipped slots row ──
   if(eqRoot){
     eqRoot.innerHTML = WALKER_GEAR.map(g => {
@@ -4342,17 +4795,72 @@ function renderWalkerGear(){
         </div>`;
       }
       const rar = gearRarityDef(item.rarity);
-      const pStat = statDef(item.primary.stat);
-      return `<div class="gear-eqslot filled" style="--rar-glow:${rar.glow};--rar-color:${rar.color}" onclick="unequipSlot('${g.id}');renderWalker();" title="${rar.label} ${g.label} — click to unequip">
+      const baseStat = statDef(item.baseStat.stat);
+      const set = runesetDef(item.set);
+      const major = item.majorRune ? runeById(item.majorRune) : null;
+      const minor = item.minorRune ? runeById(item.minorRune) : null;
+      const majorOn = major ? 'on' : 'off';
+      const minorOn = minor ? 'on' : 'off';
+      return `<div class="gear-eqslot filled" style="--rar-glow:${rar.glow};--rar-color:${rar.color}" onclick="unequipSlot('${g.id}');renderWalker();" title="${rar.label} ${set.name} ${g.label} — click to unequip">
         <div class="gear-eqslot-rar">${rar.label}</div>
         <div class="gear-eqslot-icon">${g.icon}</div>
         <div class="gear-eqslot-label">${g.label}</div>
-        <div class="gear-eqslot-primary">+${item.primary.value}% ${pStat.label}</div>
+        <div class="gear-eqslot-primary">+${item.baseStat.value}% ${baseStat.label}</div>
+        <div class="gear-eqslot-runes">
+          <span class="gear-eqslot-rune-dot ${majorOn}" title="Major rune ${major?'slotted':'empty'}">◆</span>
+          <span class="gear-eqslot-rune-dot ${minorOn}" title="Minor rune ${minor?'slotted':'empty'}">◇</span>
+        </div>
+        <div class="gear-eqslot-set" style="color:${set.color}">${set.name}</div>
       </div>`;
     }).join('');
   }
   const fc = document.getElementById('gear-fill-count');
   if(fc) fc.textContent = '— '+filled+'/6 forged';
+
+  // ── Active set bonuses ──
+  if(setRoot){
+    const counts = {};
+    for(const slot of Object.keys(eq)){
+      const id = eq[slot]; if(!id) continue;
+      const it = gearById(id); if(!it || !it.set) continue;
+      counts[it.set] = (counts[it.set]||0) + 1;
+    }
+    const setEntries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    if(setEntries.length === 0){
+      setRoot.innerHTML = '';
+    } else {
+      setRoot.innerHTML = `
+        <div class="walker-section-title" style="margin-top:14px">Active Runesets</div>
+        <div class="gear-sets-list">
+          ${setEntries.map(([setId, count]) => {
+            const def = runesetDef(setId);
+            const t2 = count >= 2, t4 = count >= 4, t6 = count >= 6;
+            return `
+              <div class="gear-set-row" style="--set-glow:${def.glow};--set-color:${def.color}">
+                <div class="gear-set-head">
+                  <span class="gear-set-name">${def.name}</span>
+                  <span class="gear-set-count">${count}/6</span>
+                </div>
+                <div class="gear-set-tiers">
+                  <div class="gear-set-tier ${t2?'on':'off'}">
+                    <span class="gear-set-tier-pip">2</span>
+                    <span class="gear-set-tier-text">${def.bonus2.label}</span>
+                  </div>
+                  <div class="gear-set-tier ${t4?'on':'off'}">
+                    <span class="gear-set-tier-pip">4</span>
+                    <span class="gear-set-tier-text">${def.bonus4.label}</span>
+                  </div>
+                  <div class="gear-set-tier ${t6?'on':'off'}">
+                    <span class="gear-set-tier-pip">6</span>
+                    <span class="gear-set-tier-text">${def.bonus6.label}</span>
+                    ${def.bonus6.cost ? `<div class="gear-set-cost">⚠ ${def.bonus6.cost}</div>` : ''}
+                  </div>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>`;
+    }
+  }
 
   // ── Filter strip ──
   if(filtRoot){
@@ -4362,10 +4870,9 @@ function renderWalkerGear(){
     `).join('');
   }
 
-  // ── Inventory grid ──
+  // ── Gear inventory grid ──
   if(invRoot){
     const filtered = gearFilter === 'all' ? inv : inv.filter(it => it.slot === gearFilter);
-    // Sort by rarity (rare first) then by total stat
     const rarityRank = {mythic:6,legendary:5,epic:4,rare:3,uncommon:2,common:1};
     filtered.sort((a,b) => {
       const ra = rarityRank[a.rarity]||0, rb = rarityRank[b.rarity]||0;
@@ -4379,22 +4886,43 @@ function renderWalkerGear(){
       invRoot.innerHTML = filtered.map(it => {
         const rar = gearRarityDef(it.rarity);
         const slot = WALKER_GEAR.find(g => g.id === it.slot);
-        const pStat = statDef(it.primary.stat);
+        const baseStat = statDef(it.baseStat.stat);
+        const set = runesetDef(it.set);
         const equipped = eq[it.slot] === it.id;
-        const subsHtml = (it.subs||[]).map(s => {
-          const sd = statDef(s.stat);
-          return `<div class="gear-sub"><span>${sd.label}</span><span class="gear-sub-val">+${s.value}%</span></div>`;
-        }).join('');
+        const major = it.majorRune ? runeById(it.majorRune) : null;
+        const minor = it.minorRune ? runeById(it.minorRune) : null;
+        const renderRuneSlot = (slotKind, rune) => {
+          if(rune){
+            const rrar = gearRarityDef(rune.rarity);
+            const pStat = statDef(rune.primary.stat);
+            return `
+              <div class="gear-rune-slot filled" style="--rar-glow:${rrar.glow};--rar-color:${rrar.color}" onclick="event.stopPropagation();unslotRune('${it.id}','${slotKind}');renderWalker();" title="Click to unslot">
+                <span class="gear-rune-slot-label">${slotKind==='majorRune'?'MAJOR':'MINOR'}</span>
+                <span class="gear-rune-slot-val">+${rune.primary.value}% ${pStat.label}</span>
+                ${rune.subs && rune.subs.length ? `<span class="gear-rune-slot-subs">+${rune.subs.length} sub${rune.subs.length>1?'s':''}</span>` : ''}
+              </div>`;
+          }
+          return `
+            <div class="gear-rune-slot empty" onclick="event.stopPropagation();openRunePicker('${it.id}','${slotKind}')" title="Slot a ${slotKind==='majorRune'?'major':'minor'} rune">
+              <span class="gear-rune-slot-label">${slotKind==='majorRune'?'MAJOR':'MINOR'}</span>
+              <span class="gear-rune-slot-empty">— empty —</span>
+            </div>`;
+        };
         return `<div class="gear-card ${equipped?'equipped':''}" style="--rar-glow:${rar.glow};--rar-color:${rar.color}">
           <div class="gear-card-head">
             <span class="gear-card-rarity">${rar.label}</span>
             <span class="gear-card-slot">${slot.icon} ${slot.label}</span>
           </div>
-          <div class="gear-card-primary">
-            <span class="gear-card-primary-val">+${it.primary.value}%</span>
-            <span class="gear-card-primary-stat">${pStat.label}</span>
+          <div class="gear-card-setbadge" style="color:${set.color};border-color:rgba(${set.glow},0.5)">${set.name}</div>
+          <div class="gear-card-base">
+            <span class="gear-card-base-tier">BASE</span>
+            <span class="gear-card-base-val">+${it.baseStat.value}%</span>
+            <span class="gear-card-base-name">${baseStat.label}</span>
           </div>
-          <div class="gear-card-subs">${subsHtml || '<div class="gear-sub-none">— no substats —</div>'}</div>
+          <div class="gear-card-runes">
+            ${renderRuneSlot('majorRune', major)}
+            ${renderRuneSlot('minorRune', minor)}
+          </div>
           <div class="gear-card-actions">
             ${equipped
               ? `<button class="gear-btn gear-btn-unequip" onclick="unequipSlot('${it.slot}');renderWalker();">Unequip</button>`
@@ -4405,11 +4933,105 @@ function renderWalkerGear(){
       }).join('');
     }
   }
+
+  // ── Rune inventory ──
+  if(runeRoot){
+    // Set of rune ids currently slotted (so we can mark them)
+    const slottedRunes = new Set();
+    for(const it of inv){
+      if(it.majorRune) slottedRunes.add(it.majorRune);
+      if(it.minorRune) slottedRunes.add(it.minorRune);
+    }
+    const rarityRank = {mythic:6,legendary:5,epic:4,rare:3,uncommon:2,common:1};
+    const sorted = runeInv.slice().sort((a,b) => {
+      // Slotted first, then by tier (major), then by rarity, then by value
+      const sa = slottedRunes.has(a.id) ? 1 : 0;
+      const sb = slottedRunes.has(b.id) ? 1 : 0;
+      if(sb !== sa) return sb - sa;
+      if(a.runeTier !== b.runeTier) return a.runeTier === 'major' ? -1 : 1;
+      const ra = rarityRank[a.rarity]||0, rb = rarityRank[b.rarity]||0;
+      if(rb !== ra) return rb - ra;
+      return runeItemTotal(b) - runeItemTotal(a);
+    });
+    if(sorted.length === 0){
+      runeRoot.innerHTML = `<div class="gear-inv-empty">No runes acquired yet. Runes are slotted into gear's MAJOR and MINOR slots to add stats.</div>`;
+    } else {
+      runeRoot.innerHTML = sorted.map(r => {
+        const rar = gearRarityDef(r.rarity);
+        const pStat = statDef(r.primary.stat);
+        const isSlotted = slottedRunes.has(r.id);
+        const subsHtml = (r.subs||[]).map(s => {
+          const sd = statDef(s.stat);
+          return `<div class="rune-sub"><span>${sd.label}</span><span class="rune-sub-val">+${s.value}%</span></div>`;
+        }).join('');
+        return `<div class="rune-card ${isSlotted?'slotted':''}" style="--rar-glow:${rar.glow};--rar-color:${rar.color}">
+          <div class="rune-card-head">
+            <span class="rune-card-tier">${r.runeTier==='major'?'◆ MAJOR':'◇ MINOR'}</span>
+            <span class="rune-card-rarity">${rar.label}</span>
+          </div>
+          <div class="rune-card-primary">
+            <span class="rune-card-primary-val">+${r.primary.value}%</span>
+            <span class="rune-card-primary-stat">${pStat.label}</span>
+          </div>
+          <div class="rune-card-subs">${subsHtml || '<div class="rune-sub-none">— no substats —</div>'}</div>
+          <div class="rune-card-actions">
+            ${isSlotted ? '<span class="rune-card-slotted-tag">SLOTTED</span>' : ''}
+            <button class="gear-btn gear-btn-discard" onclick="confirmDiscardRune('${r.id}')" title="Discard">✕</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ── Rune picker modal (only renders when one is open) ──
+  if(pickerRoot){
+    if(!runePicker.gearId){
+      pickerRoot.innerHTML = '';
+      pickerRoot.classList.remove('open');
+    } else {
+      const wantTier = runePicker.slotKind === 'majorRune' ? 'major' : 'minor';
+      const available = runeInv.filter(r => r.runeTier === wantTier);
+      const rarityRank = {mythic:6,legendary:5,epic:4,rare:3,uncommon:2,common:1};
+      available.sort((a,b) => {
+        const ra = rarityRank[a.rarity]||0, rb = rarityRank[b.rarity]||0;
+        if(rb !== ra) return rb - ra;
+        return runeItemTotal(b) - runeItemTotal(a);
+      });
+      pickerRoot.classList.add('open');
+      pickerRoot.innerHTML = `
+        <div class="rune-picker-backdrop" onclick="closeRunePicker()"></div>
+        <div class="rune-picker-panel">
+          <div class="rune-picker-head">
+            <span>Slot ${wantTier.toUpperCase()} Rune</span>
+            <button class="rune-picker-close" onclick="closeRunePicker()">×</button>
+          </div>
+          ${available.length === 0
+            ? `<div class="rune-picker-empty">No ${wantTier} runes available.</div>`
+            : `<div class="rune-picker-list">
+                ${available.map(r => {
+                  const rar = gearRarityDef(r.rarity);
+                  const pStat = statDef(r.primary.stat);
+                  return `<div class="rune-picker-item" style="--rar-glow:${rar.glow};--rar-color:${rar.color}" onclick="slotRuneFromPicker('${r.id}')">
+                    <div class="rune-picker-item-rar">${rar.label}</div>
+                    <div class="rune-picker-item-primary">+${r.primary.value}% ${pStat.label}</div>
+                    ${(r.subs||[]).map(s => `<div class="rune-picker-item-sub">+${s.value}% ${statDef(s.stat).label}</div>`).join('')}
+                  </div>`;
+                }).join('')}
+              </div>`}
+        </div>`;
+    }
+  }
 }
 
 function confirmDiscardGear(id){
   if(confirm('Discard this piece of equipment? This cannot be undone.')){
     discardGear(id);
+    renderWalker();
+  }
+}
+function confirmDiscardRune(id){
+  if(confirm('Discard this rune? This cannot be undone.')){
+    discardRune(id);
     renderWalker();
   }
 }
