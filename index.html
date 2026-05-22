@@ -6754,14 +6754,12 @@ window.CodexScene = (function(){
   let initialized = false;
   let paused = false;
   let hoverTome = false;
-  // Tome float + hover lift state
-  let tomeBaseY = -0.15, tomeHoverY = -0.05, tomeCurrentY = -0.15;
+  // Tome float + hover lift state. Coordinates tuned for the baked-in tome position in codex_bg.jpg
+  // (lectern sits in lower-third of frame, tome's open pages center around screen-y ~-0.35 NDC).
+  let tomeBaseY = -0.42, tomeHoverY = -0.32, tomeCurrentY = -0.42;
 
-  // Asset paths — codex_bg.jpg is the chamber backdrop. Tome layer defaults to nav_journal.png
-  // (the same keyed leather-tome PNG used in the Walker nav card), but can be swapped for a
-  // dedicated codex-tome asset later.
+  // Asset path — codex_bg.jpg is the chamber backdrop with the tome already baked onto the lectern.
   const BG_PATH = 'assets/ui/codex_bg.jpg';
-  const TOME_PATH = 'assets/ui/nav_journal.png';
 
   function init(){
     if (initialized) return;
@@ -6822,43 +6820,30 @@ window.CodexScene = (function(){
       },
     );
 
-    // ── Tome layer: a flat image plane positioned in front of the backdrop ──
-    // Loaded async; geometry is created immediately with a placeholder, then the texture binds
-    // when ready. Sized to roughly match the lectern position in the bg image.
-    const tomeGeo = new THREE.PlaneGeometry(1.6, 1.8);
+    // ── Tome layer: the codex bg image has a beautiful open tome already baked onto the lectern.
+    // We don't add a visible tome image — instead, we position an INVISIBLE click hitbox over the
+    // baked-in tome's screen position and a soft additive-glow plane that pulses subtly and
+    // intensifies on hover. The bg image is the source of truth for what the tome looks like.
+    //
+    // Tuning: if you change the bg image and the baked-in tome moves, adjust tome.position to
+    // align the hitbox + glow with the new tome location.
+    const tomeGeo = new THREE.PlaneGeometry(1.0, 0.65); // hit-test area covering the tome on the lectern
     tomeMaterial = new THREE.MeshBasicMaterial({
-      transparent: true, depthWrite: false,
-      color: 0xffffff, opacity: 1.0,
+      transparent: true, opacity: 0, depthWrite: false, // invisible — pure click target
     });
     tome = new THREE.Mesh(tomeGeo, tomeMaterial);
     tome.position.set(0, tomeBaseY, 1.2);
     scene.add(tome);
-    loader.load(
-      TOME_PATH,
-      (tex) => {
-        tex.minFilter = THREE.LinearFilter;
-        tex.encoding = THREE.sRGBEncoding;
-        if (tomeMaterial) tomeMaterial.map = tex;
-        if (tomeMaterial) tomeMaterial.needsUpdate = true;
-      },
-      undefined,
-      () => {
-        // No keyed tome image available — show a placeholder rectangle so the click target still exists
-        if (tomeMaterial) {
-          tomeMaterial.color.setHex(0x4a1d6a);
-          tomeMaterial.opacity = 0.85;
-        }
-      },
-    );
 
-    // Underglow plane behind the tome — warm golden bloom suggesting torchlight on the page
-    const glowGeo = new THREE.PlaneGeometry(2.4, 2.4);
+    // Soft glow plane positioned over the baked-in tome. Additively blended warm light that
+    // breathes idle and brightens on hover, signalling interactivity without obscuring the art.
+    const glowGeo = new THREE.PlaneGeometry(2.2, 1.6);
     const glowMat = new THREE.MeshBasicMaterial({
-      color: 0xfbbf24, transparent: true, opacity: 0.18,
+      color: 0xfbbf24, transparent: true, opacity: 0.0,
       blending: THREE.AdditiveBlending, depthWrite: false,
     });
     tomeGlow = new THREE.Mesh(glowGeo, glowMat);
-    tomeGlow.position.set(0, tomeBaseY, 1.0);
+    tomeGlow.position.set(0, tomeBaseY, 1.1);
     scene.add(tomeGlow);
 
     // ── Dust motes drifting in front of the bg image for atmosphere ──
@@ -6934,15 +6919,18 @@ window.CodexScene = (function(){
     animationId = requestAnimationFrame(animate);
     if (paused) return;
     const t = clock.getElapsedTime();
-    // Tome hover lift + idle bob
+    // Tome hitbox follows the baked-in tome position — no idle bob since it's invisible
+    // (a bobbing invisible click target would have the hover hitbox sliding off the visible tome).
+    // The hover lift effect is communicated entirely via the glow plane below.
     const targetY = hoverTome ? tomeHoverY : tomeBaseY;
     tomeCurrentY += (targetY - tomeCurrentY) * 0.08;
-    if (tome) {
-      tome.position.y = tomeCurrentY + Math.sin(t * 0.9) * 0.018;
-    }
+    if (tome) tome.position.y = tomeCurrentY;
     if (tomeGlow) {
       tomeGlow.position.y = tomeCurrentY;
-      tomeGlow.material.opacity = hoverTome ? 0.42 : 0.18 + Math.sin(t*1.2)*0.05;
+      // Idle: faint warm breath. Hover: noticeably brighter pulse.
+      const idle = 0.08 + Math.sin(t*1.4)*0.04;
+      const hover = 0.32 + Math.sin(t*3.5)*0.06;
+      tomeGlow.material.opacity = hoverTome ? hover : idle;
     }
     // Drift dust upward and recycle
     if (dustSystem){
