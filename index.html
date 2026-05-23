@@ -614,140 +614,46 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .cc-unknown-name{font-size:.45rem;color:#2a1a4a;font-family:var(--serif)}
 
 /* ══════════════════════════════════════
-   REALMS SCREEN — per-realm immersive environment.
-   Each realm has its own full-screen bg image. Center holds the realm's rift.
-   Bottom strip switches between realms. All realms are accessible from start;
-   difficulty scaling at higher realms organically gates progression order.
+   REALMS HALL — the void between worlds.
+   Not a place. The non-space where the player stands momentarily to choose
+   which realm to step into. Black abyssal backdrop, 8 realm rifts scattered
+   across it like tears in nothingness. Each rift is a portal into a realm.
 ══════════════════════════════════════ */
 #screen-realms{
   position:fixed;inset:0;overflow:hidden;background:#06000e;
 }
-.realms-stage{
-  /* Full-screen bg; opacity-fades on realm switch */
+.realms-void{
+  /* The void itself — bg image is just texture, no architecture */
   position:absolute;inset:0;
-  background-color:#06000e;
-  background-size:cover;background-position:center;background-repeat:no-repeat;
-  transition:opacity .55s ease;
-  z-index:0;
+  background:#06000e url('assets/ui/realms_hall_bg.jpg') center center / cover no-repeat;
 }
-.realms-stage::after{
-  /* Dark vignette so the center portal reads clearly */
+.realms-void::after{
+  /* Subtle vignette so rifts at the edges feel held in the dark, not floating off */
   content:'';position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(ellipse at center, transparent 25%, rgba(6,0,14,0.72) 92%);
+  background:radial-gradient(ellipse at center, transparent 35%, rgba(6,0,14,0.70) 95%);
 }
-/* Per-realm fallback gradients — used when realm_bg_<id>.jpg isn't deployed yet */
-.realms-stage.fallback-vale  {background:radial-gradient(ellipse at 50% 40%, rgba(96,165,250,0.20),  #06000e 70%)}
-.realms-stage.fallback-void  {background:radial-gradient(ellipse at 50% 40%, rgba(224,224,255,0.12), #06000e 70%)}
-.realms-stage.fallback-wrath {background:radial-gradient(ellipse at 50% 40%, rgba(244,63,94,0.22),   #1a0006 70%)}
-.realms-stage.fallback-greed {background:radial-gradient(ellipse at 50% 40%, rgba(251,191,36,0.18),  #15100a 70%)}
-.realms-stage.fallback-sloth {background:radial-gradient(ellipse at 50% 40%, rgba(93,186,140,0.20),  #08140e 70%)}
-.realms-stage.fallback-envy  {background:radial-gradient(ellipse at 50% 40%, rgba(45,212,191,0.18),  #051515 70%)}
-.realms-stage.fallback-pride {background:radial-gradient(ellipse at 50% 40%, rgba(253,230,138,0.16), #14110a 70%)}
-.realms-stage.fallback-glut  {background:radial-gradient(ellipse at 50% 40%, rgba(167,139,250,0.20), #0a0420 70%)}
-
-/* Center portal — holds the realm rift; clicking enters the realm */
-.realm-portal{
-  position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
-  width:42%;max-width:360px;min-width:200px;
-  cursor:pointer;text-align:center;
-  transition:transform .25s ease;
-  z-index:2;
-}
-.realm-portal:hover{transform:translate(-50%,-53%)}
-.realm-portal-content{
-  position:relative;width:100%;aspect-ratio:1/1.5;
-  display:flex;align-items:center;justify-content:center;
-}
-.realm-portal img{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
-  filter:drop-shadow(0 0 18px var(--portal-glow,rgba(192,132,252,0.5)))
-         drop-shadow(0 0 38px var(--portal-glow,rgba(192,132,252,0.3)));
-  transition:filter .35s ease;
-}
-.realm-portal:hover img{
-  filter:drop-shadow(0 0 28px var(--portal-glow,rgba(192,132,252,0.75)))
-         drop-shadow(0 0 60px var(--portal-glow,rgba(192,132,252,0.5)));
-}
-/* CSS fallback if realm_rift_<id>.png isn't deployed yet — themed oval glow per realm */
-.realm-portal-fallback{
+.realms-rifts{
   position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  pointer-events:none;
-}
-.realm-portal-fallback-shape{
-  width:62%;height:82%;
-  background:radial-gradient(ellipse at center, var(--portal-color,#c084fc) 0%, transparent 70%);
-  border-radius:50% / 50%;
-  filter:blur(8px);
-  animation:realm-fallback-pulse 3s ease-in-out infinite;
-}
-@keyframes realm-fallback-pulse{
-  0%,100%{opacity:0.75;transform:scale(0.95)}
-  50%{opacity:1;transform:scale(1.02)}
-}
-.realm-portal-fallback-sigil{
-  position:absolute;
-  font-size:54px;color:var(--portal-color,#c084fc);
-  text-shadow:0 0 22px var(--portal-glow,rgba(192,132,252,0.75));
+  /* Bottom-safe so no rift sits under the nav */
+  padding-bottom:80px;
 }
 
-/* Label below the portal */
-.realm-portal-label{margin-top:16px}
-.realm-portal-eyebrow{
-  font-family:var(--serif);font-size:.55rem;letter-spacing:.32em;
-  color:var(--gold);text-transform:uppercase;margin-bottom:6px;
-  text-shadow:0 0 12px rgba(251,191,36,0.55);
+/* The realm-rift label that appears below each rift on hover */
+.realm-rift-name{
+  position:absolute;left:50%;bottom:-26px;transform:translateX(-50%);
+  white-space:nowrap;
+  font-family:var(--deco);font-size:.65rem;letter-spacing:.15em;
+  color:var(--rift-accent, #c084fc);
+  opacity:0;pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;
+  text-shadow:0 0 12px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.95);
 }
-.realm-portal-name{
-  font-family:var(--deco);font-size:1.35rem;letter-spacing:.05em;
-  margin-bottom:8px;text-shadow:0 0 16px rgba(0,0,0,0.85);
-}
-.realm-portal-stats{
-  font-family:var(--serif);font-size:.55rem;letter-spacing:.15em;
-  color:var(--muted);text-transform:uppercase;
+.rift.realm-rift:hover .realm-rift-name{
+  opacity:1;transform:translateX(-50%) translateY(2px);
 }
 
-/* Bottom UI strip — 8 realm chips for switching. Sits above the bottom nav. */
-.realms-strip{
-  position:absolute;
-  bottom:90px;left:50%;transform:translateX(-50%);
-  display:flex;gap:5px;
-  background:rgba(8,2,20,0.85);
-  border:1px solid rgba(192,132,252,0.3);
-  border-radius:12px;padding:8px 10px;
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  max-width:94vw;overflow-x:auto;
-  z-index:3;
-  scrollbar-width:none;
-}
-.realms-strip::-webkit-scrollbar{display:none}
-.realm-chip{
-  flex:0 0 auto;width:50px;height:50px;
-  display:flex;align-items:center;justify-content:center;
-  border-radius:8px;cursor:pointer;
-  background:rgba(124,58,237,0.06);
-  border:1px solid rgba(192,132,252,0.18);
-  font-size:22px;line-height:1;
-  position:relative;transition:all .15s ease;
-}
-.realm-chip:hover{
-  background:rgba(192,132,252,0.18);transform:translateY(-2px);
-}
-.realm-chip.active{
-  border-color:rgba(251,191,36,0.75);
-  background:rgba(251,191,36,0.10);
-  box-shadow:0 0 14px rgba(251,191,36,0.35);
-}
-.realm-chip-icon{display:block;line-height:1}
-.realm-chip-progress{
-  position:absolute;bottom:3px;left:6px;right:6px;
-  height:2px;background:rgba(255,255,255,0.06);border-radius:1px;
-  overflow:hidden;
-}
-.realm-chip-progress-fill{height:100%;border-radius:1px;transition:width .3s ease}
-
-/* Hide legacy realm-card / realms-grid / realms-inner — replaced by the immersive layout */
-.realms-inner,.realms-grid,.realm-card{display:none !important}
+/* Hide legacy realm-card / realms-grid / realms-inner / chip strip / portal — replaced by the void hall */
+.realms-inner,.realms-grid,.realm-card,.realms-strip,.realm-portal,.realms-stage{display:none !important}
 
 /* ══════════════════════════════════════
    GARRISON SCREEN
@@ -2458,27 +2364,10 @@ body{font-family:var(--body);color:var(--text);position:relative}
       </div>
     </div>
 
-    <!-- REALMS — per-realm immersive environment; bg + central rift + UI strip -->
+    <!-- REALMS HALL — the void between worlds; 8 realm rifts scattered across nothing -->
     <div id="screen-realms" class="screen">
-      <div class="realms-stage" id="realms-stage"></div>
-      <div class="realm-portal" id="realm-portal" onclick="onRealmPortalClick()">
-        <div class="realm-portal-content">
-          <!-- CSS fallback (always rendered behind the IMG; shows through if IMG fails) -->
-          <div class="realm-portal-fallback" id="realm-portal-fallback">
-            <div class="realm-portal-fallback-shape"></div>
-            <div class="realm-portal-fallback-sigil" id="realm-portal-fallback-sigil"></div>
-          </div>
-          <img id="realm-portal-img" src="" alt=""
-               onerror="this.style.display='none'"
-               onload="this.style.display='block'">
-        </div>
-        <div class="realm-portal-label">
-          <div class="realm-portal-eyebrow" id="realm-portal-eyebrow"></div>
-          <div class="realm-portal-name" id="realm-portal-name"></div>
-          <div class="realm-portal-stats" id="realm-portal-stats"></div>
-        </div>
-      </div>
-      <div class="realms-strip" id="realms-strip"></div>
+      <div class="realms-void"></div>
+      <div class="realms-rifts" id="realms-rifts"></div>
     </div>
 
     <!-- GARRISON -->
@@ -3829,28 +3718,15 @@ function renderCodex(){
 // ═══════════════════════════════════════════
 // REALMS
 // ═══════════════════════════════════════════
-// ─── REALMS ──────────────────────────────────────────────────────────────
-// Per-realm immersive environment. The active realm fills the screen with its bg image
-// (or themed gradient fallback). The center shows the realm's rift; clicking it enters
-// the realm's stage view. All 8 realms are accessible from the start — there is no
-// forced unlock mechanic; difficulty scaling at higher realms organically gates
-// progression order without preventing exploration.
+// ─── REALMS HALL ─────────────────────────────────────────────────────────
+// The void between worlds. 8 realm rifts scattered across nothing; clicking
+// a rift enters that realm. There is no selection state — every rift is a
+// choice the player can make from the moment they arrive. Difficulty scales
+// hard enough at later realms to organically gate progression order.
 
-let _activeRealmId = null;
-function getActiveRealm(){
-  if(!_activeRealmId) _activeRealmId = REALMS[0].id;
-  return REALMS.find(r => r.id === _activeRealmId) || REALMS[0];
-}
-function setActiveRealm(id){
-  _activeRealmId = id;
-  renderRealms();
-}
-function onRealmPortalClick(){
-  const r = getActiveRealm();
-  if(r) enterRealm(r.id);
-}
-
-// Hex+alpha helper: builds a portal-glow color from realm.color for CSS vars
+// Hex+alpha helper — converts realm.color hex into rgba for the rift's
+// drop-shadow glow CSS variable. Used per-rift inline so each realm's halo
+// matches its themed energy color.
 function _hexToRgba(hex, a){
   const m = (hex||'#c084fc').match(/^#?([0-9a-fA-F]{6})$/);
   if(!m) return `rgba(192,132,252,${a})`;
@@ -3858,59 +3734,38 @@ function _hexToRgba(hex, a){
   return `rgba(${(v>>16)&255},${(v>>8)&255},${v&255},${a})`;
 }
 
+// Scatter positions for the 8 realm rifts across the void.
+// Constraints: x stays in [18%, 82%] so rifts remain visible on portrait mobile
+// (where the 21:9 bg crops to the center band); y stays in [20%, 78%] to leave
+// room above for the upper cosmic-glow in the bg and below for the bottom nav.
+// Tilts vary to feel chaotic, not gridded. Widths vary slightly to suggest depth.
+const _REALMS_LAYOUT = [
+  { id:'void',   x:26, y:22, w:13, tilt:-12, delay:-0.4 },
+  { id:'vale',   x:74, y:24, w:12, tilt:  8, delay:-2.1 },
+  { id:'wrath',  x:18, y:48, w:14, tilt:  6, delay:-3.7 },
+  { id:'greed',  x:50, y:42, w:12, tilt:-10, delay:-1.3 },
+  { id:'glut',   x:82, y:50, w:13, tilt: 12, delay:-4.9 },
+  { id:'sloth',  x:30, y:72, w:13, tilt: 14, delay:-2.8 },
+  { id:'envy',   x:56, y:72, w:12, tilt: -8, delay:-5.6 },
+  { id:'pride',  x:80, y:70, w:11, tilt:-14, delay:-0.9 },
+];
+
 function renderRealms(){
-  const r = getActiveRealm();
-  if(!r) return;
-
-  // ── Backdrop ──
-  const stage = document.getElementById('realms-stage');
-  if(stage){
-    stage.className = 'realms-stage fallback-' + r.id;
-    stage.style.backgroundImage = `url('assets/ui/realm_bg_${r.id}.jpg')`;
-  }
-
-  // ── Portal (rift) ──
-  const portal = document.getElementById('realm-portal');
-  const img = document.getElementById('realm-portal-img');
-  const sigilEl = document.getElementById('realm-portal-fallback-sigil');
-  const portalGlow = _hexToRgba(r.color, 0.55);
-  if(portal){
-    portal.style.setProperty('--portal-glow', portalGlow);
-    portal.style.setProperty('--portal-color', r.color);
-  }
-  if(img){
-    img.src = `assets/ui/realm_rift_${r.id}.png`;
-    img.style.display = 'block';
-  }
-  if(sigilEl) sigilEl.textContent = r.icon;
-
-  // ── Label ──
-  const eyebrow = r.conquered === 0 ? 'Enter' : 'Continue';
-  const nameEl = document.getElementById('realm-portal-name');
-  const eyeEl = document.getElementById('realm-portal-eyebrow');
-  const statsEl = document.getElementById('realm-portal-stats');
-  if(eyeEl) eyeEl.textContent = eyebrow;
-  if(nameEl){
-    nameEl.textContent = r.name;
-    nameEl.style.color = r.color;
-  }
-  if(statsEl) statsEl.textContent = `${r.conquered} / ${r.stages} stages claimed`;
-
-  // ── Bottom strip ──
-  const strip = document.getElementById('realms-strip');
-  if(strip){
-    strip.innerHTML = REALMS.map(realm => {
-      const active = realm.id === _activeRealmId;
-      const pct = Math.min(100, (realm.conquered / realm.stages) * 100);
-      return `
-        <div class="realm-chip ${active?'active':''}"
-             onclick="setActiveRealm('${realm.id}')"
-             title="${realm.name}">
-          <span class="realm-chip-icon">${realm.icon}</span>
-          <div class="realm-chip-progress"><div class="realm-chip-progress-fill" style="width:${pct}%;background:${realm.color}"></div></div>
-        </div>`;
-    }).join('');
-  }
+  const container = document.getElementById('realms-rifts');
+  if(!container) return;
+  container.innerHTML = _REALMS_LAYOUT.map(p => {
+    const r = REALMS.find(x => x.id === p.id);
+    if(!r) return '';
+    const glow = _hexToRgba(r.color, 0.55);
+    return `
+      <a class="rift rift-cutout realm-rift" href="javascript:void(0)"
+         onclick="enterRealm('${r.id}')"
+         title="${r.name}"
+         style="--x:${p.x}%;--y:${p.y}%;--w:${p.w}%;--rift-tilt:${p.tilt}deg;--rift-delay:${p.delay}s;--rift-glow:${glow};--rift-accent:${r.color}">
+        <div class="rift-opening" style="background-image:url('assets/ui/realm_rift_${r.id}.png')"></div>
+        <div class="realm-rift-name">${r.name}</div>
+      </a>`;
+  }).join('');
 }
 function enterRealm(id){alert('Battle system coming soon — '+id+' realm');}
 
