@@ -614,48 +614,193 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .cc-unknown-name{font-size:.45rem;color:#2a1a4a;font-family:var(--serif)}
 
 /* ══════════════════════════════════════
-   REALMS SCREEN
+   REALMS SCREEN — per-realm immersive environment.
+   Each realm has its own full-screen bg image. Center holds the realm rift (if unlocked)
+   or a sealed monolith (if locked). Bottom strip switches between realms.
 ══════════════════════════════════════ */
 #screen-realms{
-  /* IMAGE SLOT: assets/ui/realms_bg.jpg — dark map room with portal frames */
-  background:var(--bg) url('assets/ui/realms_bg.jpg') center center/cover no-repeat;
+  position:fixed;inset:0;overflow:hidden;background:#06000e;
 }
-#screen-realms::before{
-  content:'';position:fixed;inset:0;z-index:0;
-  background:rgba(6,0,14,.65);pointer-events:none;
+.realms-stage{
+  /* Full-screen bg; opacity-fades on realm switch */
+  position:absolute;inset:0;
+  background-color:#06000e;
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  transition:opacity .55s ease;
+  z-index:0;
 }
-#screen-realms > *{position:relative;z-index:1}
-.realms-inner{padding:16px 16px 30px}
-.section-title{font-family:var(--deco);font-size:.85rem;letter-spacing:.2em;color:var(--purple);margin-bottom:14px}
-.realms-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(min-width:600px){.realms-grid{grid-template-columns:repeat(3,1fr)}}
-.realm-card{
-  /* IMAGE SLOT: assets/ui/panel_stone.jpg — dark stone texture */
-  background:var(--ui-panel,rgba(6,0,14,.8));
-  background-size:cover;background-position:center;
-  border:0.5px solid var(--border);
-  border-radius:10px;padding:14px 12px;cursor:pointer;
-  transition:all .2s;position:relative;overflow:hidden;
+.realms-stage::after{
+  /* Dark vignette so the center portal reads clearly */
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at center, transparent 25%, rgba(6,0,14,0.72) 92%);
 }
-/* Overlay to ensure text readability over texture */
-.realm-card::before{
-  content:'';position:absolute;inset:0;
-  background:rgba(6,0,14,.45);pointer-events:none;border-radius:10px;
-  transition:background .2s;
+/* Per-realm fallback gradients — used when realm_bg_<id>.jpg isn't deployed yet */
+.realms-stage.fallback-vale  {background:radial-gradient(ellipse at 50% 40%, rgba(96,165,250,0.20),  #06000e 70%)}
+.realms-stage.fallback-void  {background:radial-gradient(ellipse at 50% 40%, rgba(224,224,255,0.12), #06000e 70%)}
+.realms-stage.fallback-wrath {background:radial-gradient(ellipse at 50% 40%, rgba(244,63,94,0.22),   #1a0006 70%)}
+.realms-stage.fallback-greed {background:radial-gradient(ellipse at 50% 40%, rgba(251,191,36,0.18),  #15100a 70%)}
+.realms-stage.fallback-sloth {background:radial-gradient(ellipse at 50% 40%, rgba(93,186,140,0.20),  #08140e 70%)}
+.realms-stage.fallback-envy  {background:radial-gradient(ellipse at 50% 40%, rgba(45,212,191,0.18),  #051515 70%)}
+.realms-stage.fallback-pride {background:radial-gradient(ellipse at 50% 40%, rgba(253,230,138,0.16), #14110a 70%)}
+.realms-stage.fallback-glut  {background:radial-gradient(ellipse at 50% 40%, rgba(167,139,250,0.20), #0a0420 70%)}
+
+/* Center portal — holds the rift OR monolith depending on lock state */
+.realm-portal{
+  position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+  width:42%;max-width:360px;min-width:200px;
+  cursor:pointer;text-align:center;
+  transition:transform .25s ease;
+  z-index:2;
 }
-.realm-card > *{position:relative;z-index:1}
-.realm-card:hover::before{background:rgba(124,58,237,.15)}
-.realm-card:hover{border-color:rgba(192,132,252,.4);transform:translateY(-2px)}
-.realm-card.locked{opacity:.45;cursor:not-allowed}
-.realm-icon{font-size:1.8rem;margin-bottom:6px}
-.realm-name{font-family:var(--serif);font-size:.7rem;letter-spacing:.1em;color:var(--text);margin-bottom:3px}
-.realm-progress{font-size:.55rem;color:var(--muted);font-style:italic;margin-bottom:8px}
-.realm-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
-.realm-bar-fill{height:100%;border-radius:2px;background:var(--purple);transition:width .5s}
-.realm-status{
-  display:inline-block;font-size:.45rem;letter-spacing:.1em;
-  padding:2px 8px;border-radius:10px;margin-top:6px;font-family:var(--serif);
+.realm-portal:hover{transform:translate(-50%,-53%)}
+.realm-portal-content{
+  position:relative;width:100%;aspect-ratio:1/1.5;
+  display:flex;align-items:center;justify-content:center;
 }
+.realm-portal img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  filter:drop-shadow(0 0 18px var(--portal-glow,rgba(192,132,252,0.5)))
+         drop-shadow(0 0 38px var(--portal-glow,rgba(192,132,252,0.3)));
+  transition:filter .35s ease;
+}
+.realm-portal:hover img{
+  filter:drop-shadow(0 0 28px var(--portal-glow,rgba(192,132,252,0.75)))
+         drop-shadow(0 0 60px var(--portal-glow,rgba(192,132,252,0.5)));
+}
+.realm-portal.locked img{
+  filter:drop-shadow(0 0 16px rgba(60,60,80,0.55)) saturate(0.35) brightness(0.62);
+}
+/* CSS fallback if realm_rift_<id>.png / realm_monolith.png aren't deployed yet */
+.realm-portal-fallback{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+}
+.realm-portal-fallback-shape{
+  width:62%;height:82%;
+  background:radial-gradient(ellipse at center, var(--portal-color,#c084fc) 0%, transparent 70%);
+  border-radius:50% / 50%;
+  filter:blur(8px);
+  animation:realm-fallback-pulse 3s ease-in-out infinite;
+}
+@keyframes realm-fallback-pulse{
+  0%,100%{opacity:0.75;transform:scale(0.95)}
+  50%{opacity:1;transform:scale(1.02)}
+}
+.realm-portal-fallback-sigil{
+  position:absolute;
+  font-size:54px;color:var(--portal-color,#c084fc);
+  text-shadow:0 0 22px var(--portal-glow,rgba(192,132,252,0.75));
+}
+.realm-portal.locked .realm-portal-fallback-shape{
+  background:linear-gradient(180deg, #2a1a3a 0%, #1a0c28 50%, #0a0414 100%);
+  filter:blur(1px);
+  border-radius:14% / 6%;
+  width:38%;height:78%;
+  animation:none;
+  border:1px solid rgba(80,70,110,0.3);
+  box-shadow:0 8px 32px rgba(0,0,0,0.8);
+}
+.realm-portal.locked .realm-portal-fallback-sigil{
+  font-size:34px;opacity:0.42;color:#6b5b8a;text-shadow:none;
+}
+
+/* Label below the portal */
+.realm-portal-label{margin-top:16px}
+.realm-portal-eyebrow{
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.32em;
+  color:var(--gold);text-transform:uppercase;margin-bottom:6px;
+  text-shadow:0 0 12px rgba(251,191,36,0.55);
+}
+.realm-portal.locked .realm-portal-eyebrow{
+  color:rgba(140,135,160,0.7);text-shadow:none;
+}
+.realm-portal-name{
+  font-family:var(--deco);font-size:1.35rem;letter-spacing:.05em;
+  margin-bottom:8px;text-shadow:0 0 16px rgba(0,0,0,0.85);
+}
+.realm-portal-stats{
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.15em;
+  color:var(--muted);text-transform:uppercase;
+}
+
+/* Bottom UI strip — 8 realm chips for switching. Sits above the bottom nav. */
+.realms-strip{
+  position:absolute;
+  bottom:90px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;
+  background:rgba(8,2,20,0.85);
+  border:1px solid rgba(192,132,252,0.3);
+  border-radius:12px;padding:8px 10px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  max-width:94vw;overflow-x:auto;
+  z-index:3;
+  scrollbar-width:none;
+}
+.realms-strip::-webkit-scrollbar{display:none}
+.realm-chip{
+  flex:0 0 auto;width:50px;height:50px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:8px;cursor:pointer;
+  background:rgba(124,58,237,0.06);
+  border:1px solid rgba(192,132,252,0.18);
+  font-size:22px;line-height:1;
+  position:relative;transition:all .15s ease;
+}
+.realm-chip:hover{
+  background:rgba(192,132,252,0.18);transform:translateY(-2px);
+}
+.realm-chip.active{
+  border-color:rgba(251,191,36,0.75);
+  background:rgba(251,191,36,0.10);
+  box-shadow:0 0 14px rgba(251,191,36,0.35);
+}
+.realm-chip-icon{display:block;line-height:1}
+.realm-chip.locked .realm-chip-icon{
+  opacity:0.32;filter:grayscale(0.9);
+}
+.realm-chip-lock{
+  position:absolute;top:2px;right:3px;
+  font-size:9px;color:rgba(180,180,200,0.7);line-height:1;
+}
+.realm-chip-progress{
+  position:absolute;bottom:3px;left:6px;right:6px;
+  height:2px;background:rgba(255,255,255,0.06);border-radius:1px;
+  overflow:hidden;
+}
+.realm-chip-progress-fill{height:100%;border-radius:1px;transition:width .3s ease}
+
+/* Rip-open unlock animation — clip-path morph reveals the rift from a thin vertical seam outward.
+   Per Sanctum Redesign spec ("Tier 2 CSS clip-path masked rip-open animation"). */
+@keyframes realm-rip-open{
+  0%{
+    clip-path:polygon(48% 0, 52% 0, 52% 100%, 48% 100%);
+    filter:brightness(0.35) saturate(0.2);
+    transform:scale(0.94);
+  }
+  35%{
+    clip-path:polygon(30% 0, 70% 0, 70% 100%, 30% 100%);
+    filter:brightness(0.75) saturate(0.75) drop-shadow(0 0 30px rgba(192,132,252,0.65));
+    transform:scale(0.98);
+  }
+  70%{
+    clip-path:polygon(8% 0, 92% 0, 92% 100%, 8% 100%);
+    filter:brightness(1.18) saturate(1.35) drop-shadow(0 0 50px rgba(192,132,252,0.88));
+    transform:scale(1.04);
+  }
+  100%{
+    clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    filter:brightness(1.0) saturate(1.0) drop-shadow(0 0 24px rgba(192,132,252,0.5));
+    transform:scale(1.0);
+  }
+}
+.realm-portal.unlocking img,
+.realm-portal.unlocking .realm-portal-fallback-shape{
+  animation:realm-rip-open 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hide legacy realm-card / realms-grid / realms-inner — replaced by the immersive layout */
+.realms-inner,.realms-grid,.realm-card{display:none !important}
 
 /* ══════════════════════════════════════
    GARRISON SCREEN
@@ -2366,12 +2511,27 @@ body{font-family:var(--body);color:var(--text);position:relative}
       </div>
     </div>
 
-    <!-- REALMS -->
+    <!-- REALMS — per-realm immersive environment; bg + central rift/monolith + UI strip -->
     <div id="screen-realms" class="screen">
-      <div class="realms-inner">
-        <div class="section-title">Realm Conquest</div>
-        <div class="realms-grid" id="realms-grid"></div>
+      <div class="realms-stage" id="realms-stage"></div>
+      <div class="realm-portal" id="realm-portal" onclick="onRealmPortalClick()">
+        <div class="realm-portal-content">
+          <!-- CSS fallback (always rendered behind the IMG; shows through if IMG fails) -->
+          <div class="realm-portal-fallback" id="realm-portal-fallback">
+            <div class="realm-portal-fallback-shape"></div>
+            <div class="realm-portal-fallback-sigil" id="realm-portal-fallback-sigil"></div>
+          </div>
+          <img id="realm-portal-img" src="" alt=""
+               onerror="this.style.display='none'"
+               onload="this.style.display='block'">
+        </div>
+        <div class="realm-portal-label">
+          <div class="realm-portal-eyebrow" id="realm-portal-eyebrow"></div>
+          <div class="realm-portal-name" id="realm-portal-name"></div>
+          <div class="realm-portal-stats" id="realm-portal-stats"></div>
+        </div>
       </div>
+      <div class="realms-strip" id="realms-strip"></div>
     </div>
 
     <!-- GARRISON -->
@@ -2596,6 +2756,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
         <button class="test-btn" data-cheat="rune">+1 Rune</button>
         <button class="test-btn" data-cheat="rune10">+10 Runes</button>
         <button class="test-btn" data-cheat="runeleg">+1 Legendary Rune</button>
+        <button class="test-btn" data-cheat="unlock">Unlock Next Realm</button>
         <button class="test-btn danger" data-cheat="wipe">Wipe Vessel</button>
       </div>
     </div>
@@ -2751,7 +2912,7 @@ const REALMS=[
   {id:'void',name:'The Void Wastes',icon:'◈',color:'#e0e0ff',stages:13,conquered:0,locked:true},
   {id:'wrath',name:"Vrath'ax Warfront",icon:'🔥',color:'#f43f5e',stages:13,conquered:0,locked:true},
   {id:'greed',name:'Gilded Pit',icon:'⭐',color:'#fbbf24',stages:13,conquered:0,locked:true},
-  {id:'sloth',name:'The Stillness',icon:'💤',color:'#6366f1',stages:13,conquered:0,locked:true},
+  {id:'sloth',name:'The Stillness',icon:'💤',color:'#5dba8c',stages:13,conquered:0,locked:true},
   {id:'envy',name:'Mirror Maze',icon:'🪞',color:'#2dd4bf',stages:13,conquered:0,locked:true},
   {id:'pride',name:'Crumbling Throne',icon:'👑',color:'#fde68a',stages:13,conquered:0,locked:true},
   {id:'glut',name:"Gorgethorn's Maw",icon:'💀',color:'#a78bfa',stages:13,conquered:0,locked:true},
@@ -3722,18 +3883,133 @@ function renderCodex(){
 // ═══════════════════════════════════════════
 // REALMS
 // ═══════════════════════════════════════════
+// ─── REALMS ──────────────────────────────────────────────────────────────
+// Per-realm immersive environment. The active realm fills the screen with its bg image
+// (or themed gradient fallback). The center shows the realm's rift (if unlocked) or a
+// sealed monolith (if locked). The bottom strip lets the player switch between realms.
+// Unlocking a realm triggers a CSS clip-path "rip-open" animation revealing the rift.
+
+let _activeRealmId = null;
+function getActiveRealm(){
+  // First call — default to first non-locked, or first in list if all locked
+  if(!_activeRealmId){
+    const firstOpen = REALMS.find(r => !r.locked);
+    _activeRealmId = (firstOpen || REALMS[0]).id;
+  }
+  return REALMS.find(r => r.id === _activeRealmId) || REALMS[0];
+}
+function setActiveRealm(id){
+  _activeRealmId = id;
+  renderRealms();
+}
+function onRealmPortalClick(){
+  const r = getActiveRealm();
+  if(!r) return;
+  if(r.locked){
+    // Locked: try to unlock if requirements met. For now, no requirements gate — just inform.
+    // (Real gating will read prior-realm completion when battle/realm-progression is wired.)
+    if(typeof showSummonResultText === 'function'){
+      showSummonResultText('SEALED', 'Complete the prior realm to break this seal.', '#c084fc');
+    }
+  } else {
+    enterRealm(r.id);
+  }
+}
+// Trigger the rip-open animation on the active realm and flip its locked state.
+// Wire this into prior-realm completion when battle/realm-progression is built.
+function unlockRealm(id){
+  const r = REALMS.find(x => x.id === id);
+  if(!r || !r.locked) return;
+  r.locked = false;
+  save();
+  // If we're currently viewing the realm being unlocked, play the rip-open animation.
+  if(_activeRealmId === id){
+    const portal = document.getElementById('realm-portal');
+    const img = document.getElementById('realm-portal-img');
+    if(portal && img){
+      portal.classList.remove('locked');
+      // Pre-swap to the unlocked rift asset so the animation reveals the right image
+      img.src = `assets/ui/realm_rift_${id}.png`;
+      portal.classList.add('unlocking');
+      setTimeout(() => {
+        portal.classList.remove('unlocking');
+        renderRealms();
+      }, 2200);
+    }
+  } else {
+    renderRealms();
+  }
+}
+
+// Hex+alpha helper: builds a portal-glow color from realm.color for CSS vars
+function _hexToRgba(hex, a){
+  const m = (hex||'#c084fc').match(/^#?([0-9a-fA-F]{6})$/);
+  if(!m) return `rgba(192,132,252,${a})`;
+  const v = parseInt(m[1], 16);
+  return `rgba(${(v>>16)&255},${(v>>8)&255},${v&255},${a})`;
+}
+
 function renderRealms(){
-  const grid=document.getElementById('realms-grid');if(!grid)return;
-  grid.innerHTML=REALMS.map(r=>`
-    <div class="realm-card${r.locked?' locked':''}" onclick="${r.locked?'':'enterRealm(\''+r.id+'\')'}">
-      <div class="realm-icon">${r.icon}</div>
-      <div class="realm-name" style="color:${r.color}">${r.name}</div>
-      <div class="realm-progress">${r.conquered} / ${r.stages} stages</div>
-      <div class="realm-bar"><div class="realm-bar-fill" style="width:${r.conquered/r.stages*100}%;background:${r.color}"></div></div>
-      <span class="realm-status" style="background:${r.locked?'rgba(255,255,255,.05)':r.color+'18'};color:${r.locked?'#2d1a4b':r.color};border:0.5px solid ${r.locked?'rgba(255,255,255,.08)':r.color+'40'}">
-        ${r.locked?'🔒 LOCKED':r.conquered===0?'ENTER':'CONTINUE'}
-      </span>
-    </div>`).join('');
+  const r = getActiveRealm();
+  if(!r) return;
+
+  // ── Backdrop ──
+  const stage = document.getElementById('realms-stage');
+  if(stage){
+    // Reset any prior fallback class
+    stage.className = 'realms-stage fallback-' + r.id;
+    // Try the per-realm bg image; if it fails, the fallback class gradient shows through
+    stage.style.backgroundImage = `url('assets/ui/realm_bg_${r.id}.jpg')`;
+  }
+
+  // ── Portal (rift OR monolith) ──
+  const portal = document.getElementById('realm-portal');
+  const img = document.getElementById('realm-portal-img');
+  const sigilEl = document.getElementById('realm-portal-fallback-sigil');
+  const portalGlow = _hexToRgba(r.color, 0.55);
+  if(portal){
+    portal.classList.toggle('locked', r.locked);
+    portal.style.setProperty('--portal-glow', portalGlow);
+    portal.style.setProperty('--portal-color', r.color);
+  }
+  if(img){
+    img.src = r.locked ? `assets/ui/realm_monolith.png` : `assets/ui/realm_rift_${r.id}.png`;
+    img.style.display = 'block'; // reset; onerror flips back to none if missing
+  }
+  if(sigilEl) sigilEl.textContent = r.locked ? '⛧' : r.icon;
+
+  // ── Label ──
+  const eyebrow = r.locked ? 'Sealed' : (r.conquered === 0 ? 'Enter' : 'Continue');
+  const nameEl = document.getElementById('realm-portal-name');
+  const eyeEl = document.getElementById('realm-portal-eyebrow');
+  const statsEl = document.getElementById('realm-portal-stats');
+  if(eyeEl) eyeEl.textContent = eyebrow;
+  if(nameEl){
+    nameEl.textContent = r.name;
+    nameEl.style.color = r.locked ? '#7a6a9a' : r.color;
+  }
+  if(statsEl){
+    statsEl.textContent = r.locked
+      ? 'Locked'
+      : `${r.conquered} / ${r.stages} stages claimed`;
+  }
+
+  // ── Bottom strip ──
+  const strip = document.getElementById('realms-strip');
+  if(strip){
+    strip.innerHTML = REALMS.map(realm => {
+      const active = realm.id === _activeRealmId;
+      const pct = Math.min(100, (realm.conquered / realm.stages) * 100);
+      return `
+        <div class="realm-chip ${active?'active':''} ${realm.locked?'locked':''}"
+             onclick="setActiveRealm('${realm.id}')"
+             title="${realm.name}${realm.locked?' — Sealed':''}">
+          <span class="realm-chip-icon">${realm.icon}</span>
+          ${realm.locked ? '<span class="realm-chip-lock">🔒</span>' : ''}
+          <div class="realm-chip-progress"><div class="realm-chip-progress-fill" style="width:${pct}%;background:${realm.color}"></div></div>
+        </div>`;
+    }).join('');
+  }
 }
 function enterRealm(id){alert('Battle system coming soon — '+id+' realm');}
 
@@ -4705,6 +4981,15 @@ window.INF=(function(){
           {id:'mythic', weight:40},
         ].map(b => Object.assign({}, GEAR_RARITIES.find(r => r.id === b.id), {weight: b.weight}));
         grantRuneDrop({ rarityBias: biased });
+      }
+    }
+    else if(kind==='unlock'){
+      // Find first locked realm, switch to it, and trigger the rip-open animation
+      const next = REALMS.find(r => r.locked);
+      if(next && typeof setActiveRealm === 'function' && typeof unlockRealm === 'function'){
+        setActiveRealm(next.id);
+        // Defer one frame so the locked state renders first, then the unlock animation triggers
+        requestAnimationFrame(() => unlockRealm(next.id));
       }
     }
     else if(kind==='wipe'){
