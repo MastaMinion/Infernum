@@ -661,6 +661,100 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .realms-inner,.realms-grid,.realm-card,.realms-strip,.realm-portal,.realms-stage{display:none !important}
 
 /* ══════════════════════════════════════
+   REALM STAGE VIEW — entered by clicking a rift in the void hall.
+   Full-screen realm bg + realm title + 13 stage nodes + back-to-void button.
+   Battle system is not yet wired; stage nodes are visual placeholders.
+══════════════════════════════════════ */
+#screen-realm{
+  position:fixed;inset:0;overflow:hidden;background:#06000e;
+}
+.realm-stage-bg{
+  position:absolute;inset:0;
+  background-color:#06000e;
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  z-index:0;
+}
+.realm-stage-vignette{
+  position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:
+    radial-gradient(ellipse at center, transparent 30%, rgba(6,0,14,0.55) 92%),
+    linear-gradient(to bottom, rgba(6,0,14,0.55) 0%, transparent 22%, transparent 72%, rgba(6,0,14,0.78) 100%);
+}
+.realm-stage-content{
+  position:absolute;inset:0;display:flex;flex-direction:column;z-index:2;
+}
+.realm-back-btn{
+  position:absolute;top:16px;left:16px;
+  background:rgba(8,2,20,0.78);
+  border:1px solid rgba(192,132,252,0.3);
+  color:var(--text);
+  padding:8px 14px;border-radius:8px;cursor:pointer;
+  font-family:var(--serif);font-size:.65rem;
+  letter-spacing:.18em;text-transform:uppercase;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:all .15s ease;z-index:3;
+}
+.realm-back-btn:hover{
+  border-color:rgba(192,132,252,0.6);
+  background:rgba(124,58,237,0.18);
+  transform:translateX(-2px);
+}
+.realm-stage-header{
+  text-align:center;padding-top:70px;padding-bottom:24px;
+}
+.realm-stage-eyebrow{
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.32em;
+  color:var(--gold);text-transform:uppercase;margin-bottom:10px;
+  text-shadow:0 0 14px rgba(0,0,0,0.95);
+}
+.realm-stage-name{
+  font-family:var(--deco);font-size:1.6rem;letter-spacing:.05em;
+  margin-bottom:8px;text-shadow:0 0 24px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.95);
+}
+.realm-stage-progress{
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.15em;
+  color:var(--muted);text-transform:uppercase;
+  text-shadow:0 0 8px rgba(0,0,0,0.85);
+}
+.realm-stage-nodes{
+  margin:auto;display:flex;gap:12px;
+  justify-content:center;flex-wrap:wrap;
+  max-width:88vw;padding:20px;
+}
+.stage-node{
+  width:42px;height:42px;border-radius:50%;
+  background:rgba(8,2,20,0.78);
+  border:1px solid rgba(255,255,255,0.18);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--deco);font-size:.85rem;
+  color:rgba(255,255,255,0.45);
+  cursor:default;transition:all .15s ease;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.stage-node.conquered{
+  background:rgba(8,2,20,0.62);
+  border-color:var(--node-color, var(--gold));
+  color:var(--node-color, var(--gold));
+}
+.stage-node.next{
+  border-color:var(--node-color, var(--gold));
+  color:var(--node-color, var(--gold));
+  box-shadow:0 0 16px var(--node-glow, rgba(251,191,36,0.55));
+  animation:stage-pulse 1.8s ease-in-out infinite;
+}
+@keyframes stage-pulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.08)}
+}
+.realm-stage-coming{
+  text-align:center;
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.22em;
+  color:var(--muted);text-transform:uppercase;
+  font-style:italic;padding-bottom:100px;opacity:0.55;
+  text-shadow:0 0 8px rgba(0,0,0,0.85);
+}
+
+/* ══════════════════════════════════════
    GARRISON SCREEN
 ══════════════════════════════════════ */
 #screen-garrison{
@@ -2375,6 +2469,24 @@ body{font-family:var(--body);color:var(--text);position:relative}
       <div class="realms-rifts" id="realms-rifts"></div>
     </div>
 
+    <!-- REALM (singular) — per-realm stage view; entered by clicking a rift in the hall.
+         Uses the realm's bg image as full-screen backdrop. Stage nodes are placeholders
+         until the battle system is wired. -->
+    <div id="screen-realm" class="screen">
+      <div class="realm-stage-bg" id="realm-stage-bg"></div>
+      <div class="realm-stage-vignette"></div>
+      <div class="realm-stage-content">
+        <button class="realm-back-btn" onclick="switchScreen('realms')">← The Void</button>
+        <div class="realm-stage-header">
+          <div class="realm-stage-eyebrow" id="realm-stage-eyebrow"></div>
+          <div class="realm-stage-name" id="realm-stage-name"></div>
+          <div class="realm-stage-progress" id="realm-stage-progress"></div>
+        </div>
+        <div class="realm-stage-nodes" id="realm-stage-nodes"></div>
+        <div class="realm-stage-coming">Battles coming soon</div>
+      </div>
+    </div>
+
     <!-- GARRISON -->
     <div id="screen-garrison" class="screen">
       <div class="garrison-inner">
@@ -3292,6 +3404,7 @@ function switchScreen(name, btnEl){
   // NOTE: codex grid render is deferred to openCodexGrid() — the chamber starts closed,
   // and rendering 28 demon-card mp4 videos before the player opens the tome wastes mobile bandwidth.
   if(name==='realms') renderRealms();
+  if(name==='realm') renderRealm();
   if(name==='garrison') renderGarrison();
   if(name==='riftwalk') renderWalker();
   if(name==='summon'){
@@ -3776,7 +3889,45 @@ function renderRealms(){
       </a>`;
   }).join('');
 }
-function enterRealm(id){alert('Battle system coming soon — '+id+' realm');}
+// State: which realm the player has stepped into. Set by enterRealm() before switchScreen.
+let _currentRealmId = null;
+
+function enterRealm(id){
+  _currentRealmId = id;
+  switchScreen('realm');
+}
+
+// Render the per-realm stage view. The realm's bg image fills the screen; the realm
+// name + 13 stage nodes sit on top with vignette + heavy text-shadow for legibility.
+// Stage nodes are visual placeholders — they show progression state (conquered / next /
+// pending) but aren't clickable until the battle system is wired.
+function renderRealm(){
+  const r = REALMS.find(x => x.id === _currentRealmId);
+  if(!r) return;
+  const bg = document.getElementById('realm-stage-bg');
+  if(bg) bg.style.backgroundImage = `url('assets/ui/realm_bg_${r.id}.jpg')`;
+  const eyebrow = document.getElementById('realm-stage-eyebrow');
+  if(eyebrow) eyebrow.textContent = r.conquered === 0 ? 'Awaiting your descent' : 'Continue the conquest';
+  const nameEl = document.getElementById('realm-stage-name');
+  if(nameEl){
+    nameEl.textContent = r.name;
+    nameEl.style.color = r.color;
+  }
+  const progress = document.getElementById('realm-stage-progress');
+  if(progress) progress.textContent = `${r.conquered} / ${r.stages} stages claimed`;
+  const nodes = document.getElementById('realm-stage-nodes');
+  if(nodes){
+    const glow = _hexToRgba(r.color, 0.55);
+    nodes.innerHTML = Array.from({length: r.stages}, (_, i) => {
+      const conquered = i < r.conquered;
+      const next = i === r.conquered;
+      return `<div class="stage-node ${conquered?'conquered':''} ${next?'next':''}"
+              style="--node-color:${r.color};--node-glow:${glow}">
+        <span>${i+1}</span>
+      </div>`;
+    }).join('');
+  }
+}
 
 // ═══════════════════════════════════════════
 // GARRISON
