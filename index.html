@@ -637,6 +637,11 @@ body{font-family:var(--body);color:var(--text);position:relative}
   /* Bottom-safe so no rift sits under the nav */
   padding-bottom:80px;
 }
+/* Cap rift size on wide viewports — keeps the scatter readable on desktop and prevents
+   neighboring drop-shadow halos from bleeding into each other. */
+.realms-rifts .rift{
+  max-width:200px;
+}
 
 /* The realm-rift label that appears below each rift on hover */
 .realm-rift-name{
@@ -3734,20 +3739,24 @@ function _hexToRgba(hex, a){
   return `rgba(${(v>>16)&255},${(v>>8)&255},${v&255},${a})`;
 }
 
-// Scatter positions for the 8 realm rifts across the void.
-// Constraints: x stays in [18%, 82%] so rifts remain visible on portrait mobile
-// (where the 21:9 bg crops to the center band); y stays in [20%, 78%] to leave
-// room above for the upper cosmic-glow in the bg and below for the bottom nav.
-// Tilts vary to feel chaotic, not gridded. Widths vary slightly to suggest depth.
+// Layout for the 8 realm rifts across the void.
+// 3-2-3 row structure (top: 3 rifts, mid: 2 rifts, bot: 3 rifts) with horizontal
+// jitter inside each row to avoid feeling gridded. Mid row indented inward so
+// it doesn't vertically align with top/bot corners. All rifts cap at 200px max
+// (.realms-rifts .rift max-width) so spacing holds on wide viewports.
+// Rows separated by ~25% Y so drop-shadow halos don't bleed between rows.
 const _REALMS_LAYOUT = [
-  { id:'void',   x:26, y:22, w:13, tilt:-12, delay:-0.4 },
-  { id:'vale',   x:74, y:24, w:12, tilt:  8, delay:-2.1 },
-  { id:'wrath',  x:18, y:48, w:14, tilt:  6, delay:-3.7 },
-  { id:'greed',  x:50, y:42, w:12, tilt:-10, delay:-1.3 },
-  { id:'glut',   x:82, y:50, w:13, tilt: 12, delay:-4.9 },
-  { id:'sloth',  x:30, y:72, w:13, tilt: 14, delay:-2.8 },
-  { id:'envy',   x:56, y:72, w:12, tilt: -8, delay:-5.6 },
-  { id:'pride',  x:80, y:70, w:11, tilt:-14, delay:-0.9 },
+  // TOP — 3 rifts (y ~22%)
+  { id:'void',   x:22, y:22, w:11, tilt:-12, delay:-0.4 },
+  { id:'greed',  x:51, y:26, w:12, tilt:  6, delay:-2.1 },
+  { id:'vale',   x:77, y:21, w:11, tilt:-10, delay:-3.7 },
+  // MID — 2 rifts (y ~50%), pulled inward to avoid corner-stack alignment
+  { id:'wrath',  x:33, y:49, w:13, tilt:  8, delay:-1.3 },
+  { id:'glut',   x:67, y:51, w:13, tilt:-14, delay:-4.9 },
+  // BOT — 3 rifts (y ~75%)
+  { id:'sloth',  x:23, y:76, w:12, tilt: 12, delay:-2.8 },
+  { id:'envy',   x:50, y:73, w:11, tilt: -8, delay:-5.6 },
+  { id:'pride',  x:78, y:77, w:12, tilt:-12, delay:-0.9 },
 ];
 
 function renderRealms(){
