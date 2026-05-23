@@ -699,6 +699,44 @@ body{font-family:var(--body);color:var(--text);position:relative}
   background:rgba(124,58,237,0.18);
   transform:translateX(-2px);
 }
+
+/* Sanctum back button — small rift-themed visualization that returns to the hub.
+   Used on sub-screens (realms hall, realm stage, codex, garrison, walker) so the
+   player has a visible thematic way to return to the sanctum. */
+.sanctum-back-btn{
+  position:fixed;
+  top:72px;right:14px;
+  width:56px;height:140px;
+  background-image:url('assets/ui/rift_sanctum.png');
+  background-size:contain;background-position:center;background-repeat:no-repeat;
+  cursor:pointer;
+  filter:drop-shadow(0 0 8px rgba(192,132,252,0.4))
+         drop-shadow(0 0 18px rgba(192,132,252,0.25));
+  transition:filter .25s ease, transform .25s ease;
+  z-index:50;
+  animation:sanctum-back-bob 6s ease-in-out infinite;
+}
+.sanctum-back-btn:hover{
+  filter:drop-shadow(0 0 14px rgba(192,132,252,0.75))
+         drop-shadow(0 0 32px rgba(192,132,252,0.5));
+  transform:scale(1.08);
+}
+.sanctum-back-btn::after{
+  content:'Sanctum';
+  position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.25em;
+  color:var(--muted);text-transform:uppercase;
+  white-space:nowrap;opacity:0;
+  transition:opacity .25s ease;
+  text-shadow:0 0 8px rgba(0,0,0,0.95);
+  pointer-events:none;
+}
+.sanctum-back-btn:hover::after{opacity:1}
+@keyframes sanctum-back-bob{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-3px)}
+}
+.sanctum-back-btn:hover{animation-play-state:paused}
 .realm-stage-header{
   text-align:center;padding-top:70px;padding-bottom:24px;
 }
@@ -2443,6 +2481,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
         <div class="summon-hud-hint" id="summon-hud-hint">Tap a scroll to select &middot; Tap pentagram to summon &middot; Hold pentagram for ×10 &middot; Hold a scroll to trade 9 &rarr; 1 next tier</div>
       </div>
       <div class="summon-result" id="summon-result"></div>
+      <div class="sanctum-back-btn" onclick="switchScreen('hub')"></div>
     </div>
 
     <!-- CODEX -->
@@ -2461,12 +2500,14 @@ body{font-family:var(--body);color:var(--text);position:relative}
         </div>
         <div class="codex-grid" id="codex-grid"></div>
       </div>
+      <div class="sanctum-back-btn" onclick="switchScreen('hub')"></div>
     </div>
 
     <!-- REALMS HALL — the void between worlds; 8 realm rifts scattered across nothing -->
     <div id="screen-realms" class="screen">
       <div class="realms-void"></div>
       <div class="realms-rifts" id="realms-rifts"></div>
+      <div class="sanctum-back-btn" onclick="switchScreen('hub')"></div>
     </div>
 
     <!-- REALM (singular) — per-realm stage view; entered by clicking a rift in the hall.
@@ -2485,6 +2526,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
         <div class="realm-stage-nodes" id="realm-stage-nodes"></div>
         <div class="realm-stage-coming">Battles coming soon</div>
       </div>
+      <div class="sanctum-back-btn" onclick="switchScreen('hub')"></div>
     </div>
 
     <!-- GARRISON -->
@@ -2500,6 +2542,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
         </div>
         <div class="garrison-slots" id="garrison-slots"></div>
       </div>
+      <div class="sanctum-back-btn" onclick="switchScreen('hub')"></div>
     </div>
 
     <!-- THE WALKER — Personal Chamber -->
@@ -2624,6 +2667,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
         </section>
 
       </div>
+      <div class="sanctum-back-btn" onclick="switchScreen('hub')"></div>
     </div>
 
   </div><!-- /content -->
