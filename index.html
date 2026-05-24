@@ -683,22 +683,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .realm-stage-content{
   position:absolute;inset:0;display:flex;flex-direction:column;z-index:2;
 }
-.realm-back-btn{
-  position:absolute;top:16px;left:16px;
-  background:rgba(8,2,20,0.78);
-  border:1px solid rgba(192,132,252,0.3);
-  color:var(--text);
-  padding:8px 14px;border-radius:8px;cursor:pointer;
-  font-family:var(--serif);font-size:.65rem;
-  letter-spacing:.18em;text-transform:uppercase;
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  transition:all .15s ease;z-index:3;
-}
-.realm-back-btn:hover{
-  border-color:rgba(192,132,252,0.6);
-  background:rgba(124,58,237,0.18);
-  transform:translateX(-2px);
-}
 
 /* Sanctum back button — small rift-themed visualization that returns to the hub.
    Used on sub-screens (realms hall, realm stage, codex, garrison, walker) so the
@@ -737,6 +721,41 @@ body{font-family:var(--body);color:var(--text);position:relative}
   50%{transform:translateY(-3px)}
 }
 .sanctum-back-btn:hover{animation-play-state:paused}
+
+/* Realms back button — same pattern as sanctum-back, but uses rift_realms.png as the
+   micro image and returns to the Realms Hall. Mirror-positioned at top-left so it
+   doesn't conflict with the sanctum-back at top-right. Used on the per-realm stage
+   view where "previous" = the void hall. */
+.realms-back-btn{
+  position:fixed;
+  top:72px;left:14px;
+  width:70px;height:70px;
+  background-image:url('assets/ui/rift_realms.png');
+  background-size:contain;background-position:center;background-repeat:no-repeat;
+  cursor:pointer;
+  filter:drop-shadow(0 0 8px rgba(192,132,252,0.4))
+         drop-shadow(0 0 18px rgba(192,132,252,0.25));
+  transition:filter .25s ease, transform .25s ease;
+  z-index:50;
+  animation:sanctum-back-bob 6s ease-in-out infinite;
+}
+.realms-back-btn:hover{
+  filter:drop-shadow(0 0 14px rgba(192,132,252,0.75))
+         drop-shadow(0 0 32px rgba(192,132,252,0.5));
+  transform:scale(1.08);
+  animation-play-state:paused;
+}
+.realms-back-btn::after{
+  content:'Void';
+  position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);
+  font-family:var(--serif);font-size:.55rem;letter-spacing:.25em;
+  color:var(--muted);text-transform:uppercase;
+  white-space:nowrap;opacity:0;
+  transition:opacity .25s ease;
+  text-shadow:0 0 8px rgba(0,0,0,0.95);
+  pointer-events:none;
+}
+.realms-back-btn:hover::after{opacity:1}
 .realm-stage-header{
   text-align:center;padding-top:70px;padding-bottom:24px;
 }
@@ -2649,7 +2668,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
       <div class="realm-stage-bg" id="realm-stage-bg"></div>
       <div class="realm-stage-vignette"></div>
       <div class="realm-stage-content">
-        <button class="realm-back-btn" onclick="switchScreen('realms')">← The Void</button>
+        <div class="realms-back-btn" onclick="switchScreen('realms')"></div>
         <div class="realm-stage-header">
           <div class="realm-stage-eyebrow" id="realm-stage-eyebrow"></div>
           <div class="realm-stage-name" id="realm-stage-name"></div>
