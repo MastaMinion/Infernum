@@ -2291,56 +2291,188 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 
 /* ── TEST PANEL (dev-only) ── */
-.test-toggle{
-  position:fixed;bottom:8px;left:8px;z-index:50;
-  padding:7px 14px;border:1px solid var(--border);
-  background:rgba(12,4,24,.85);backdrop-filter:blur(6px);
-  color:var(--gold);font-family:var(--serif);
-  font-size:.55rem;letter-spacing:.32em;text-transform:uppercase;
-  cursor:pointer;transition:all .25s;
-}
-.test-toggle:hover{border-color:rgba(251,191,36,.55);color:#fff8e1;box-shadow:0 0 18px -8px rgba(251,191,36,.5)}
 
-.test-panel{
-  position:fixed;top:0;left:0;bottom:0;z-index:60;
-  width:min(420px,92vw);
-  background:linear-gradient(180deg,rgba(12,4,24,.97),rgba(6,0,14,.98));
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;
-  transform:translateX(-105%);
+
+/* ══════════════════════════════════════
+   MUSIC SYSTEM — splash, mini player, playlist sheet.
+   Browser autoplay policy requires a user gesture before audio plays, so the
+   splash screen captures the player's first click and starts the soundtrack.
+══════════════════════════════════════ */
+
+/* SPLASH SCREEN — fullscreen overlay shown on initial load until dismissed. */
+.splash-screen{
+  position:fixed;inset:0;z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center, #0a0420 0%, #06000e 70%);
+  opacity:0;pointer-events:none;
+  transition:opacity .6s ease;
+}
+.splash-screen.show{opacity:1;pointer-events:auto}
+.splash-screen.fading{opacity:0;pointer-events:none}
+.splash-inner{
+  text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:34px;
+  padding:40px 28px;
+  animation:splash-rise .9s cubic-bezier(.22,1,.36,1);
+}
+@keyframes splash-rise{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.splash-logo{
+  font-family:var(--deco);font-weight:700;
+  font-size:2.6rem;letter-spacing:.32em;
+  color:var(--gold);
+  text-shadow:0 0 24px rgba(251,191,36,0.45), 0 0 60px rgba(192,132,252,0.25);
+  margin:0;
+}
+.splash-tagline{
+  font-family:var(--serif);font-style:italic;
+  font-size:.75rem;letter-spacing:.32em;text-transform:uppercase;
+  color:var(--muted);
+  margin:0;
+}
+.splash-btn{
+  background:linear-gradient(180deg, rgba(124,58,237,0.22), rgba(124,58,237,0.08));
+  border:1px solid rgba(192,132,252,0.55);
+  color:var(--text);
+  padding:16px 38px;
+  font-family:var(--deco);font-weight:700;
+  font-size:.8rem;letter-spacing:.34em;text-transform:uppercase;
+  cursor:pointer;
+  transition:all .25s ease;
+  text-shadow:0 0 8px rgba(192,132,252,0.4);
+}
+.splash-btn:hover{
+  border-color:rgba(192,132,252,0.95);
+  background:linear-gradient(180deg, rgba(124,58,237,0.35), rgba(124,58,237,0.15));
+  box-shadow:0 0 28px -4px rgba(192,132,252,0.55);
+  transform:translateY(-1px);
+}
+.splash-btn:active{transform:translateY(0) scale(.98)}
+
+/* MINI PLAYER BAR — sits just above the bottom nav; always visible after splash. */
+.music-player{
+  position:fixed;left:50%;
+  bottom:78px; /* sits above bottom-nav (~70px tall) */
+  transform:translateX(-50%);
+  display:flex;align-items:center;gap:10px;
+  padding:7px 12px 7px 14px;
+  background:rgba(8,2,20,0.82);
+  border:1px solid rgba(192,132,252,0.28);
+  border-radius:24px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  font-family:var(--serif);
+  z-index:40;
+  box-shadow:0 6px 24px -8px rgba(0,0,0,0.85);
+  max-width:88vw;
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease;
+}
+.music-player.show{opacity:1;pointer-events:auto}
+.music-player-info{
+  display:flex;align-items:center;gap:8px;
+  cursor:pointer;flex:1;min-width:0;
+  padding:2px 4px;
+}
+.music-player-icon{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 8px rgba(251,191,36,0.7);
+  flex:0 0 auto;
+  animation:music-pulse 2.4s ease-in-out infinite;
+}
+.music-player.paused .music-player-icon{
+  animation:none;background:var(--muted);box-shadow:none;
+}
+@keyframes music-pulse{
+  0%,100%{opacity:.55;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.18)}
+}
+.music-player-name{
+  font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.music-player-btn{
+  background:transparent;border:none;cursor:pointer;
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:14px;
+  transition:all .15s ease;
+  flex:0 0 auto;
+}
+.music-player-btn:hover{color:var(--gold);background:rgba(251,191,36,0.08)}
+
+/* PLAYLIST SHEET — slides up from below; lists all 20 tracks with lock states. */
+.playlist-sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;
+  height:75vh;max-height:600px;
+  background:linear-gradient(180deg, rgba(12,4,24,0.97) 0%, rgba(6,0,14,0.99) 100%);
+  border-top:1px solid rgba(192,132,252,0.35);
+  border-radius:18px 18px 0 0;
+  transform:translateY(110%);
   transition:transform .45s cubic-bezier(.2,.7,.2,1);
-  box-shadow:30px 0 60px -20px rgba(0,0,0,.85);
+  display:flex;flex-direction:column;
+  box-shadow:0 -20px 60px -10px rgba(0,0,0,0.7);
 }
-.test-panel.open{transform:translateX(0)}
-
-.test-panel-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
-.test-panel-head h2{margin:0;flex:1;font-family:var(--deco);font-weight:700;font-size:.7rem;letter-spacing:.34em;color:var(--gold);text-transform:uppercase}
-.test-panel-close{background:rgba(0,0,0,.5);border:1px solid var(--border);width:28px;height:28px;color:var(--muted);font-family:var(--serif);font-size:16px;cursor:pointer;transition:all .2s}
-.test-panel-close:hover{color:var(--gold);border-color:rgba(251,191,36,.4)}
-
-.test-panel-body{flex:1;overflow-y:auto;padding:18px 22px 22px;scrollbar-width:thin;scrollbar-color:var(--muted) transparent}
-.test-section{margin-bottom:24px}
-.test-section h3{margin:0 0 10px;font-family:var(--serif);font-weight:500;font-size:.55rem;letter-spacing:.4em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
-.test-section h3::before,.test-section h3::after{content:"";flex:1;height:1px;background:var(--border)}
-.test-section h3::before{flex:0 0 12px}
-
-.test-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.test-btn{padding:9px 10px;border:1px solid var(--border);background:rgba(0,0,0,.4);color:var(--text);font-family:var(--serif);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:all .25s}
-.test-btn:hover{border-color:rgba(251,191,36,.4);color:var(--gold)}
-.test-btn.danger:hover{border-color:var(--crimson);color:var(--crimson)}
-.test-btn.run{grid-column:span 2;padding:13px;border-color:rgba(251,191,36,.55);color:var(--gold);font-family:var(--deco);font-weight:700;font-size:.65rem;letter-spacing:.34em;margin-bottom:11px}
-.test-btn.run:hover{background:linear-gradient(180deg,rgba(251,191,36,.1),transparent);color:#fff8e1;box-shadow:0 0 22px -8px rgba(251,191,36,.5)}
-
-.test-summary{padding:11px 14px;margin-bottom:11px;border:1px solid var(--border);background:rgba(0,0,0,.35);font-family:var(--serif);font-size:.75rem;display:flex;gap:14px;align-items:center}
-.test-summary .ps{color:#86efac}.test-summary .fl{color:var(--crimson)}.test-summary .tt{color:var(--muted);margin-left:auto;font-size:.55rem;letter-spacing:.28em;text-transform:uppercase}
-
-.test-result{padding:9px 11px;margin-bottom:4px;border-left:2px solid var(--muted);background:rgba(0,0,0,.22);font-family:var(--body);font-size:.78rem}
-.test-result.pass{border-color:#86efac}
-.test-result.fail{border-color:var(--crimson);background:rgba(244,63,94,.06)}
-.test-result .name{font-family:var(--serif);font-size:.65rem;letter-spacing:.16em;color:var(--text);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.test-result.pass .icon{color:#86efac}.test-result.fail .icon{color:var(--crimson)}
-.test-result .msg{margin-top:4px;color:var(--crimson);font-size:.7rem;font-style:italic;line-height:1.4}
-.test-empty{text-align:center;padding:24px 0;font-family:var(--body);font-style:italic;color:var(--muted);font-size:.78rem}
+.playlist-sheet.open{transform:translateY(0)}
+.playlist-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 22px 14px;
+  border-bottom:1px solid var(--border);
+}
+.playlist-header h3{
+  margin:0;font-family:var(--deco);font-weight:700;
+  font-size:.85rem;letter-spacing:.34em;color:var(--gold);text-transform:uppercase;
+}
+.playlist-close{
+  background:rgba(0,0,0,0.5);border:1px solid var(--border);
+  width:32px;height:32px;border-radius:6px;
+  color:var(--muted);font-family:var(--serif);font-size:18px;cursor:pointer;
+  transition:all .15s ease;
+}
+.playlist-close:hover{color:var(--gold);border-color:rgba(251,191,36,0.4)}
+.playlist-tracks{
+  flex:1;overflow-y:auto;
+  padding:8px 14px 22px;
+  scrollbar-width:thin;scrollbar-color:var(--muted) transparent;
+}
+.playlist-track{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 14px;margin-bottom:4px;
+  border-radius:8px;cursor:pointer;
+  border:1px solid transparent;
+  transition:all .15s ease;
+}
+.playlist-track:hover{
+  background:rgba(124,58,237,0.08);
+  border-color:rgba(192,132,252,0.18);
+}
+.playlist-track.locked{
+  cursor:default;opacity:0.55;
+}
+.playlist-track.locked:hover{background:transparent;border-color:transparent}
+.playlist-track.playing{
+  background:rgba(251,191,36,0.06);
+  border-color:rgba(251,191,36,0.32);
+}
+.playlist-track-icon{
+  flex:0 0 28px;width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:14px;
+}
+.playlist-track.playing .playlist-track-icon{color:var(--gold)}
+.playlist-track-info{flex:1;min-width:0}
+.playlist-track-name{
+  font-family:var(--deco);font-size:.78rem;letter-spacing:.06em;
+  color:var(--text);
+}
+.playlist-track.locked .playlist-track-name{color:var(--muted)}
+.playlist-track-hint{
+  font-family:var(--serif);font-style:italic;
+  font-size:.62rem;letter-spacing:.05em;
+  color:var(--muted);margin-top:2px;
+}
 
 </style>
 <!-- Three.js for 3D summon screen -->
@@ -2675,6 +2807,35 @@ body{font-family:var(--body);color:var(--text);position:relative}
   <!-- BOTTOM NAV -->
 </div><!-- /shell -->
 
+<!-- ═══ MUSIC SYSTEM UI ═══ -->
+<!-- SPLASH — shown on first load; click "Walk the Rift" to satisfy autoplay policy + start soundtrack -->
+<div id="splash-screen" class="splash-screen">
+  <div class="splash-inner">
+    <h1 class="splash-logo">INFERNUM</h1>
+    <p class="splash-tagline">A walk between worlds</p>
+    <button class="splash-btn" onclick="dismissSplash()">Walk the Rift</button>
+  </div>
+</div>
+
+<!-- MINI PLAYER BAR — sits above bottom nav; click track name to open playlist -->
+<div id="music-player" class="music-player">
+  <div class="music-player-info" onclick="openPlaylist()">
+    <div class="music-player-icon"></div>
+    <div class="music-player-name" id="music-player-name">Infernum</div>
+  </div>
+  <button class="music-player-btn" id="music-player-toggle" onclick="toggleMusic()" aria-label="Play/Pause">⏸</button>
+  <button class="music-player-btn" onclick="nextMusicTrack()" aria-label="Next track">⏭</button>
+</div>
+
+<!-- PLAYLIST SHEET — slides up; lists all tracks with unlock state -->
+<div id="playlist-sheet" class="playlist-sheet">
+  <div class="playlist-header">
+    <h3>Soundtrack</h3>
+    <button class="playlist-close" onclick="closePlaylist()" aria-label="Close playlist">×</button>
+  </div>
+  <div class="playlist-tracks" id="playlist-tracks"></div>
+</div>
+
 <!-- DETAIL OVERLAY -->
 <div id="detail-overlay" role="dialog" aria-modal="true" aria-labelledby="detail-name">
   <div id="detail-card">
@@ -2732,40 +2893,6 @@ body{font-family:var(--body);color:var(--text);position:relative}
 <div class="inf-watermark"><img src="assets/ui/infernum_logo.png" alt="" aria-hidden="true" onerror="this.parentElement.style.display='none'"></div>
 
 <!-- TEST PANEL (dev-only — remove before launch) -->
-<button class="test-toggle" id="test-toggle">⸻ Trial of the Bound ⸻</button>
-<aside class="test-panel" id="test-panel" aria-hidden="true">
-  <header class="test-panel-head">
-    <h2>Trial of the Bound</h2>
-    <button class="test-panel-close" id="test-panel-close" aria-label="Close panel">×</button>
-  </header>
-  <div class="test-panel-body">
-    <div class="test-section">
-      <h3>Rituals</h3>
-      <div class="test-actions">
-        <button class="test-btn" data-cheat="void">+50 Void</button>
-        <button class="test-btn" data-cheat="rift">+50 Rift</button>
-        <button class="test-btn" data-cheat="soul">+50 Soul</button>
-        <button class="test-btn" data-cheat="dups">+1 Each Duplicate</button>
-        <button class="test-btn" data-cheat="seedall">Seed Full Codex</button>
-        <button class="test-btn" data-cheat="gear">+1 Gear Drop</button>
-        <button class="test-btn" data-cheat="gear10">+10 Gear Drops</button>
-        <button class="test-btn" data-cheat="gearleg">+1 Legendary+</button>
-        <button class="test-btn" data-cheat="rune">+1 Rune</button>
-        <button class="test-btn" data-cheat="rune10">+10 Runes</button>
-        <button class="test-btn" data-cheat="runeleg">+1 Legendary Rune</button>
-        <button class="test-btn danger" data-cheat="wipe">Wipe Vessel</button>
-      </div>
-    </div>
-    <div class="test-section">
-      <h3>Tests</h3>
-      <button class="test-btn run" id="run-tests-btn">Invoke the Trial</button>
-      <div id="test-results">
-        <div class="test-empty">No trial cast yet. The seals lie undisturbed.</div>
-      </div>
-    </div>
-  </div>
-</aside>
-
 <script>
 // ═══════════════════════════════════════════
 // DEMON CARD CLASS (inline)
@@ -3426,6 +3553,7 @@ function load(){
     };
   }
   if(typeof S.embers==='undefined') S.embers=0;
+  if(!S.musicState) S.musicState={currentTrackId:'infernum_welcome', paused:false};
   if(!S.bannerExpiry){S.bannerExpiry=Date.now()+((2*24+14)*3600+33*60)*1000;save();}
 }
 
@@ -4585,377 +4713,7 @@ window.INF=(function(){
     }
   }
 
-  // ── TESTS ──
-  const tests=[];
-  function test(name,fn){tests.push({name,fn})}
-  function assert(cond,msg){if(!cond)throw new Error(msg||'assertion failed')}
-  function assertEq(actual,expected,msg){
-    const a=JSON.stringify(actual),b=JSON.stringify(expected);
-    if(a!==b)throw new Error(`${msg||'expected equal'} — got ${a}, expected ${b}`);
-  }
-  function snap(){return JSON.parse(JSON.stringify(S))}
-  function restore(s){
-    // restore in place (don't reassign S since other modules hold the reference)
-    for(const k of Object.keys(S))delete S[k];
-    Object.assign(S,JSON.parse(JSON.stringify(s)));
-    save();
-  }
 
-  // pick a representative demon at each stat tier we care about
-  const D_SHADE='Mournveil';      // tier 0
-  const D_FIEND='Morkhex';        // tier 2 — rift-eligible
-  const D_SINLORD='Avara';        // tier 5 — soul-eligible
-
-  test('migrate: v1 number → v2 object',()=>{
-    const s=snap();
-    for(const k of Object.keys(S.collection))delete S.collection[k];
-    S.collection['X']=3;
-    migrate();
-    const e=S.collection['X'];
-    assert(typeof e==='object'); assertEq(e.count,3); assertEq(e.seals,1);
-    assertEq(e.unchainTier,'none'); assert(typeof e.acquiredAt==='number');
-    restore(s);
-  });
-  test('migrate: idempotent on v2 data',()=>{
-    const s=snap(); migrate();
-    const a=JSON.parse(JSON.stringify(S.collection));
-    migrate();
-    assertEq(S.collection,a);
-    restore(s);
-  });
-  test('migrate: backfills partial entry',()=>{
-    const s=snap();
-    for(const k of Object.keys(S.collection))delete S.collection[k];
-    S.collection['P']={count:2,seals:3};
-    migrate();
-    assertEq(S.collection['P'].unchainTier,'none');
-    assert(typeof S.collection['P'].acquiredAt==='number');
-    restore(s);
-  });
-  test('migrate: clamps invalid seal values',()=>{
-    const s=snap();
-    for(const k of Object.keys(S.collection))delete S.collection[k];
-    S.collection['B']={count:1,seals:99,unchainTier:'none'};
-    migrate(); assertEq(S.collection['B'].seals,6);
-    S.collection['B'].seals=0; migrate(); assertEq(S.collection['B'].seals,1);
-    restore(s);
-  });
-  test('migrate: creates missing echoes',()=>{
-    const s=snap();
-    delete S.echoes; migrate();
-    assertEq(S.echoes,{void:0,rift:0,soul:0});
-    restore(s);
-  });
-
-  test('nextUpgrade: at seal 1 → seal 2 (20 void)',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:1,seals:1,unchainTier:'none',acquiredAt:Date.now()};
-    const u=nextUpgrade(D_SHADE);
-    assertEq(u.kind,'seal'); assertEq(u.targetSeal,2);
-    assertEq(u.cost,{void:20,rift:0,soul:0});
-    restore(s);
-  });
-  test('nextUpgrade: seal 4 costs 30 rift',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:1,seals:3,unchainTier:'none',acquiredAt:Date.now()};
-    const u=nextUpgrade(D_SHADE);
-    assertEq(u.targetSeal,4); assertEq(u.cost.rift,30); assertEq(u.cost.void,0);
-    restore(s);
-  });
-  test('nextUpgrade: at seal 6 → rebound',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:2,seals:6,unchainTier:'none',acquiredAt:Date.now()};
-    const u=nextUpgrade(D_SHADE);
-    assertEq(u.kind,'unchain'); assertEq(u.target,'rebound');
-    assertEq(u.cost,{dup:1,soul:10});
-    restore(s);
-  });
-  test('nextUpgrade: deepbound → soulbound',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:2,seals:6,unchainTier:'deepbound',acquiredAt:Date.now()};
-    const u=nextUpgrade(D_SHADE);
-    assertEq(u.target,'soulbound'); assertEq(u.cost.soul,50);
-    restore(s);
-  });
-  test('nextUpgrade: maxed → null',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:1,seals:6,unchainTier:'soulbound',acquiredAt:Date.now()};
-    assertEq(nextUpgrade(D_SHADE),null);
-    restore(s);
-  });
-
-  test('canAfford: short on void → false',()=>{
-    const s=snap();
-    S.echoes={void:5,rift:0,soul:0};
-    assertEq(canAfford({kind:'seal',cost:{void:20,rift:0,soul:0}},D_SHADE),false);
-    restore(s);
-  });
-  test('canAfford: enough → true',()=>{
-    const s=snap();
-    S.echoes={void:100,rift:0,soul:0};
-    assertEq(canAfford({kind:'seal',cost:{void:20,rift:0,soul:0}},D_SHADE),true);
-    restore(s);
-  });
-  test('canAfford: unchain needs spare duplicate',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:1,seals:6,unchainTier:'none',acquiredAt:Date.now()};
-    S.echoes={void:0,rift:0,soul:100};
-    const u={kind:'unchain',target:'rebound',cost:{dup:1,soul:10}};
-    assertEq(canAfford(u,D_SHADE),false,'count=1 has no spare');
-    S.collection[D_SHADE].count=2;
-    assertEq(canAfford(u,D_SHADE),true,'count=2 has 1 spare');
-    restore(s);
-  });
-
-  test('applyUpgrade: seal forge deducts void',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:1,seals:1,unchainTier:'none',acquiredAt:Date.now()};
-    S.echoes={void:50,rift:0,soul:0};
-    applyUpgrade(D_SHADE,nextUpgrade(D_SHADE));
-    assertEq(S.echoes.void,30); assertEq(S.collection[D_SHADE].seals,2);
-    restore(s);
-  });
-  test('applyUpgrade: unchain consumes 1 dup + soul',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:3,seals:6,unchainTier:'none',acquiredAt:Date.now()};
-    S.echoes={void:0,rift:0,soul:50};
-    applyUpgrade(D_SHADE,nextUpgrade(D_SHADE));
-    assertEq(S.collection[D_SHADE].count,2);
-    assertEq(S.collection[D_SHADE].unchainTier,'rebound');
-    assertEq(S.echoes.soul,40);
-    restore(s);
-  });
-  test('applyUpgrade: refuses unaffordable, no state change',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:1,seals:1,unchainTier:'none',acquiredAt:Date.now()};
-    S.echoes={void:5,rift:0,soul:0};
-    const ok=applyUpgrade(D_SHADE,{kind:'seal',targetSeal:2,cost:{void:20,rift:0,soul:0}});
-    assertEq(ok,false);
-    assertEq(S.echoes.void,5);
-    assertEq(S.collection[D_SHADE].seals,1);
-    restore(s);
-  });
-
-  test('calcStats: seal 3 → 1.30× base',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:1,seals:3,unchainTier:'none',acquiredAt:Date.now()};
-    const b=baseStats(D_SHADE), st=calcStats(D_SHADE);
-    assertEq(st.Power,Math.round(b.Power*1.30));
-    assertEq(st._sealMult,1.30); assertEq(st._unchainMult,1.0);
-    restore(s);
-  });
-  test('calcStats: 6 seals + soulbound → 4.0× base',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:1,seals:6,unchainTier:'soulbound',acquiredAt:Date.now()};
-    const b=baseStats(D_SHADE), st=calcStats(D_SHADE);
-    assertEq(st.Power,Math.round(b.Power*4.0));
-    assertEq(st._total,4.0);
-    restore(s);
-  });
-  test('garrison rate scales with unchain tier',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:1,seals:1,unchainTier:'none',acquiredAt:Date.now()};
-    assertEq(calcStats(D_SHADE)._garrison,1.0);
-    S.collection[D_SHADE].unchainTier='rebound';   assertEq(calcStats(D_SHADE)._garrison,2.0);
-    S.collection[D_SHADE].unchainTier='deepbound'; assertEq(calcStats(D_SHADE)._garrison,3.0);
-    S.collection[D_SHADE].unchainTier='soulbound'; assertEq(calcStats(D_SHADE)._garrison,5.0);
-    restore(s);
-  });
-
-  test('tier sets: rift requires fiend+, soul requires sinlord+',()=>{
-    assert(!RIFT_TIERS.has('shade'));
-    assert(!RIFT_TIERS.has('imp'));
-    assert(RIFT_TIERS.has('fiend'));
-    assert(RIFT_TIERS.has('greater_demon'));
-    assert(RIFT_TIERS.has('archdemon'));
-    assert(RIFT_TIERS.has('sin_lord'));
-    assert(RIFT_TIERS.has('void_primordial'));
-    assert(!SOUL_TIERS.has('archdemon'));
-    assert(SOUL_TIERS.has('sin_lord'));
-    assert(SOUL_TIERS.has('void_primordial'));
-  });
-
-  test('applyUpgrade: unchain resets seals to 1',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:3,seals:6,unchainTier:'none',acquiredAt:Date.now()};
-    S.echoes={void:0,rift:0,soul:50};
-    const u=nextUpgrade(D_SHADE);
-    assertEq(u.kind,'unchain'); assertEq(u.target,'rebound');
-    applyUpgrade(D_SHADE,u);
-    assertEq(S.collection[D_SHADE].unchainTier,'rebound');
-    assertEq(S.collection[D_SHADE].seals,1,'seals must reset on unchain');
-    restore(s);
-  });
-
-  test('rebound progression: forge seals 1→6 within rebound',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:1,seals:1,unchainTier:'rebound',acquiredAt:Date.now()};
-    S.echoes={void:60,rift:190,soul:0};
-    for(let target=2;target<=6;target++){
-      const u=nextUpgrade(D_SHADE);
-      assertEq(u.kind,'seal',`at rebound seal ${target-1} should be seal forge`);
-      assertEq(u.targetSeal,target);
-      assert(applyUpgrade(D_SHADE,u));
-    }
-    assertEq(S.collection[D_SHADE].seals,6);
-    assertEq(S.collection[D_SHADE].unchainTier,'rebound');
-    // Now next should be deepbound transition
-    const u=nextUpgrade(D_SHADE);
-    assertEq(u.kind,'unchain'); assertEq(u.target,'deepbound');
-    restore(s);
-  });
-
-  test('full progression: 4 tiers × 6 seals each (Unbound→Rebound→Deepbound→Soulbound)',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:4,seals:1,unchainTier:'none',acquiredAt:Date.now()};
-    // 4 tiers × (60 void + 190 rift) = 240 void + 760 rift; 10+25+50 = 85 soul
-    S.echoes={void:240,rift:760,soul:85};
-
-    let actions=0;
-    for(const tier of ['none','rebound','deepbound','soulbound']){
-      assertEq(S.collection[D_SHADE].unchainTier,tier);
-      // Forge seals 2→6 within this tier
-      for(let target=2;target<=6;target++){
-        const u=nextUpgrade(D_SHADE);
-        assertEq(u.kind,'seal',`tier ${tier}: should still be in seal phase at ${target-1}/6`);
-        assertEq(u.targetSeal,target);
-        assert(applyUpgrade(D_SHADE,u));
-        actions++;
-      }
-      assertEq(S.collection[D_SHADE].seals,6);
-      // If not soulbound, advance to next tier
-      if(tier!=='soulbound'){
-        const u=nextUpgrade(D_SHADE);
-        assertEq(u.kind,'unchain');
-        assert(applyUpgrade(D_SHADE,u));
-        actions++;
-        // seals just reset
-        assertEq(S.collection[D_SHADE].seals,1);
-      }
-    }
-    assertEq(actions,4*5+3,'4 tiers × 5 forges + 3 unchain transitions = 23 actions');
-    assertEq(S.collection[D_SHADE].unchainTier,'soulbound');
-    assertEq(S.collection[D_SHADE].seals,6);
-    assertEq(S.collection[D_SHADE].count,1,'3 dups consumed from 4');
-    assertEq(S.echoes.void,0); assertEq(S.echoes.rift,0); assertEq(S.echoes.soul,0);
-    assertEq(nextUpgrade(D_SHADE),null,'maxed at soulbound seal 6');
-    restore(s);
-  });
-
-  test('echoes never go negative on legitimate spend',()=>{
-    const s=snap();
-    S.collection[D_SHADE]={count:1,seals:1,unchainTier:'none',acquiredAt:Date.now()};
-    S.echoes={void:20,rift:0,soul:0};
-    applyUpgrade(D_SHADE,nextUpgrade(D_SHADE));
-    assertEq(S.echoes.void,0);
-    assert(S.echoes.void>=0);
-    restore(s);
-  });
-
-  test('pullOne integration: writes object schema',()=>{
-    const s=snap();
-    for(const k of Object.keys(S.collection))delete S.collection[k];
-    S.shards=10000;
-    pullOne(); // exists in outer scope
-    const keys=Object.keys(S.collection);
-    assert(keys.length>=1);
-    const v=S.collection[keys[0]];
-    assert(typeof v==='object','pullOne should write object after migration');
-    assertEq(v.seals,1); assertEq(v.unchainTier,'none');
-    restore(s);
-  });
-
-  function runTests(){
-    const out=[];
-    for(const t of tests){
-      try{t.fn();out.push({name:t.name,pass:true});}
-      catch(e){out.push({name:t.name,pass:false,msg:e.message});}
-    }
-    return out;
-  }
-  function renderResults(results){
-    const root=document.getElementById('test-results');
-    if(!root)return;
-    const passed=results.filter(r=>r.pass).length;
-    const failed=results.length-passed;
-    const summary=`<div class="test-summary">
-      <span class="ps">⸻ ${passed} bound</span>
-      <span class="fl">${failed} broken</span>
-      <span class="tt">${results.length} trials</span>
-    </div>`;
-    const list=results.map(r=>`
-      <div class="test-result ${r.pass?'pass':'fail'}">
-        <div class="name">
-          <span>${r.name}</span>
-          <span class="icon">${r.pass?'◆':'✕'}</span>
-        </div>
-        ${r.msg?`<div class="msg">${escapeHtml(r.msg)}</div>`:''}
-      </div>`).join('');
-    root.innerHTML=summary+list;
-  }
-  function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-
-  // ── CHEATS ──
-  function applyCheat(kind){
-    if(kind==='void')S.echoes.void+=50;
-    else if(kind==='rift')S.echoes.rift+=50;
-    else if(kind==='soul')S.echoes.soul+=50;
-    else if(kind==='dups'){
-      for(const k of Object.keys(S.collection)){
-        const v=S.collection[k];
-        if(typeof v==='object')v.count+=1;
-      }
-    }
-    else if(kind==='seedall'){
-      const now=Date.now();
-      for(const d of ALL_DEMONS){
-        S.collection[d.name]={count:3,seals:1,unchainTier:'none',acquiredAt:now};
-      }
-    }
-    else if(kind==='gear'){
-      if(typeof grantGearDrop === 'function') grantGearDrop();
-    }
-    else if(kind==='gear10'){
-      if(typeof grantGearDrop === 'function'){ for(let i=0;i<10;i++) grantGearDrop(); }
-    }
-    else if(kind==='gearleg'){
-      // Bias toward Legendary+ for quick perfect-roll testing
-      if(typeof grantGearDrop === 'function'){
-        const biased = [
-          {id:'legendary', weight:60},
-          {id:'mythic', weight:40},
-        ].map(b => Object.assign({}, GEAR_RARITIES.find(r => r.id === b.id), {weight: b.weight}));
-        grantGearDrop({ rarityBias: biased });
-      }
-    }
-    else if(kind==='rune'){
-      if(typeof grantRuneDrop === 'function') grantRuneDrop();
-    }
-    else if(kind==='rune10'){
-      if(typeof grantRuneDrop === 'function'){ for(let i=0;i<10;i++) grantRuneDrop(); }
-    }
-    else if(kind==='runeleg'){
-      if(typeof grantRuneDrop === 'function'){
-        const biased = [
-          {id:'legendary', weight:60},
-          {id:'mythic', weight:40},
-        ].map(b => Object.assign({}, GEAR_RARITIES.find(r => r.id === b.id), {weight: b.weight}));
-        grantRuneDrop({ rarityBias: biased });
-      }
-    }
-    else if(kind==='wipe'){
-      if(!confirm('Wipe all bound demons and echoes from this vessel?'))return;
-      for(const k of Object.keys(S.collection))delete S.collection[k];
-      S.echoes={void:0,rift:0,soul:0};
-      S.echoesAccum={void:0,rift:0,soul:0};
-    }
-    save();
-    if(typeof renderCodex==='function')renderCodex();
-    renderEchoes();
-    if(typeof updateUI==='function')updateUI();
-    if(typeof renderWalker==='function')renderWalker();
-    if(openName)renderDetail();
-  }
 
   // ── WIRING ──
   function wire(){
@@ -4964,27 +4722,6 @@ window.INF=(function(){
       if(e.target.id==='detail-overlay')closeDetail();
     });
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openName)closeDetail();});
-
-    const panel=document.getElementById('test-panel');
-    document.getElementById('test-toggle').addEventListener('click',()=>{
-      panel.classList.add('open');panel.setAttribute('aria-hidden','false');
-    });
-    document.getElementById('test-panel-close').addEventListener('click',()=>{
-      panel.classList.remove('open');panel.setAttribute('aria-hidden','true');
-    });
-    document.getElementById('run-tests-btn').addEventListener('click',()=>{
-      const before=snap();
-      const results=runTests();
-      restore(before);
-      renderResults(results);
-      if(typeof renderCodex==='function')renderCodex();
-      renderEchoes();
-      if(typeof updateUI==='function')updateUI();
-      if(openName)renderDetail();
-    });
-    document.querySelectorAll('[data-cheat]').forEach(b=>{
-      b.addEventListener('click',()=>applyCheat(b.dataset.cheat));
-    });
   }
 
   // ── PUBLIC API ──
@@ -4993,7 +4730,7 @@ window.INF=(function(){
     calcStats,nextUpgrade,canAfford,applyUpgrade,
     openDetail,closeDetail,
     tickEchoes,renderEchoes,
-    wire,runTests,
+    wire,
     SOULBOUND_NAMES,RIFT_TIERS,SOUL_TIERS,
   };
 })();
@@ -5673,13 +5410,225 @@ function tick(){
 }
 
 // ═══════════════════════════════════════════
-// INIT
+// MUSIC SYSTEM
+// Splash → mini player → playlist sheet, plus crossfade audio engine.
+// 20-track registry (13 main + 7 realm) with unlock predicates that read live
+// game state. Locked tracks appear in the playlist but are dimmed and unclickable
+// with an unlock hint. As Carter wires more progression systems (realm conquest,
+// scroll inventory, etc.), tracks gated on those become reachable naturally.
 // ═══════════════════════════════════════════
+
+// State accessors used by unlock predicates.
+function _mBoundCount(){ return Object.keys(S.collection||{}).length; }
+function _mOwnedTier(tier){
+  let n=0;
+  for(const name in (S.collection||{})){
+    const d=(typeof ALL_DEMONS!=='undefined' && ALL_DEMONS) ? ALL_DEMONS.find(x=>x.name===name) : null;
+    if(d && d.tier===tier) n++;
+  }
+  return n;
+}
+// True when EVERY demon in `tier` is bound. Used by tier-anthem tracks
+// (shade, sin_lords_anthem, void_song, rift_walker) so they unlock as a milestone,
+// not on the first demon of the tier.
+function _mAllOfTierBound(tier){
+  if(typeof ALL_DEMONS==='undefined' || !ALL_DEMONS) return false;
+  const tierDemons=ALL_DEMONS.filter(d=>d.tier===tier);
+  if(tierDemons.length===0) return false;
+  return tierDemons.every(d=>S.collection && S.collection[d.name]);
+}
+function _mHasDemon(name){ return !!(S.collection && S.collection[name]); }
+function _mWalkerLevel(){ return (S.walker && S.walker.level) || 1; }
+function _mRealmConquered(id){
+  // Returns true when the realm is FULLY conquered (all stages), not just touched.
+  const r=(typeof REALMS!=='undefined' && REALMS) ? REALMS.find(x=>x.id===id) : null;
+  return !!(r && r.conquered >= r.stages);
+}
+function _mCodexComplete(){
+  // True when all 28 demons are bound — the codex is full.
+  if(typeof ALL_DEMONS==='undefined' || !ALL_DEMONS) return false;
+  return ALL_DEMONS.every(d=>S.collection && S.collection[d.name]);
+}
+// Character creation: for now, walker existing in state counts as "character created".
+// When a dedicated character creation flow is built, replace with that flag.
+function _mCharacterCreated(){ return !!(S.walker); }
+
+// Track registry. Each entry: id, name, file, isUnlocked predicate, unlock hint shown when locked.
+const MUSIC_TRACKS=[
+  // MAIN TRACKS (13)
+  {id:'infernum_welcome', name:'Infernum',             file:'infernum_welcome.mp3', isUnlocked:()=>_mCharacterCreated(),           hint:'Create your Walker'},
+  {id:'the_binding',      name:'The Binding',          file:'the_binding.mp3',      isUnlocked:()=>_mBoundCount()>=1,              hint:'Bind your first demon'},
+  {id:'shade',            name:'Shade',                file:'shade.mp3',            isUnlocked:()=>_mAllOfTierBound('shade'),      hint:'Bind every Shade'},
+  {id:'the_codex',        name:'The Codex',            file:'the_codex.mp3',        isUnlocked:()=>_mCodexComplete(),              hint:'Bind all 28 demons'},
+  {id:'sin_lords_anthem', name:"Sin Lords' Anthem",    file:'sin_lords_anthem.mp3', isUnlocked:()=>_mAllOfTierBound('sinlord'),    hint:'Bind every Sin Lord'},
+  {id:'rift_walker',      name:'Rift Walker',          file:'rift_walker.mp3',      isUnlocked:()=>_mAllOfTierBound('archdemon'),  hint:'Bind all 3 Archdemons'},
+  {id:'the_descent',      name:'The Descent',          file:'the_descent.mp3',      isUnlocked:()=>_mWalkerLevel()>=10,            hint:'Reach Walker LVL 10'},
+  {id:'shattered_vale',   name:'Shattered Vale',       file:'shattered_vale.mp3',   isUnlocked:()=>_mRealmConquered('vale'),       hint:'Conquer the Shattered Vale'},
+  {id:'void_song',        name:'Void Song',            file:'void_song.mp3',        isUnlocked:()=>_mAllOfTierBound('void'),       hint:'Bind every Void Primordial'},
+  {id:'gorgethorn_theme', name:'Gorgethorn',           file:'gorgethorn.mp3',       isUnlocked:()=>_mHasDemon('Gorgethorn'),       hint:'Bind Gorgethorn'},
+  {id:'the_eternal_pact', name:'The Eternal Pact',     file:'the_eternal_pact.mp3', isUnlocked:()=>_mWalkerLevel()>=25,            hint:'Reach Walker LVL 25'},
+  {id:'whispers_in_void', name:'Whispers in the Void', file:'whispers_in_void.mp3', isUnlocked:()=>false,                          hint:'A future ritual will unveil this'},
+  {id:'the_sanctum',      name:'The Sanctum',          file:'the_sanctum.mp3',      isUnlocked:()=>false,                          hint:'A future pact will unveil this'},
+  // REALM TRACKS (7) — unlock by fully conquering the realm
+  {id:'vrathax_warfront', name:"Vrath'ax Warfront",    file:'vrathax_warfront.mp3', isUnlocked:()=>_mRealmConquered('wrath'),      hint:"Conquer Vrath'ax Warfront",  realm:'wrath'},
+  {id:'gilded_pit',       name:'Gilded Pit',           file:'gilded_pit.mp3',       isUnlocked:()=>_mRealmConquered('greed'),      hint:'Conquer the Gilded Pit',     realm:'greed'},
+  {id:'the_stillness',    name:'The Stillness',        file:'the_stillness.mp3',    isUnlocked:()=>_mRealmConquered('sloth'),      hint:'Conquer the Stillness',      realm:'sloth'},
+  {id:'mirror_maze',      name:'Mirror Maze',          file:'mirror_maze.mp3',      isUnlocked:()=>_mRealmConquered('envy'),       hint:'Conquer the Mirror Maze',    realm:'envy'},
+  {id:'crumbling_throne', name:'Crumbling Throne',     file:'crumbling_throne.mp3', isUnlocked:()=>_mRealmConquered('pride'),      hint:'Conquer the Crumbling Throne', realm:'pride'},
+  {id:'gorgethorns_maw',  name:"Gorgethorn's Maw",     file:'gorgethorns_maw.mp3',  isUnlocked:()=>_mRealmConquered('glut'),       hint:"Conquer Gorgethorn's Maw",    realm:'glut'},
+  {id:'void_wastes',      name:'The Void Wastes',      file:'void_wastes.mp3',      isUnlocked:()=>_mRealmConquered('void'),       hint:'Conquer the Void Wastes',    realm:'void'},
+];
+
+// Audio engine — two <Audio> elements that crossfade. activeAudio is the one
+// currently audible; on playTrack we load the new track into inactiveAudio at
+// volume 0 and ramp it up while ramping the active one down, then swap roles.
+const _audioA=new Audio();
+const _audioB=new Audio();
+_audioA.preload='auto'; _audioB.preload='auto';
+let _activeAudio=_audioA, _inactiveAudio=_audioB;
+const _VOLUME=0.5;
+const _CROSSFADE_MS=1500;
+let _crossfadeRaf=0;
+let _musicStarted=false;
+
+function _onAudioEnded(){ nextMusicTrack(); }
+_audioA.addEventListener('ended', _onAudioEnded);
+_audioB.addEventListener('ended', _onAudioEnded);
+
+function playTrack(trackId){
+  const track=MUSIC_TRACKS.find(t=>t.id===trackId);
+  if(!track || !track.isUnlocked()) return;
+  S.musicState.currentTrackId=trackId;
+  S.musicState.paused=false;
+  save();
+
+  _inactiveAudio.src=`assets/music/${track.file}`;
+  _inactiveAudio.volume=0;
+  _inactiveAudio.play().catch(e=>console.warn('[music] play failed:', track.file, e));
+
+  // Crossfade: ramp inactive 0→VOLUME, active VOLUME→0 over CROSSFADE_MS
+  if(_crossfadeRaf) cancelAnimationFrame(_crossfadeRaf);
+  const startedActive=_activeAudio;
+  const startedInactive=_inactiveAudio;
+  const startedAtVol=startedActive ? startedActive.volume : 0;
+  const t0=performance.now();
+  function step(now){
+    const t=Math.min(1, (now-t0)/_CROSSFADE_MS);
+    if(startedActive) startedActive.volume=(1-t)*startedAtVol;
+    startedInactive.volume=t*_VOLUME;
+    if(t<1) _crossfadeRaf=requestAnimationFrame(step);
+    else{
+      if(startedActive) startedActive.pause();
+      _crossfadeRaf=0;
+    }
+  }
+  _crossfadeRaf=requestAnimationFrame(step);
+
+  // Swap roles
+  [_activeAudio,_inactiveAudio]=[_inactiveAudio,_activeAudio];
+  updateMusicPlayerUI();
+  renderPlaylist();
+}
+
+function nextMusicTrack(){
+  const unlocked=MUSIC_TRACKS.filter(t=>t.isUnlocked());
+  if(unlocked.length===0) return;
+  const idx=unlocked.findIndex(t=>t.id===S.musicState.currentTrackId);
+  const next=unlocked[(idx+1)%unlocked.length];
+  playTrack(next.id);
+}
+
+function toggleMusic(){
+  if(!_musicStarted){ startMusic(); return; }
+  if(_activeAudio.paused){
+    _activeAudio.play().catch(()=>{});
+    S.musicState.paused=false;
+  }else{
+    _activeAudio.pause();
+    S.musicState.paused=true;
+  }
+  save();
+  updateMusicPlayerUI();
+}
+
+function startMusic(){
+  if(_musicStarted) return;
+  _musicStarted=true;
+  // Pick the saved track if still unlocked, else default
+  let trackId=S.musicState.currentTrackId;
+  const t=MUSIC_TRACKS.find(x=>x.id===trackId);
+  if(!t || !t.isUnlocked()) trackId='infernum_welcome';
+  // First track plays without crossfade-from-zero: prime activeAudio directly
+  const track=MUSIC_TRACKS.find(x=>x.id===trackId);
+  _activeAudio.src=`assets/music/${track.file}`;
+  _activeAudio.volume=_VOLUME;
+  _activeAudio.play().catch(e=>console.warn('[music] initial play failed:', track.file, e));
+  S.musicState.currentTrackId=trackId;
+  S.musicState.paused=false;
+  save();
+  updateMusicPlayerUI();
+  document.getElementById('music-player').classList.add('show');
+}
+
+function dismissSplash(){
+  const splash=document.getElementById('splash-screen');
+  if(!splash) return;
+  splash.classList.add('fading');
+  setTimeout(()=>splash.classList.remove('show','fading'), 600);
+  startMusic();
+}
+
+function openPlaylist(){
+  renderPlaylist();
+  document.getElementById('playlist-sheet').classList.add('open');
+}
+function closePlaylist(){
+  document.getElementById('playlist-sheet').classList.remove('open');
+}
+
+function renderPlaylist(){
+  const root=document.getElementById('playlist-tracks');
+  if(!root) return;
+  root.innerHTML=MUSIC_TRACKS.map(t=>{
+    const unlocked=t.isUnlocked();
+    const playing=t.id===S.musicState.currentTrackId && _musicStarted && !S.musicState.paused;
+    const icon=playing ? '▶' : (unlocked ? '♪' : '🔒');
+    const click=unlocked ? `onclick="playTrack('${t.id}');closePlaylist();"` : '';
+    return `
+      <div class="playlist-track ${unlocked?'':'locked'} ${playing?'playing':''}" ${click}>
+        <div class="playlist-track-icon">${icon}</div>
+        <div class="playlist-track-info">
+          <div class="playlist-track-name">${t.name}</div>
+          ${!unlocked ? `<div class="playlist-track-hint">${t.hint}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateMusicPlayerUI(){
+  const player=document.getElementById('music-player');
+  if(!player) return;
+  const t=MUSIC_TRACKS.find(x=>x.id===S.musicState.currentTrackId);
+  const nameEl=document.getElementById('music-player-name');
+  if(nameEl && t) nameEl.textContent=t.name;
+  const toggleBtn=document.getElementById('music-player-toggle');
+  if(toggleBtn) toggleBtn.textContent=(S.musicState.paused || !_musicStarted) ? '▶' : '⏸';
+  player.classList.toggle('paused', S.musicState.paused);
+}
+
+// Show the splash on initial load — captures user gesture for autoplay.
+function showSplash(){
+  document.getElementById('splash-screen').classList.add('show');
+}
+
+
 (function init(){
   load();
   INF.migrate();
   INF.wire();
   INF.renderEchoes();
+  showSplash();
+  updateMusicPlayerUI();
   document.getElementById('btn-again').onclick=()=>{closeOverlay();const cost=lastCount===1?getCost(1):getCost(10);if(S.shards>=(cost||0))setTimeout(()=>doPull(lastCount),80);};
   document.getElementById('btn-close-pull').onclick=()=>closeOverlay();
   // Sanctum ambient: sigils + embers
