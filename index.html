@@ -3554,6 +3554,7 @@ function load(){
   }
   if(typeof S.embers==='undefined') S.embers=0;
   if(!S.musicState) S.musicState={currentTrackId:'infernum_welcome', paused:false};
+  if(!S.realmsVisited) S.realmsVisited={};
   if(!S.bannerExpiry){S.bannerExpiry=Date.now()+((2*24+14)*3600+33*60)*1000;save();}
 }
 
@@ -4066,6 +4067,12 @@ let _currentRealmId = null;
 
 function enterRealm(id){
   _currentRealmId = id;
+  // Mark realm as visited — unlocks that realm's music track in the playlist
+  if(!S.realmsVisited) S.realmsVisited={};
+  if(!S.realmsVisited[id]){
+    S.realmsVisited[id]=true;
+    save();
+  }
   switchScreen('realm');
 }
 
@@ -5429,54 +5436,63 @@ function _mOwnedTier(tier){
   return n;
 }
 // True when EVERY demon in `tier` is bound. Used by tier-anthem tracks
-// (shade, sin_lords_anthem, void_song, rift_walker) so they unlock as a milestone,
-// not on the first demon of the tier.
+// (e.g. shade, rift_walker) so they unlock as a milestone, not on first of tier.
 function _mAllOfTierBound(tier){
   if(typeof ALL_DEMONS==='undefined' || !ALL_DEMONS) return false;
   const tierDemons=ALL_DEMONS.filter(d=>d.tier===tier);
   if(tierDemons.length===0) return false;
   return tierDemons.every(d=>S.collection && S.collection[d.name]);
 }
-function _mHasDemon(name){ return !!(S.collection && S.collection[name]); }
-function _mWalkerLevel(){ return (S.walker && S.walker.level) || 1; }
-function _mRealmConquered(id){
-  // Returns true when the realm is FULLY conquered (all stages), not just touched.
-  const r=(typeof REALMS!=='undefined' && REALMS) ? REALMS.find(x=>x.id===id) : null;
-  return !!(r && r.conquered >= r.stages);
-}
 function _mCodexComplete(){
-  // True when all 28 demons are bound — the codex is full.
   if(typeof ALL_DEMONS==='undefined' || !ALL_DEMONS) return false;
   return ALL_DEMONS.every(d=>S.collection && S.collection[d.name]);
 }
-// Character creation: for now, walker existing in state counts as "character created".
-// When a dedicated character creation flow is built, replace with that flag.
+function _mAllRealmsConquered(){
+  if(typeof REALMS==='undefined' || !REALMS) return false;
+  return REALMS.every(r => r.conquered >= r.stages);
+}
+function _mRealmConquered(id){
+  // True when realm fully conquered (all stages).
+  const r=(typeof REALMS!=='undefined' && REALMS) ? REALMS.find(x=>x.id===id) : null;
+  return !!(r && r.conquered >= r.stages);
+}
+function _mRealmVisited(id){
+  // True when player has stepped through the realm rift at least once.
+  return !!(S.realmsVisited && S.realmsVisited[id]);
+}
+function _mGarrisoned(){ return Object.keys(S.garrison||{}).length >= 1; }
+function _mScrollReceived(){ return !!S.hasVisitedSummon; }
+// Character creation: walker existing counts as "character created". When a
+// dedicated character creation flow ships, replace with that flag.
 function _mCharacterCreated(){ return !!(S.walker); }
 
-// Track registry. Each entry: id, name, file, isUnlocked predicate, unlock hint shown when locked.
+// Track registry — 20 tracks (13 main + 7 realm), canonical names from the GDD.
+// Each entry: id, name, file, isUnlocked predicate, unlock hint shown when locked.
+// Realm tracks unlock on FIRST VISIT (they play during the realm); main tracks
+// unlock at story/progression milestones.
 const MUSIC_TRACKS=[
-  // MAIN TRACKS (13)
+  // ── MAIN PLAYLIST (13) ──
   {id:'infernum_welcome', name:'Infernum',             file:'infernum_welcome.mp3', isUnlocked:()=>_mCharacterCreated(),           hint:'Create your Walker'},
-  {id:'the_binding',      name:'The Binding',          file:'the_binding.mp3',      isUnlocked:()=>_mBoundCount()>=1,              hint:'Bind your first demon'},
+  {id:'the_pull',         name:'The Pull',             file:'the_pull.mp3',         isUnlocked:()=>_mScrollReceived(),             hint:'Receive your first scroll'},
+  {id:'the_binding',      name:'The Binding',          file:'the_binding.mp3',      isUnlocked:()=>_mBoundCount()>=1,              hint:'Complete your first pull'},
   {id:'shade',            name:'Shade',                file:'shade.mp3',            isUnlocked:()=>_mAllOfTierBound('shade'),      hint:'Bind every Shade'},
-  {id:'the_codex',        name:'The Codex',            file:'the_codex.mp3',        isUnlocked:()=>_mCodexComplete(),              hint:'Bind all 28 demons'},
-  {id:'sin_lords_anthem', name:"Sin Lords' Anthem",    file:'sin_lords_anthem.mp3', isUnlocked:()=>_mAllOfTierBound('sinlord'),    hint:'Bind every Sin Lord'},
+  {id:'the_garrison',     name:'The Garrison',         file:'the_garrison.mp3',     isUnlocked:()=>_mGarrisoned(),                 hint:'Garrison your first demon'},
+  {id:'shattered_vale',   name:'The Shattered Vale',   file:'shattered_vale.mp3',   isUnlocked:()=>_mRealmConquered('vale'),       hint:'Conquer the Shattered Vale', realm:'vale'},
+  {id:'sin_lords_anthem', name:"Sin Lords' Anthem",    file:'sin_lords_anthem.mp3', isUnlocked:()=>_mOwnedTier('sinlord')>=1,      hint:'Bind your first Sin Lord'},
+  {id:'the_codex',        name:'The Codex',            file:'the_codex.mp3',        isUnlocked:()=>_mBoundCount()>=14,             hint:'Bind 14 demons'},
   {id:'rift_walker',      name:'Rift Walker',          file:'rift_walker.mp3',      isUnlocked:()=>_mAllOfTierBound('archdemon'),  hint:'Bind all 3 Archdemons'},
-  {id:'the_descent',      name:'The Descent',          file:'the_descent.mp3',      isUnlocked:()=>_mWalkerLevel()>=10,            hint:'Reach Walker LVL 10'},
-  {id:'shattered_vale',   name:'Shattered Vale',       file:'shattered_vale.mp3',   isUnlocked:()=>_mRealmConquered('vale'),       hint:'Conquer the Shattered Vale'},
-  {id:'void_song',        name:'Void Song',            file:'void_song.mp3',        isUnlocked:()=>_mAllOfTierBound('void'),       hint:'Bind every Void Primordial'},
-  {id:'gorgethorn_theme', name:'Gorgethorn',           file:'gorgethorn.mp3',       isUnlocked:()=>_mHasDemon('Gorgethorn'),       hint:'Bind Gorgethorn'},
-  {id:'the_eternal_pact', name:'The Eternal Pact',     file:'the_eternal_pact.mp3', isUnlocked:()=>_mWalkerLevel()>=25,            hint:'Reach Walker LVL 25'},
-  {id:'whispers_in_void', name:'Whispers in the Void', file:'whispers_in_void.mp3', isUnlocked:()=>false,                          hint:'A future ritual will unveil this'},
-  {id:'the_sanctum',      name:'The Sanctum',          file:'the_sanctum.mp3',      isUnlocked:()=>false,                          hint:'A future pact will unveil this'},
-  // REALM TRACKS (7) — unlock by fully conquering the realm
-  {id:'vrathax_warfront', name:"Vrath'ax Warfront",    file:'vrathax_warfront.mp3', isUnlocked:()=>_mRealmConquered('wrath'),      hint:"Conquer Vrath'ax Warfront",  realm:'wrath'},
-  {id:'gilded_pit',       name:'Gilded Pit',           file:'gilded_pit.mp3',       isUnlocked:()=>_mRealmConquered('greed'),      hint:'Conquer the Gilded Pit',     realm:'greed'},
-  {id:'the_stillness',    name:'The Stillness',        file:'the_stillness.mp3',    isUnlocked:()=>_mRealmConquered('sloth'),      hint:'Conquer the Stillness',      realm:'sloth'},
-  {id:'mirror_maze',      name:'Mirror Maze',          file:'mirror_maze.mp3',      isUnlocked:()=>_mRealmConquered('envy'),       hint:'Conquer the Mirror Maze',    realm:'envy'},
-  {id:'crumbling_throne', name:'Crumbling Throne',     file:'crumbling_throne.mp3', isUnlocked:()=>_mRealmConquered('pride'),      hint:'Conquer the Crumbling Throne', realm:'pride'},
-  {id:'gorgethorns_maw',  name:"Gorgethorn's Maw",     file:'gorgethorns_maw.mp3',  isUnlocked:()=>_mRealmConquered('glut'),       hint:"Conquer Gorgethorn's Maw",    realm:'glut'},
-  {id:'void_wastes',      name:'The Void Wastes',      file:'void_wastes.mp3',      isUnlocked:()=>_mRealmConquered('void'),       hint:'Conquer the Void Wastes',    realm:'void'},
+  {id:'the_unnamed_one',  name:'The Unnamed One',      file:'the_unnamed_one.mp3',  isUnlocked:()=>_mOwnedTier('void')>=1,         hint:'Pull your first Void Primordial'},
+  {id:'sanctum_rising',   name:'Sanctum Rising',       file:'sanctum_rising.mp3',   isUnlocked:()=>_mAllRealmsConquered(),         hint:'Conquer all 8 realms'},
+  {id:'the_rift_between', name:'The Rift Between',     file:'the_rift_between.mp3', isUnlocked:()=>_mCodexComplete(),              hint:'Complete the codex — bind all 28'},
+  {id:'the_apex',         name:'The Apex',             file:'the_apex.mp3',         isUnlocked:()=>_mCodexComplete() && _mAllRealmsConquered(), hint:'Complete everything'},
+  // ── REALM TRACKS (7) — unlock on first visit to that realm ──
+  {id:'vrathax_warfront', name:"Vrath'ax Warfront",    file:'vrathax_warfront.mp3', isUnlocked:()=>_mRealmVisited('wrath'),        hint:"Enter Vrath'ax Warfront",     realm:'wrath'},
+  {id:'gilded_pit',       name:'Gilded Pit',           file:'gilded_pit.mp3',       isUnlocked:()=>_mRealmVisited('greed'),        hint:'Enter the Gilded Pit',        realm:'greed'},
+  {id:'the_stillness',    name:'The Stillness',        file:'the_stillness.mp3',    isUnlocked:()=>_mRealmVisited('sloth'),        hint:'Enter the Stillness',         realm:'sloth'},
+  {id:'mirror_maze',      name:'Mirror Maze',          file:'mirror_maze.mp3',      isUnlocked:()=>_mRealmVisited('envy'),         hint:'Enter the Mirror Maze',       realm:'envy'},
+  {id:'crumbling_throne', name:'Crumbling Throne',     file:'crumbling_throne.mp3', isUnlocked:()=>_mRealmVisited('pride'),        hint:'Enter the Crumbling Throne',  realm:'pride'},
+  {id:'gorgethorns_maw',  name:"Gorgethorn's Maw",     file:'gorgethorns_maw.mp3',  isUnlocked:()=>_mRealmVisited('glut'),         hint:"Enter Gorgethorn's Maw",      realm:'glut'},
+  {id:'void_wastes',      name:'The Void Wastes',      file:'void_wastes.mp3',      isUnlocked:()=>_mRealmVisited('void'),         hint:'Enter the Void Wastes',       realm:'void'},
 ];
 
 // Audio engine — two <Audio> elements that crossfade. activeAudio is the one
