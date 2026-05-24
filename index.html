@@ -5502,7 +5502,7 @@ function playTrack(trackId){
   S.musicState.paused=false;
   save();
 
-  _inactiveAudio.src=`assets/music/${track.file}`;
+  _inactiveAudio.src=`assets/audio/${track.file}`;
   _inactiveAudio.volume=0;
   _inactiveAudio.play().catch(e=>console.warn('[music] play failed:', track.file, e));
 
@@ -5560,7 +5560,7 @@ function startMusic(){
   if(!t || !t.isUnlocked()) trackId='infernum_welcome';
   // First track plays without crossfade-from-zero: prime activeAudio directly
   const track=MUSIC_TRACKS.find(x=>x.id===trackId);
-  _activeAudio.src=`assets/music/${track.file}`;
+  _activeAudio.src=`assets/audio/${track.file}`;
   _activeAudio.volume=_VOLUME;
   _activeAudio.play().catch(e=>console.warn('[music] initial play failed:', track.file, e));
   S.musicState.currentTrackId=trackId;
