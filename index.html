@@ -47,6 +47,13 @@
   /* Garrison: assets/ui/garrison_bg.jpg — stone corridor (generate in MJ) */
   /* Realms: assets/ui/realms_bg.jpg — map room with portals (generate in MJ) */
   /* RiftWalk: assets/ui/riftwalk_bg.jpg — personal chamber (generate in MJ) */
+
+  /* Talents tree backdrop. Fallback gradient kept below the image as a safety net. */
+  --ui-talents-bg:
+    linear-gradient(rgba(6,0,14,0.60), rgba(6,0,14,0.82)),
+    url('assets/ui/talents_bg.jpg') center/cover no-repeat,
+    radial-gradient(ellipse at 50% 16%, rgba(46,18,82,0.55), transparent 58%),
+    #05000c;
 }
 html,body{height:100%;overflow:hidden;background:var(--bg)}
 body{font-family:var(--body);color:var(--text);position:relative}
@@ -1042,6 +1049,10 @@ body{font-family:var(--body);color:var(--text);position:relative}
   overflow-y:auto;
   animation:walkerPageIn .28s ease-out;
 }
+/* Talents page gets its own backdrop image slot (set --ui-talents-bg above). */
+#screen-riftwalk.walker-page-open.section-talents .walker-inner{
+  background:var(--ui-talents-bg);
+}
 #screen-riftwalk.walker-page-open .walker-panel.active{
   display:block !important;
   max-width:720px;margin:0 auto;
@@ -1521,13 +1532,15 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 .tt-syll.active::before{ opacity:1; }
 .tt-syll.done{ border-color:rgba(251,191,36,0.7); }
-.tt-syll.done .tt-syll-glyph{ color:rgba(255,225,150,1); text-shadow:0 0 12px rgba(251,191,36,0.8); }
+.tt-syll.done .tt-syll-rune{ color:rgba(255,225,150,1); text-shadow:0 0 12px rgba(251,191,36,0.8); }
 .tt-syll.locked{ filter:saturate(0.3) brightness(0.7); cursor:pointer; }
 .tt-syll-rom{
   font-family:var(--serif); font-size:.42rem; letter-spacing:.26em;
   color:rgba(var(--branch-glow),0.78); text-transform:lowercase;
 }
-.tt-syll-glyph{ font-size:22px; line-height:1; color:var(--branch-color); text-shadow:0 0 12px rgba(var(--branch-glow),0.55); }
+.tt-syll-glyph{ position:relative; width:34px; height:34px; display:flex; align-items:center; justify-content:center; }
+.tt-syll-img{ max-width:34px; max-height:34px; object-fit:contain; filter:drop-shadow(0 0 8px rgba(var(--branch-glow),0.6)); }
+.tt-syll-rune{ position:absolute; font-size:22px; line-height:1; color:var(--branch-color); text-shadow:0 0 12px rgba(var(--branch-glow),0.55); }
 .tt-syll-name{
   font-family:var(--serif); font-size:.44rem; letter-spacing:.12em;
   color:var(--text); text-transform:uppercase; text-align:center; line-height:1.1;
@@ -5310,7 +5323,10 @@ function renderWalkerTalents(){
               style="--branch-glow:${b.glow};--branch-color:${b.color}"
               onclick="focusTalentBranch('${bid}')">
         <span class="tt-syll-rom">${b.syllable}</span>
-        <span class="tt-syll-glyph">${locked ? '\uD83D\uDF38' : b.icon}</span>
+        <span class="tt-syll-glyph">
+          ${locked ? '' : `<img class="tt-syll-img" src="assets/ui/talent_${bid}.png" alt="" onerror="this.remove();const r=this.parentNode.querySelector('.tt-syll-rune');if(r)r.style.opacity='1'">`}
+          <span class="tt-syll-rune" style="${locked ? '' : 'opacity:0'}">${locked ? '\uD83D\uDF38' : b.icon}</span>
+        </span>
         <span class="tt-syll-name">${b.name.replace(/^The /,'')}</span>
         <span class="tt-syll-prog">${locked ? 'sealed' : inv+'/'+total}</span>
       </button>`;
@@ -5454,10 +5470,14 @@ function switchWalkerTab(tab, btnEl){
 function openWalkerPage(sectionId){
   switchWalkerTab(sectionId, null);
   if(typeof renderWalker === 'function') renderWalker();
-  document.getElementById('screen-riftwalk').classList.add('walker-page-open');
+  const el = document.getElementById('screen-riftwalk');
+  el.classList.add('walker-page-open');
+  el.classList.toggle('section-talents', sectionId === 'talents');
 }
 function closeWalkerPage(){
-  document.getElementById('screen-riftwalk').classList.remove('walker-page-open');
+  const el = document.getElementById('screen-riftwalk');
+  el.classList.remove('walker-page-open');
+  el.classList.remove('section-talents');
 }
 
 // Talent investment
