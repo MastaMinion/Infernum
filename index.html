@@ -1490,168 +1490,192 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
 /* Talents */
 /* ─── TALENT TREE — Six Syllables of the Binding Word + locked 7th ─── */
-/* Layout: vertical stack of full-width branches. Each branch is a horizontal row
-   with a header on the left and its 6 nodes flowing left-to-right by tier
-   (Tier 1 → Tier 4 → Capstone). User scrolls down through all 7 branches. */
-.walker-talents{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  margin-top:6px;
-}
-.talent-branch{
-  display:grid;
-  grid-template-columns:160px 1fr;
-  gap:20px;
-  align-items:center;
-  background:rgba(8,2,20,0.78);
-  border:1px solid rgba(var(--branch-glow), 0.35);
-  border-radius:12px;
-  padding:16px 18px;
-  position:relative;
-}
-.talent-branch::before{
-  content:'';position:absolute;inset:0;border-radius:12px;
-  background:radial-gradient(ellipse at left, rgba(var(--branch-glow),0.12), transparent 60%);
-  pointer-events:none;
-}
-.talent-branch-header{text-align:center;position:relative;padding:0 4px}
-.talent-branch-syllable{
-  font-family:var(--serif);font-size:.46rem;letter-spacing:.32em;
-  color:rgba(var(--branch-glow),0.7);text-transform:lowercase;margin-bottom:6px;
-}
-.talent-branch-icon{
-  font-size:30px;color:var(--branch-color);margin-bottom:6px;line-height:1;
-  text-shadow:0 0 16px rgba(var(--branch-glow),0.6);
-}
-.talent-branch-name{
-  font-family:var(--serif);font-size:.7rem;letter-spacing:.22em;
-  color:var(--branch-color);text-transform:uppercase;margin-bottom:7px;
-}
-.talent-branch-desc{
-  font-size:.5rem;color:var(--muted);font-style:italic;line-height:1.45;
-}
+/* 3D experience: a syllable rail selects one branch; that branch renders as a
+   perspective board of raised plinths receding into depth, with glowing prereq
+   conduits and a gentle pointer-parallax tilt. Reuses investTalentNode() logic. */
+.walker-talents{ display:flex; flex-direction:column; gap:16px; margin-top:6px; }
 
-/* Nodes flow left-to-right: 4 columns (Tier 1, Tier 2, Keystone, Capstone) × 2 rows for the paired Tier 1/2 nodes.
-   Tier 3 and Tier 4 each span both rows (centered vertically). */
-.talent-grid{
-  display:grid;
-  grid-template-columns:repeat(4, minmax(0, 1fr));
-  grid-template-rows:1fr 1fr;
-  gap:10px 26px;
-  position:relative;
+/* ── Binding-Word syllable rail ── */
+.tt-rail{
+  display:flex; gap:7px; flex-wrap:wrap; justify-content:center;
 }
-.talent-node{
-  background:rgba(6,0,14,0.72);
+.tt-syll{
+  flex:1 1 88px; max-width:118px; min-width:78px;
+  background:linear-gradient(180deg, rgba(14,6,30,0.9), rgba(6,0,14,0.85));
+  border:1px solid rgba(var(--branch-glow),0.32);
+  border-radius:10px; padding:9px 6px 8px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  position:relative; overflow:hidden;
+}
+.tt-syll::before{
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at top, rgba(var(--branch-glow),0.16), transparent 65%);
+  opacity:0; transition:opacity .2s ease; pointer-events:none;
+}
+.tt-syll:hover{ transform:translateY(-2px); border-color:rgba(var(--branch-glow),0.6); }
+.tt-syll:hover::before{ opacity:1; }
+.tt-syll.active{
+  border-color:rgba(var(--branch-glow),0.95);
+  box-shadow:0 0 18px rgba(var(--branch-glow),0.5), inset 0 0 14px rgba(var(--branch-glow),0.18);
+}
+.tt-syll.active::before{ opacity:1; }
+.tt-syll.done{ border-color:rgba(251,191,36,0.7); }
+.tt-syll.done .tt-syll-glyph{ color:rgba(255,225,150,1); text-shadow:0 0 12px rgba(251,191,36,0.8); }
+.tt-syll.locked{ filter:saturate(0.3) brightness(0.7); cursor:pointer; }
+.tt-syll-rom{
+  font-family:var(--serif); font-size:.42rem; letter-spacing:.26em;
+  color:rgba(var(--branch-glow),0.78); text-transform:lowercase;
+}
+.tt-syll-glyph{ font-size:22px; line-height:1; color:var(--branch-color); text-shadow:0 0 12px rgba(var(--branch-glow),0.55); }
+.tt-syll-name{
+  font-family:var(--serif); font-size:.44rem; letter-spacing:.12em;
+  color:var(--text); text-transform:uppercase; text-align:center; line-height:1.1;
+}
+.tt-syll-prog{ font-size:.4rem; letter-spacing:.1em; color:var(--muted); font-family:var(--body); }
+.tt-syll.done .tt-syll-prog{ color:var(--gold); }
+
+/* ── Perspective board ── */
+.tt-board-wrap{ perspective:1300px; perspective-origin:50% 38%; padding:6px 0 10px; }
+.tt-board{
+  position:relative; transform-style:preserve-3d;
+  transform:rotateX(calc(9deg + var(--tilt-y,0deg))) rotateY(var(--tilt-x,0deg));
+  transition:transform .18s ease-out;
+  border-radius:16px;
+  background:
+    radial-gradient(ellipse at 50% 120%, rgba(var(--branch-glow),0.16), transparent 62%),
+    linear-gradient(180deg, rgba(10,4,24,0.55), rgba(6,0,14,0.78));
   border:1px solid rgba(var(--branch-glow),0.28);
-  border-radius:7px;
-  padding:8px 6px 7px;
-  cursor:pointer;
-  text-align:center;
-  transition:all .22s ease;
+  padding:18px 16px 22px;
+  box-shadow:0 26px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(var(--branch-glow),0.18);
+}
+.tt-board::after{ /* altar floor glow */
+  content:''; position:absolute; left:8%; right:8%; bottom:8px; height:46px;
+  background:radial-gradient(ellipse at center, rgba(var(--branch-glow),0.3), transparent 70%);
+  filter:blur(8px); transform:translateZ(-30px); pointer-events:none;
+}
+.tt-head{ text-align:center; margin-bottom:18px; transform:translateZ(12px); }
+.tt-head-rom{
+  font-family:var(--serif); font-size:.46rem; letter-spacing:.34em;
+  color:rgba(var(--branch-glow),0.7); text-transform:lowercase; margin-bottom:5px;
+}
+.tt-head-name{
+  font-family:var(--serif); font-size:.92rem; letter-spacing:.2em;
+  color:var(--branch-color); text-transform:uppercase; margin-bottom:7px;
+  text-shadow:0 0 18px rgba(var(--branch-glow),0.55);
+}
+.tt-head-desc{ font-size:.5rem; color:rgba(210,200,235,0.7); font-style:italic; line-height:1.5; max-width:440px; margin:0 auto 8px; }
+.tt-head-prog{ font-family:var(--serif); font-size:.5rem; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; }
+.tt-head-prog span{ color:var(--gold); font-size:.62rem; }
+
+/* Tier grid — 4 columns (T1→Capstone) receding into depth, 2 rows for paired nodes */
+.tt-grid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0,1fr));
+  grid-template-rows:1fr 1fr;
+  gap:14px 30px;
+  transform-style:preserve-3d;
   position:relative;
-  min-width:0;
 }
-/* tier maps to column index, col-0/col-1 (legacy data field) maps to row index */
-.talent-node.tier-1.col-0{grid-column:1;grid-row:1}
-.talent-node.tier-1.col-1{grid-column:1;grid-row:2}
-.talent-node.tier-2.col-0{grid-column:2;grid-row:1}
-.talent-node.tier-2.col-1{grid-column:2;grid-row:2}
-.talent-node.tier-3{grid-column:3;grid-row:1 / span 2}
-.talent-node.tier-4{grid-column:4;grid-row:1 / span 2}
+.tt-node.tier-1.col-0{grid-column:1;grid-row:1}
+.tt-node.tier-1.col-1{grid-column:1;grid-row:2}
+.tt-node.tier-2.col-0{grid-column:2;grid-row:1}
+.tt-node.tier-2.col-1{grid-column:2;grid-row:2}
+.tt-node.tier-3{grid-column:3;grid-row:1 / span 2}
+.tt-node.tier-4{grid-column:4;grid-row:1 / span 2}
 
-/* Connector lines flowing left-to-right between tiers */
-.talent-node.tier-2::before{
-  content:'';position:absolute;top:50%;left:-22px;
-  width:22px;height:2px;background:rgba(var(--branch-glow),0.35);
-  transform:translateY(-50%);
+/* Raised plinths — deeper tiers lift further toward the viewer */
+.tt-node{
+  position:relative; cursor:pointer; border-radius:10px;
+  padding:11px 8px 10px; text-align:center;
+  transform-style:preserve-3d;
+  background:linear-gradient(180deg, rgba(20,10,40,0.92), rgba(8,2,20,0.82));
+  border:1px solid rgba(var(--branch-glow),0.3);
+  box-shadow:0 16px 26px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05);
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
 }
-.talent-node.tier-2::after{
-  content:'';position:absolute;top:50%;right:-22px;
-  width:22px;height:2px;background:rgba(var(--branch-glow),0.35);
-  transform:translateY(-50%);
+.tt-node.tier-1{ transform:translateZ(4px); }
+.tt-node.tier-2{ transform:translateZ(20px); }
+.tt-node.tier-3{ transform:translateZ(40px); }
+.tt-node.tier-4{ transform:translateZ(62px); }
+
+/* Glowing prereq conduits flowing left-to-right into depth */
+.tt-node.tier-2::before, .tt-node.tier-3::before, .tt-node.tier-4::before{
+  content:''; position:absolute; top:50%; left:-30px; width:30px; height:3px;
+  transform:translateY(-50%) translateZ(-10px);
+  background:linear-gradient(90deg, transparent, rgba(var(--branch-glow),0.7));
+  box-shadow:0 0 8px rgba(var(--branch-glow),0.6); border-radius:2px;
 }
-.talent-node.tier-3::before, .talent-node.tier-4::before{
-  content:'';position:absolute;top:50%;left:-22px;
-  width:22px;height:2px;background:rgba(var(--branch-glow),0.35);
-  transform:translateY(-50%);
+.tt-node.tier-2::after{
+  content:''; position:absolute; top:50%; right:-30px; width:30px; height:3px;
+  transform:translateY(-50%) translateZ(-10px);
+  background:linear-gradient(90deg, rgba(var(--branch-glow),0.7), transparent);
+  box-shadow:0 0 8px rgba(var(--branch-glow),0.6); border-radius:2px;
 }
 
-.talent-node.locked{opacity:0.38;cursor:not-allowed;filter:saturate(0.4)}
-.talent-node.available{border-color:rgba(var(--branch-glow),0.55)}
-.talent-node.available:hover{
+.tt-node-icon{ font-size:24px; line-height:1; color:var(--branch-color); margin-bottom:5px; text-shadow:0 0 10px rgba(var(--branch-glow),0.5); }
+.tt-node-name{ font-family:var(--serif); font-size:.5rem; letter-spacing:.08em; color:var(--text); text-transform:uppercase; margin-bottom:4px; line-height:1.18; }
+.tt-node-desc{ font-size:.43rem; color:rgba(200,190,225,0.62); line-height:1.4; font-style:italic; }
+.tt-node-check{ position:absolute; top:6px; right:8px; font-size:13px; color:var(--gold); font-weight:bold; text-shadow:0 0 8px rgba(251,191,36,0.8); }
+.tt-node-lock{ position:absolute; top:6px; right:7px; font-size:11px; opacity:0.7; }
+
+/* States */
+.tt-node.available{ border-color:rgba(var(--branch-glow),0.6); }
+.tt-node.available:hover{
+  transform:translateZ(var(--hz,30px)) translateY(-3px) scale(1.04);
   border-color:rgba(var(--branch-glow),1);
-  box-shadow:0 0 14px rgba(var(--branch-glow),0.55);
-  transform:translateY(-1px);
+  box-shadow:0 24px 40px rgba(0,0,0,0.6), 0 0 22px rgba(var(--branch-glow),0.7);
 }
-.talent-node.invested{
-  border-color:rgba(251,191,36,0.85);
-  background:linear-gradient(180deg, rgba(28,18,52,0.92), rgba(8,2,20,0.78));
-  box-shadow:0 0 12px rgba(251,191,36,0.32);
+.tt-node.tier-1.available:hover{ --hz:14px; }
+.tt-node.tier-2.available:hover{ --hz:30px; }
+.tt-node.tier-3.available:hover{ --hz:50px; }
+.tt-node.tier-4.available:hover{ --hz:72px; }
+.tt-node.invested{
+  border-color:rgba(251,191,36,0.9);
+  background:linear-gradient(180deg, rgba(46,30,8,0.95), rgba(20,10,2,0.85));
+  box-shadow:0 18px 30px rgba(0,0,0,0.55), 0 0 20px rgba(251,191,36,0.45), inset 0 1px 0 rgba(255,210,90,0.25);
 }
-.talent-node.invested .talent-node-icon{
-  color:rgba(255,225,150,1);
-  text-shadow:0 0 12px rgba(251,191,36,0.78);
+.tt-node.invested .tt-node-icon{ color:rgba(255,225,150,1); text-shadow:0 0 14px rgba(251,191,36,0.85); }
+.tt-node.invested::before, .tt-node.invested::after{
+  background:linear-gradient(90deg, rgba(251,191,36,0.85), rgba(251,191,36,0.4)) !important;
+  box-shadow:0 0 10px rgba(251,191,36,0.7) !important;
 }
-.talent-node-icon{
-  font-size:18px;color:var(--branch-color);margin-bottom:3px;
-  line-height:1;text-shadow:0 0 8px rgba(var(--branch-glow),0.4);
+.tt-node.locked{
+  opacity:0.42; cursor:not-allowed; filter:saturate(0.35);
+  background:linear-gradient(180deg, rgba(8,4,16,0.9), rgba(4,0,10,0.85));
+  box-shadow:inset 0 2px 10px rgba(0,0,0,0.7);
 }
-.talent-node-name{
-  font-family:var(--serif);font-size:.46rem;letter-spacing:.08em;
-  color:var(--text);text-transform:uppercase;margin-bottom:3px;line-height:1.15;
-}
-.talent-node-desc{
-  font-size:.4rem;color:var(--muted);line-height:1.35;font-style:italic;
-}
-.talent-node-check{
-  position:absolute;top:3px;right:5px;
-  font-size:11px;color:var(--gold);font-weight:bold;
-}
+.tt-node.locked.tier-1, .tt-node.locked.tier-2, .tt-node.locked.tier-3, .tt-node.locked.tier-4{ transform:translateZ(0); }
 
-/* The Unspoken — locked seventh branch, same row format */
-.talent-branch-locked{
-  background:rgba(10,8,18,0.86);
-  border-color:rgba(120,120,120,0.4);
-  filter:saturate(0.4);
+/* The Unspoken — sealed seventh branch shown in the board */
+.tt-sealed{
+  text-align:center; padding:40px 24px; transform:translateZ(10px);
+  display:flex; flex-direction:column; align-items:center; gap:14px;
 }
-.talent-branch-locked .talent-branch-icon,
-.talent-branch-locked .talent-branch-name,
-.talent-branch-locked .talent-branch-syllable{opacity:0.6}
-.talent-locked-seal{
-  text-align:center;padding:24px 20px;
-  border:1px dashed rgba(180,180,180,0.28);
-  border-radius:8px;background:rgba(0,0,0,0.4);
-  display:flex;align-items:center;justify-content:center;gap:18px;
-}
-.talent-locked-glyph{
-  font-size:36px;color:rgba(200,200,210,0.65);
-  text-shadow:0 0 14px rgba(180,180,200,0.35);line-height:1;
-}
-.talent-locked-text{text-align:left}
-.talent-locked-label{
-  font-family:var(--serif);font-size:.6rem;letter-spacing:.28em;
-  color:rgba(220,220,230,0.8);text-transform:uppercase;margin-bottom:5px;
-}
-.talent-locked-sub{
-  font-size:.46rem;color:var(--muted);font-style:italic;letter-spacing:.18em;
-}
+.tt-sealed-glyph{ font-size:52px; color:rgba(200,200,210,0.7); text-shadow:0 0 22px rgba(180,180,200,0.4); line-height:1; }
+.tt-sealed-label{ font-family:var(--serif); font-size:.78rem; letter-spacing:.3em; color:rgba(220,220,230,0.85); text-transform:uppercase; }
+.tt-sealed-sub{ font-size:.5rem; color:var(--muted); font-style:italic; letter-spacing:.16em; }
+
 .tt-points-pill{
-  display:inline-block;font-size:.5rem;padding:5px 12px;
-  background:rgba(251,191,36,.08);border:0.5px solid rgba(251,191,36,.2);
-  color:var(--gold);border-radius:4px;letter-spacing:.18em;
-  font-family:var(--serif);text-transform:uppercase;
+  display:inline-block; font-size:.5rem; padding:6px 14px;
+  background:rgba(251,191,36,.1); border:1px solid rgba(251,191,36,.3);
+  color:var(--gold); border-radius:6px; letter-spacing:.18em;
+  font-family:var(--serif); text-transform:uppercase;
+  box-shadow:0 0 14px rgba(251,191,36,0.2);
 }
 
-/* Narrow viewports — header drops above nodes instead of left-of */
+/* Narrow viewports — flatter tilt, tighter grid, smaller depth so nothing clips */
 @media (max-width: 640px){
-  .talent-branch{grid-template-columns:1fr;gap:12px}
-  .talent-branch-header{text-align:center}
-  .talent-grid{gap:8px 18px}
-  .talent-node.tier-2::before,
-  .talent-node.tier-2::after,
-  .talent-node.tier-3::before,
-  .talent-node.tier-4::before{display:none}
+  .tt-board{ transform:rotateX(calc(5deg + var(--tilt-y,0deg))) rotateY(var(--tilt-x,0deg)); padding:14px 10px 18px; }
+  .tt-grid{ gap:9px 16px; }
+  .tt-node{ padding:8px 5px; }
+  .tt-node.tier-2{ transform:translateZ(12px); }
+  .tt-node.tier-3{ transform:translateZ(24px); }
+  .tt-node.tier-4{ transform:translateZ(38px); }
+  .tt-node.tier-2::before, .tt-node.tier-3::before, .tt-node.tier-4::before{ left:-16px; width:16px; }
+  .tt-node.tier-2::after{ right:-16px; width:16px; }
+  .tt-node-icon{ font-size:19px; }
+  .tt-head-name{ font-size:.74rem; }
 }
 
 /* Soul Bonds */
@@ -2369,6 +2393,118 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 .splash-btn:active{transform:translateY(0) scale(.98)}
 
+/* CHARACTER CREATION — the first binding. Surfaces after the splash if the player
+   has not yet created their walker. Lets them speak their name + choose a sigil. */
+.char-creation{
+  position:fixed;inset:0;z-index:190;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center, #0a0420 0%, #06000e 70%);
+  opacity:0;pointer-events:none;
+  transition:opacity .6s ease;
+}
+.char-creation.show{opacity:1;pointer-events:auto}
+.char-creation.fading{opacity:0;pointer-events:none}
+.char-creation-inner{
+  text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:28px;
+  padding:40px 28px;max-width:480px;width:92vw;
+  animation:splash-rise .9s cubic-bezier(.22,1,.36,1);
+}
+.char-creation-eyebrow{
+  font-family:var(--serif);font-style:italic;
+  font-size:.65rem;letter-spacing:.32em;text-transform:uppercase;
+  color:var(--muted);margin:0;
+}
+.char-creation-title{
+  font-family:var(--deco);font-weight:700;
+  font-size:1.8rem;letter-spacing:.28em;
+  color:var(--gold);
+  text-shadow:0 0 22px rgba(251,191,36,0.45), 0 0 48px rgba(192,132,252,0.22);
+  margin:0;
+}
+.char-creation-rule{
+  width:120px;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(192,132,252,0.6), transparent);
+  margin:0;
+}
+.char-creation-prompt{
+  font-family:var(--serif);font-style:italic;
+  font-size:.85rem;letter-spacing:.04em;
+  color:rgba(220,210,240,0.85);
+  line-height:1.5;margin:0;
+}
+.char-name-input{
+  width:100%;
+  padding:14px 18px;
+  background:rgba(8,2,20,0.85);
+  border:1px solid rgba(192,132,252,0.4);
+  color:var(--gold);
+  font-family:var(--deco);font-weight:700;
+  font-size:1.1rem;letter-spacing:.14em;text-align:center;
+  text-transform:uppercase;
+  outline:none;
+  transition:all .2s ease;
+}
+.char-name-input:focus{
+  border-color:rgba(192,132,252,0.85);
+  box-shadow:0 0 18px -4px rgba(192,132,252,0.45);
+  background:rgba(12,4,28,0.92);
+}
+.char-name-input::placeholder{color:var(--muted);font-style:italic}
+.char-sigil-label{
+  font-family:var(--serif);
+  font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;
+  color:var(--muted);margin:0;
+}
+.char-sigil-row{
+  display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+}
+.char-sigil-btn{
+  width:54px;height:54px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(8,2,20,0.7);
+  border:1px solid rgba(192,132,252,0.25);
+  color:rgba(190,170,220,0.7);
+  font-size:1.8rem;line-height:1;
+  cursor:pointer;
+  transition:all .2s ease;
+}
+.char-sigil-btn:hover{
+  border-color:rgba(192,132,252,0.6);
+  color:var(--purple);
+  transform:translateY(-2px);
+}
+.char-sigil-btn.selected{
+  border-color:rgba(251,191,36,0.85);
+  color:var(--gold);
+  background:rgba(251,191,36,0.06);
+  box-shadow:0 0 16px -4px rgba(251,191,36,0.45);
+}
+.char-submit-btn{
+  background:linear-gradient(180deg, rgba(124,58,237,0.22), rgba(124,58,237,0.08));
+  border:1px solid rgba(192,132,252,0.55);
+  color:var(--text);
+  padding:14px 36px;
+  font-family:var(--deco);font-weight:700;
+  font-size:.78rem;letter-spacing:.32em;text-transform:uppercase;
+  cursor:pointer;
+  transition:all .25s ease;
+  text-shadow:0 0 8px rgba(192,132,252,0.4);
+}
+.char-submit-btn:hover{
+  border-color:rgba(192,132,252,0.95);
+  background:linear-gradient(180deg, rgba(124,58,237,0.35), rgba(124,58,237,0.15));
+  box-shadow:0 0 24px -4px rgba(192,132,252,0.55);
+}
+.char-submit-btn:disabled{
+  opacity:0.4;cursor:not-allowed;
+  border-color:rgba(192,132,252,0.2);
+  box-shadow:none;
+}
+.char-submit-btn:disabled:hover{
+  background:linear-gradient(180deg, rgba(124,58,237,0.22), rgba(124,58,237,0.08));
+}
+
 /* MINI PLAYER BAR — sits just above the bottom nav; always visible after splash. */
 .music-player{
   position:fixed;left:50%;
@@ -2788,7 +2924,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
           </div>
           <div class="walker-talents" id="walker-talents"></div>
           <p class="walker-panel-prose">
-            Tap a branch to invest. Each rank grants a passive effect that compounds.
+            Speak the word, one syllable at a time. Each rank grants a passive effect that compounds.
           </p>
         </section>
 
@@ -2832,6 +2968,28 @@ body{font-family:var(--body);color:var(--text);position:relative}
     <h1 class="splash-logo">INFERNUM</h1>
     <p class="splash-tagline">A walk between worlds</p>
     <button class="splash-btn" onclick="dismissSplash()">Walk the Rift</button>
+  </div>
+</div>
+
+<!-- CHARACTER CREATION — first-binding ritual. Shown after splash if walker not yet created. -->
+<div id="char-creation" class="char-creation">
+  <div class="char-creation-inner">
+    <p class="char-creation-eyebrow">The First Binding</p>
+    <h1 class="char-creation-title">SPEAK YOUR NAME</h1>
+    <div class="char-creation-rule"></div>
+    <p class="char-creation-prompt">The void already knows you. Teach it what to call you when it comes looking.</p>
+    <input type="text" id="char-name-input" class="char-name-input"
+           placeholder="Walker" maxlength="24" autocomplete="off" spellcheck="false"
+           oninput="updateCharSubmitState()" />
+    <p class="char-sigil-label">Choose your sigil</p>
+    <div class="char-sigil-row" id="char-sigil-row">
+      <button type="button" class="char-sigil-btn selected" data-sigil="⛧" onclick="selectCharSigil('⛧')">⛧</button>
+      <button type="button" class="char-sigil-btn" data-sigil="⸸" onclick="selectCharSigil('⸸')">⸸</button>
+      <button type="button" class="char-sigil-btn" data-sigil="☽" onclick="selectCharSigil('☽')">☽</button>
+      <button type="button" class="char-sigil-btn" data-sigil="⛤" onclick="selectCharSigil('⛤')">⛤</button>
+      <button type="button" class="char-sigil-btn" data-sigil="✠" onclick="selectCharSigil('✠')">✠</button>
+    </div>
+    <button class="char-submit-btn" id="char-submit-btn" onclick="submitCharacterCreation()">Bind the Name</button>
   </div>
 </div>
 
@@ -3563,12 +3721,18 @@ function load(){
   if(!S.walker){
     S.walker={
       name:'Walker', title:'initiate', level:1, xp:0,
+      sigil:'⛧',  // chosen during character creation
       cosmetics:{robe:'robe:novice',hood:'hood:none',aura:'aura:pale',pool:'pool:void'},
       ownedCosmetics:['robe:novice','hood:none','aura:pale','pool:void'],
       equipped:{crown:null,pendant:null,robe:null,gloves:null,sash:null,tome:null},
       talents:{points:0, ranks:{binder:0,warden:0,voidtouched:0,ascendant:0}},
       bonds:[null,null,null], pacts:{}, journal:[],
+      created:false,  // flips to true after character creation flow completes
     };
+  } else {
+    // Existing saves grandfathered as already-created — no re-prompt for current players
+    if(typeof S.walker.created==='undefined') S.walker.created=true;
+    if(typeof S.walker.sigil==='undefined') S.walker.sigil='⛧';
   }
   if(typeof S.embers==='undefined') S.embers=0;
   if(!S.musicState) S.musicState={currentTrackId:'infernum_welcome', paused:false};
@@ -5116,6 +5280,12 @@ function confirmDiscardRune(id){
   }
 }
 
+// Which Binding-Word syllable is currently focused on the talent board.
+let activeTalentBranch = 'call';
+function focusTalentBranch(id){
+  if(WALKER_TALENT_TREE[id]) activeTalentBranch = id;
+  renderWalkerTalents();
+}
 function renderWalkerTalents(){
   const root = document.getElementById('walker-talents');
   if(!root) return;
@@ -5123,57 +5293,90 @@ function renderWalkerTalents(){
   if(ptsEl) ptsEl.textContent = S.walker.talents.points;
   const ranks = S.walker.talents.ranks || {};
   const isInvested = id => (ranks[id]||0) > 0;
-  const isAvailable = node => {
-    if(!node.requires) return true;
-    return node.requires.split('|').some(isInvested);
-  };
-  root.innerHTML = Object.entries(WALKER_TALENT_TREE).map(([branchId, b]) => {
-    // Locked syllable branch (The Unspoken) — render a sealed placeholder column
-    if(b.locked){
-      return `
-        <div class="talent-branch talent-branch-locked" style="--branch-glow:${b.glow};--branch-color:${b.color}">
-          <div class="talent-branch-header">
-            <div class="talent-branch-syllable">${b.syllable}</div>
-            <div class="talent-branch-icon">${b.icon}</div>
-            <div class="talent-branch-name">${b.name}</div>
-            <div class="talent-branch-desc">${b.desc}</div>
-          </div>
-          <div class="talent-locked-seal">
-            <div class="talent-locked-glyph">🜸</div>
-            <div class="talent-locked-text">
-              <div class="talent-locked-label">Sealed</div>
-              <div class="talent-locked-sub">Season 2 — The Descent</div>
-            </div>
-          </div>
-        </div>`;
-    }
+  const isAvailable = node => !node.requires || node.requires.split('|').some(isInvested);
+
+  if(!WALKER_TALENT_TREE[activeTalentBranch]) activeTalentBranch = 'call';
+  const entries = Object.entries(WALKER_TALENT_TREE);
+
+  // Syllable rail — the six spoken syllables + the sealed seventh
+  const rail = entries.map(([bid, b]) => {
+    const locked = !!b.locked;
+    const total = locked ? 0 : b.nodes.length;
+    const inv   = locked ? 0 : b.nodes.filter(n => isInvested(n.id)).length;
+    const active = bid === activeTalentBranch;
+    const done = !locked && total > 0 && inv === total;
     return `
-      <div class="talent-branch" style="--branch-glow:${b.glow};--branch-color:${b.color}">
-        <div class="talent-branch-header">
-          <div class="talent-branch-syllable">${b.syllable}</div>
-          <div class="talent-branch-icon">${b.icon}</div>
-          <div class="talent-branch-name">${b.name}</div>
-          <div class="talent-branch-desc">${b.desc}</div>
-        </div>
-        <div class="talent-grid">
-          ${b.nodes.map(n => {
-            const invested = isInvested(n.id);
-            const available = invested || isAvailable(n);
-            const state = invested ? 'invested' : (available ? 'available' : 'locked');
-            const colCls = n.col==='mid' ? 'col-mid' : ('col-'+n.col);
-            return `
-              <div class="talent-node tier-${n.tier} ${colCls} ${state}"
-                   data-id="${n.id}"
-                   onclick="investTalentNode('${n.id}')">
-                <div class="talent-node-icon">${n.icon}</div>
-                <div class="talent-node-name">${n.name}</div>
-                <div class="talent-node-desc">${n.desc}</div>
-                ${invested ? '<div class="talent-node-check">✓</div>' : ''}
-              </div>`;
-          }).join('')}
-        </div>
-      </div>`;
+      <button class="tt-syll ${active?'active':''} ${locked?'locked':''} ${done?'done':''}"
+              style="--branch-glow:${b.glow};--branch-color:${b.color}"
+              onclick="focusTalentBranch('${bid}')">
+        <span class="tt-syll-rom">${b.syllable}</span>
+        <span class="tt-syll-glyph">${locked ? '\uD83D\uDF38' : b.icon}</span>
+        <span class="tt-syll-name">${b.name.replace(/^The /,'')}</span>
+        <span class="tt-syll-prog">${locked ? 'sealed' : inv+'/'+total}</span>
+      </button>`;
   }).join('');
+
+  const b = WALKER_TALENT_TREE[activeTalentBranch];
+  let board;
+  if(b.locked){
+    board = `
+      <div class="tt-sealed">
+        <div class="tt-sealed-glyph">\uD83D\uDF38</div>
+        <div class="tt-sealed-label">The Unspoken</div>
+        <div class="tt-sealed-sub">The seventh syllable. Never spoken.</div>
+        <div class="tt-sealed-sub">Sealed — Season 2 · The Descent</div>
+      </div>`;
+  } else {
+    const inv = b.nodes.filter(n => isInvested(n.id)).length;
+    const nodes = b.nodes.map(n => {
+      const invested  = isInvested(n.id);
+      const available = invested || isAvailable(n);
+      const state = invested ? 'invested' : (available ? 'available' : 'locked');
+      const colCls = n.col === 'mid' ? 'col-mid' : ('col-' + n.col);
+      return `
+        <div class="tt-node tier-${n.tier} ${colCls} ${state}"
+             data-id="${n.id}" tabindex="0"
+             onclick="investTalentNode('${n.id}')">
+          <div class="tt-node-icon">${n.icon}</div>
+          <div class="tt-node-name">${n.name}</div>
+          <div class="tt-node-desc">${n.desc}</div>
+          ${invested ? '<div class="tt-node-check">\u2713</div>' : ''}
+          ${(!available && !invested) ? '<div class="tt-node-lock">\uD83D\uDD12</div>' : ''}
+        </div>`;
+    }).join('');
+    board = `
+      <div class="tt-head">
+        <div class="tt-head-rom">${b.syllable} syllable</div>
+        <div class="tt-head-name">${b.name}</div>
+        <div class="tt-head-desc">${b.desc}</div>
+        <div class="tt-head-prog"><span>${inv}</span> / ${b.nodes.length} spoken</div>
+      </div>
+      <div class="tt-grid">${nodes}</div>`;
+  }
+
+  root.innerHTML = `
+    <div class="tt-rail">${rail}</div>
+    <div class="tt-board-wrap">
+      <div class="tt-board" style="--branch-glow:${b.glow};--branch-color:${b.color}">${board}</div>
+    </div>`;
+
+  // Pointer-parallax tilt (fine pointers only — touch leaves the board at rest)
+  const wrap = root.querySelector('.tt-board-wrap');
+  const bd   = root.querySelector('.tt-board');
+  const fine = window.matchMedia && window.matchMedia('(pointer:fine)').matches;
+  if(wrap && bd && fine){
+    wrap.onpointermove = (e) => {
+      const r = wrap.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width  - 0.5;
+      const py = (e.clientY - r.top)  / r.height - 0.5;
+      bd.style.setProperty('--tilt-x', (px * 10).toFixed(2) + 'deg');
+      bd.style.setProperty('--tilt-y', (-py * 7).toFixed(2) + 'deg');
+    };
+    wrap.onpointerleave = () => {
+      bd.style.setProperty('--tilt-x', '0deg');
+      bd.style.setProperty('--tilt-y', '0deg');
+    };
+  }
 }
 
 function renderWalkerBonds(){
@@ -5480,9 +5683,7 @@ function _mRealmVisited(id){
 }
 function _mGarrisoned(){ return Object.keys(S.garrison||{}).length >= 1; }
 function _mScrollReceived(){ return !!S.hasVisitedSummon; }
-// Character creation: walker existing counts as "character created". When a
-// dedicated character creation flow ships, replace with that flag.
-function _mCharacterCreated(){ return !!(S.walker); }
+function _mCharacterCreated(){ return !!(S.walker && S.walker.created); }
 
 // Track registry — 20 tracks (13 main + 7 realm), canonical names from the GDD.
 // Each entry: id, name, file, isUnlocked predicate, unlock hint shown when locked.
@@ -5609,6 +5810,65 @@ function dismissSplash(){
   if(!splash) return;
   splash.classList.add('fading');
   setTimeout(()=>splash.classList.remove('show','fading'), 600);
+  // If the walker hasn't gone through character creation yet, route there next.
+  // Otherwise, start the music straight away (returning player).
+  if(S.walker && !S.walker.created){
+    setTimeout(showCharacterCreation, 400);
+  } else {
+    startMusic();
+  }
+}
+
+// CHARACTER CREATION — first-binding ritual that runs after splash on a fresh
+// vessel. Sets the walker's name + sigil and flips S.walker.created = true so
+// it never re-prompts. Existing saves are grandfathered as already-created.
+let _pendingSigil='⛧';
+function showCharacterCreation(){
+  const m=document.getElementById('char-creation');
+  if(!m) return;
+  // Reset to defaults each time it opens
+  const input=document.getElementById('char-name-input');
+  if(input){ input.value=''; }
+  _pendingSigil='⛧';
+  document.querySelectorAll('#char-sigil-row .char-sigil-btn').forEach(btn=>{
+    btn.classList.toggle('selected', btn.dataset.sigil===_pendingSigil);
+  });
+  updateCharSubmitState();
+  m.classList.add('show');
+  // Focus the name input shortly after the modal animates in
+  setTimeout(()=>{ if(input) input.focus(); }, 250);
+}
+function selectCharSigil(sigil){
+  _pendingSigil=sigil;
+  document.querySelectorAll('#char-sigil-row .char-sigil-btn').forEach(btn=>{
+    btn.classList.toggle('selected', btn.dataset.sigil===sigil);
+  });
+}
+function updateCharSubmitState(){
+  const input=document.getElementById('char-name-input');
+  const btn=document.getElementById('char-submit-btn');
+  if(!input || !btn) return;
+  const hasName=input.value.trim().length>=1;
+  btn.disabled=!hasName;
+}
+function submitCharacterCreation(){
+  const input=document.getElementById('char-name-input');
+  const name=(input.value||'').trim().slice(0,24);
+  if(!name) return; // submit guard; button is also disabled when empty
+  S.walker.name=name;
+  S.walker.sigil=_pendingSigil||'⛧';
+  S.walker.created=true;
+  save();
+  // Update any walker UI that's already on screen (defensive — walker screen may
+  // not be rendered yet, but renderWalker is safe to call regardless)
+  if(typeof renderWalker==='function') renderWalker();
+  // Fade out the creation modal
+  const m=document.getElementById('char-creation');
+  if(m){
+    m.classList.add('fading');
+    setTimeout(()=>m.classList.remove('show','fading'), 600);
+  }
+  // Start music — infernum_welcome.mp3 is now unlocked (character created)
   startMusic();
 }
 
