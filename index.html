@@ -1500,95 +1500,63 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 
 /* Talents */
-/* ─── TALENT TREE — Six Syllables of the Binding Word + locked 7th ─── */
-/* 3D experience: a syllable rail selects one branch; that branch renders as a
-   perspective board of raised plinths receding into depth, with glowing prereq
-   conduits and a gentle pointer-parallax tilt. Reuses investTalentNode() logic. */
-.walker-talents{ display:flex; flex-direction:column; gap:16px; margin-top:6px; }
+/* ─── TALENT TREE — floating ritual sigils over the sanctum, no menu chrome ─── */
+.walker-talents{ display:flex; flex-direction:column; gap:24px; margin-top:12px; }
 
-/* ── Binding-Word syllable rail ── */
-.tt-rail{
-  display:flex; gap:7px; flex-wrap:wrap; justify-content:center;
-}
+@keyframes ttBob{   0%,100%{ transform:translateY(0) }   50%{ transform:translateY(-8px) } }
+@keyframes ttBobSm{ 0%,100%{ transform:translateY(0) }   50%{ transform:translateY(-5px) } }
+@keyframes ttPulse{ 0%,100%{ opacity:.40 }               50%{ opacity:.72 } }
+
+/* ── Binding-Word rail — floating sigils, no boxes ── */
+.tt-rail{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
 .tt-syll{
-  flex:1 1 88px; max-width:118px; min-width:78px;
-  background:linear-gradient(180deg, rgba(14,6,30,0.9), rgba(6,0,14,0.85));
-  border:1px solid rgba(var(--branch-glow),0.32);
-  border-radius:10px; padding:9px 6px 8px; cursor:pointer;
-  display:flex; flex-direction:column; align-items:center; gap:3px;
-  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-  position:relative; overflow:hidden;
+  flex:0 0 auto; width:90px; background:none; border:0; padding:8px 3px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:7px; position:relative;
+  animation:ttBobSm 5.5s ease-in-out infinite;
+  transition:filter .25s ease, transform .25s ease;
 }
+.tt-syll:nth-child(2){ animation-delay:.45s } .tt-syll:nth-child(3){ animation-delay:.9s }
+.tt-syll:nth-child(4){ animation-delay:1.35s } .tt-syll:nth-child(5){ animation-delay:1.8s }
+.tt-syll:nth-child(6){ animation-delay:2.25s } .tt-syll:nth-child(7){ animation-delay:2.7s }
+/* feathered light pool beneath active/hover — no hard edge */
 .tt-syll::before{
-  content:''; position:absolute; inset:0;
-  background:radial-gradient(ellipse at top, rgba(var(--branch-glow),0.16), transparent 65%);
-  opacity:0; transition:opacity .2s ease; pointer-events:none;
+  content:''; position:absolute; left:50%; top:42%; width:128px; height:128px;
+  transform:translate(-50%,-50%) scale(.55); opacity:0;
+  background:radial-gradient(circle, rgba(var(--branch-glow),0.55), transparent 62%);
+  filter:blur(7px); transition:opacity .3s ease, transform .3s ease; pointer-events:none; z-index:-1;
 }
-.tt-syll:hover{ transform:translateY(-2px); border-color:rgba(var(--branch-glow),0.6); }
-.tt-syll:hover::before{ opacity:1; }
-.tt-syll.active{
-  border-color:rgba(var(--branch-glow),0.95);
-  box-shadow:0 0 18px rgba(var(--branch-glow),0.5), inset 0 0 14px rgba(var(--branch-glow),0.18);
-}
-.tt-syll.active::before{ opacity:1; }
-.tt-syll.done{ border-color:rgba(251,191,36,0.7); }
-.tt-syll.done .tt-syll-rune{ color:rgba(255,225,150,1); text-shadow:0 0 12px rgba(251,191,36,0.8); }
-.tt-syll.locked{ filter:saturate(0.3) brightness(0.7); cursor:pointer; }
-.tt-syll-rom{
-  font-family:var(--serif); font-size:.42rem; letter-spacing:.26em;
-  color:rgba(var(--branch-glow),0.78); text-transform:lowercase;
-}
-.tt-syll-glyph{ position:relative; width:34px; height:34px; display:flex; align-items:center; justify-content:center; }
-.tt-syll-img{ max-width:34px; max-height:34px; object-fit:contain; filter:drop-shadow(0 0 8px rgba(var(--branch-glow),0.6)); }
-.tt-syll-rune{ position:absolute; font-size:22px; line-height:1; color:var(--branch-color); text-shadow:0 0 12px rgba(var(--branch-glow),0.55); }
-.tt-syll-name{
-  font-family:var(--serif); font-size:.44rem; letter-spacing:.12em;
-  color:var(--text); text-transform:uppercase; text-align:center; line-height:1.1;
-}
-.tt-syll-prog{ font-size:.4rem; letter-spacing:.1em; color:var(--muted); font-family:var(--body); }
-.tt-syll.done .tt-syll-prog{ color:var(--gold); }
+.tt-syll:hover{ filter:brightness(1.15); }
+.tt-syll:hover::before{ opacity:.65; transform:translate(-50%,-50%) scale(.85); }
+.tt-syll.active{ filter:brightness(1.2); }
+.tt-syll.active::before{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+.tt-syll.locked{ filter:saturate(.25) brightness(.6); }
+.tt-syll-rom{ font-family:var(--serif); font-size:.42rem; letter-spacing:.26em; color:rgba(var(--branch-glow),0.8); text-transform:lowercase; }
+.tt-syll-glyph{ position:relative; width:56px; height:56px; display:flex; align-items:center; justify-content:center; }
+.tt-syll-img{ max-width:56px; max-height:56px; object-fit:contain; filter:drop-shadow(0 0 11px rgba(var(--branch-glow),0.8)); }
+.tt-syll-rune{ position:absolute; font-size:32px; line-height:1; color:var(--branch-color); text-shadow:0 0 16px rgba(var(--branch-glow),0.7); }
+.tt-syll-name{ font-family:var(--serif); font-size:.46rem; letter-spacing:.14em; color:var(--text); text-transform:uppercase; text-align:center; text-shadow:0 1px 6px rgba(0,0,0,.85); }
+.tt-syll-prog{ font-size:.42rem; letter-spacing:.1em; color:var(--muted); }
+.tt-syll.active .tt-syll-prog{ color:var(--gold); }
+.tt-syll.done .tt-syll-rune{ color:rgba(255,225,150,1); text-shadow:0 0 16px rgba(251,191,36,0.85); }
 
-/* ── Perspective board ── */
-.tt-board-wrap{ perspective:1300px; perspective-origin:50% 38%; padding:6px 0 10px; }
+/* ── No panel — the tree floats directly over the sanctum ── */
+.tt-board-wrap{ perspective:1500px; perspective-origin:50% 42%; }
 .tt-board{
   position:relative; transform-style:preserve-3d;
-  transform:rotateX(calc(9deg + var(--tilt-y,0deg))) rotateY(var(--tilt-x,0deg));
-  transition:transform .18s ease-out;
-  border-radius:16px;
-  background:
-    radial-gradient(ellipse at 50% 120%, rgba(var(--branch-glow),0.16), transparent 62%),
-    linear-gradient(180deg, rgba(10,4,24,0.55), rgba(6,0,14,0.78));
-  border:1px solid rgba(var(--branch-glow),0.28);
-  padding:18px 16px 22px;
-  box-shadow:0 26px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(var(--branch-glow),0.18);
+  transform:rotateX(calc(6deg + var(--tilt-y,0deg))) rotateY(var(--tilt-x,0deg));
+  transition:transform .2s ease-out;
 }
-.tt-board::after{ /* altar floor glow */
-  content:''; position:absolute; left:8%; right:8%; bottom:8px; height:46px;
-  background:radial-gradient(ellipse at center, rgba(var(--branch-glow),0.3), transparent 70%);
-  filter:blur(8px); transform:translateZ(-30px); pointer-events:none;
-}
-.tt-head{ text-align:center; margin-bottom:18px; transform:translateZ(12px); }
-.tt-head-rom{
-  font-family:var(--serif); font-size:.46rem; letter-spacing:.34em;
-  color:rgba(var(--branch-glow),0.7); text-transform:lowercase; margin-bottom:5px;
-}
-.tt-head-name{
-  font-family:var(--serif); font-size:.92rem; letter-spacing:.2em;
-  color:var(--branch-color); text-transform:uppercase; margin-bottom:7px;
-  text-shadow:0 0 18px rgba(var(--branch-glow),0.55);
-}
-.tt-head-desc{ font-size:.5rem; color:rgba(210,200,235,0.7); font-style:italic; line-height:1.5; max-width:440px; margin:0 auto 8px; }
-.tt-head-prog{ font-family:var(--serif); font-size:.5rem; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; }
+.tt-head{ text-align:center; margin-bottom:26px; transform:translateZ(22px); }
+.tt-head-rom{ font-family:var(--serif); font-size:.46rem; letter-spacing:.34em; color:rgba(var(--branch-glow),0.78); text-transform:lowercase; margin-bottom:6px; text-shadow:0 1px 6px rgba(0,0,0,.8); }
+.tt-head-name{ font-family:var(--serif); font-size:1rem; letter-spacing:.22em; color:var(--branch-color); text-transform:uppercase; margin-bottom:9px; text-shadow:0 0 22px rgba(var(--branch-glow),0.65), 0 2px 8px rgba(0,0,0,.9); }
+.tt-head-desc{ font-size:.52rem; color:rgba(216,206,238,0.78); font-style:italic; line-height:1.5; max-width:430px; margin:0 auto 9px; text-shadow:0 1px 6px rgba(0,0,0,.9); }
+.tt-head-prog{ font-family:var(--serif); font-size:.5rem; letter-spacing:.22em; color:var(--muted); text-transform:uppercase; text-shadow:0 1px 6px rgba(0,0,0,.9); }
 .tt-head-prog span{ color:var(--gold); font-size:.62rem; }
 
-/* Tier grid — 4 columns (T1→Capstone) receding into depth, 2 rows for paired nodes */
+/* Tier grid — depth tiers receding, paired rows */
 .tt-grid{
-  display:grid;
-  grid-template-columns:repeat(4, minmax(0,1fr));
-  grid-template-rows:1fr 1fr;
-  gap:14px 30px;
-  transform-style:preserve-3d;
-  position:relative;
+  display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); grid-template-rows:1fr 1fr;
+  gap:28px 50px; transform-style:preserve-3d; position:relative;
 }
 .tt-node.tier-1.col-0{grid-column:1;grid-row:1}
 .tt-node.tier-1.col-1{grid-column:1;grid-row:2}
@@ -1597,98 +1565,94 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .tt-node.tier-3{grid-column:3;grid-row:1 / span 2}
 .tt-node.tier-4{grid-column:4;grid-row:1 / span 2}
 
-/* Raised plinths — deeper tiers lift further toward the viewer */
-.tt-node{
-  position:relative; cursor:pointer; border-radius:10px;
-  padding:11px 8px 10px; text-align:center;
-  transform-style:preserve-3d;
-  background:linear-gradient(180deg, rgba(20,10,40,0.92), rgba(8,2,20,0.82));
-  border:1px solid rgba(var(--branch-glow),0.3);
-  box-shadow:0 16px 26px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05);
-  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
-}
-.tt-node.tier-1{ transform:translateZ(4px); }
-.tt-node.tier-2{ transform:translateZ(20px); }
-.tt-node.tier-3{ transform:translateZ(40px); }
-.tt-node.tier-4{ transform:translateZ(62px); }
+/* Nodes — floating sigils, no card. Depth via translateZ, motion via inner bob. */
+.tt-node{ position:relative; cursor:pointer; transform-style:preserve-3d; }
+.tt-node.tier-1{ transform:translateZ(6px); }
+.tt-node.tier-2{ transform:translateZ(26px); }
+.tt-node.tier-3{ transform:translateZ(48px); }
+.tt-node.tier-4{ transform:translateZ(72px); }
 
-/* Glowing prereq conduits flowing left-to-right into depth */
+.tt-node-inner{
+  position:relative; display:flex; flex-direction:column; align-items:center; gap:8px; padding:8px 4px;
+  animation:ttBob 6.5s ease-in-out infinite;
+}
+.tt-node.tier-1 .tt-node-inner{ animation-delay:0s }
+.tt-node.tier-2 .tt-node-inner{ animation-delay:.55s }
+.tt-node.tier-3 .tt-node-inner{ animation-delay:1.1s }
+.tt-node.tier-4 .tt-node-inner{ animation-delay:1.65s }
+/* feathered glow aura behind each sigil — no edge, sits behind in depth */
+.tt-node-inner::before{
+  content:''; position:absolute; left:50%; top:30px; width:124px; height:124px;
+  transform:translate(-50%,-50%) translateZ(-12px); border-radius:50%;
+  background:radial-gradient(circle, rgba(var(--branch-glow),0.30), transparent 60%);
+  filter:blur(9px); opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+
+/* glowing energy conduits between tiers — recede behind the sigils */
 .tt-node.tier-2::before, .tt-node.tier-3::before, .tt-node.tier-4::before{
-  content:''; position:absolute; top:50%; left:-30px; width:30px; height:3px;
+  content:''; position:absolute; top:34px; left:-50px; width:50px; height:2px;
   transform:translateY(-50%) translateZ(-10px);
-  background:linear-gradient(90deg, transparent, rgba(var(--branch-glow),0.7));
-  box-shadow:0 0 8px rgba(var(--branch-glow),0.6); border-radius:2px;
+  background:linear-gradient(90deg, transparent, rgba(var(--branch-glow),0.55));
+  box-shadow:0 0 8px rgba(var(--branch-glow),0.5); border-radius:2px;
 }
 .tt-node.tier-2::after{
-  content:''; position:absolute; top:50%; right:-30px; width:30px; height:3px;
+  content:''; position:absolute; top:34px; right:-50px; width:50px; height:2px;
   transform:translateY(-50%) translateZ(-10px);
-  background:linear-gradient(90deg, rgba(var(--branch-glow),0.7), transparent);
-  box-shadow:0 0 8px rgba(var(--branch-glow),0.6); border-radius:2px;
+  background:linear-gradient(90deg, rgba(var(--branch-glow),0.55), transparent);
+  box-shadow:0 0 8px rgba(var(--branch-glow),0.5); border-radius:2px;
 }
 
-.tt-node-icon{ font-size:24px; line-height:1; color:var(--branch-color); margin-bottom:5px; text-shadow:0 0 10px rgba(var(--branch-glow),0.5); }
-.tt-node-name{ font-family:var(--serif); font-size:.5rem; letter-spacing:.08em; color:var(--text); text-transform:uppercase; margin-bottom:4px; line-height:1.18; }
-.tt-node-desc{ font-size:.43rem; color:rgba(200,190,225,0.62); line-height:1.4; font-style:italic; }
-.tt-node-check{ position:absolute; top:6px; right:8px; font-size:13px; color:var(--gold); font-weight:bold; text-shadow:0 0 8px rgba(251,191,36,0.8); }
-.tt-node-lock{ position:absolute; top:6px; right:7px; font-size:11px; opacity:0.7; }
+.tt-node-icon{ font-size:36px; line-height:1; color:var(--branch-color); text-shadow:0 0 15px rgba(var(--branch-glow),0.6); transition:transform .25s ease, text-shadow .25s ease; }
+.tt-node-name{ font-family:var(--serif); font-size:.54rem; letter-spacing:.1em; color:var(--text); text-transform:uppercase; text-shadow:0 1px 7px rgba(0,0,0,.9); }
+.tt-node-desc{ font-size:.45rem; color:rgba(214,204,236,0.72); font-style:italic; line-height:1.45; max-width:150px; text-align:center; text-shadow:0 1px 6px rgba(0,0,0,.9); }
+.tt-node-check{ position:absolute; top:18px; left:50%; margin-left:22px; font-size:14px; color:var(--gold); text-shadow:0 0 9px rgba(251,191,36,0.85); }
+.tt-node-lock{ position:absolute; top:20px; left:50%; margin-left:20px; font-size:12px; opacity:.65; }
 
-/* States */
-.tt-node.available{ border-color:rgba(var(--branch-glow),0.6); }
-.tt-node.available:hover{
-  transform:translateZ(var(--hz,30px)) translateY(-3px) scale(1.04);
-  border-color:rgba(var(--branch-glow),1);
-  box-shadow:0 24px 40px rgba(0,0,0,0.6), 0 0 22px rgba(var(--branch-glow),0.7);
+/* States — glow, not borders */
+.tt-node.available .tt-node-inner::before{ opacity:.5; animation:ttPulse 3.2s ease-in-out infinite; }
+.tt-node.available:hover .tt-node-inner::before{ opacity:.95; animation:none; }
+.tt-node.available:hover .tt-node-icon{ transform:scale(1.16); text-shadow:0 0 22px rgba(var(--branch-glow),0.95); }
+.tt-node.invested .tt-node-inner::before{
+  opacity:.8; background:radial-gradient(circle, rgba(251,191,36,0.40), transparent 60%);
 }
-.tt-node.tier-1.available:hover{ --hz:14px; }
-.tt-node.tier-2.available:hover{ --hz:30px; }
-.tt-node.tier-3.available:hover{ --hz:50px; }
-.tt-node.tier-4.available:hover{ --hz:72px; }
-.tt-node.invested{
-  border-color:rgba(251,191,36,0.9);
-  background:linear-gradient(180deg, rgba(46,30,8,0.95), rgba(20,10,2,0.85));
-  box-shadow:0 18px 30px rgba(0,0,0,0.55), 0 0 20px rgba(251,191,36,0.45), inset 0 1px 0 rgba(255,210,90,0.25);
-}
-.tt-node.invested .tt-node-icon{ color:rgba(255,225,150,1); text-shadow:0 0 14px rgba(251,191,36,0.85); }
+.tt-node.invested .tt-node-icon{ color:rgba(255,225,150,1); text-shadow:0 0 20px rgba(251,191,36,0.9); }
 .tt-node.invested::before, .tt-node.invested::after{
-  background:linear-gradient(90deg, rgba(251,191,36,0.85), rgba(251,191,36,0.4)) !important;
+  background:linear-gradient(90deg, rgba(251,191,36,0.75), rgba(251,191,36,0.35)) !important;
   box-shadow:0 0 10px rgba(251,191,36,0.7) !important;
 }
-.tt-node.locked{
-  opacity:0.42; cursor:not-allowed; filter:saturate(0.35);
-  background:linear-gradient(180deg, rgba(8,4,16,0.9), rgba(4,0,10,0.85));
-  box-shadow:inset 0 2px 10px rgba(0,0,0,0.7);
-}
-.tt-node.locked.tier-1, .tt-node.locked.tier-2, .tt-node.locked.tier-3, .tt-node.locked.tier-4{ transform:translateZ(0); }
+.tt-node.locked{ opacity:.4; filter:saturate(.3); cursor:not-allowed; }
+.tt-node.locked .tt-node-inner{ animation:none; }   /* dormant — does not float */
 
-/* The Unspoken — sealed seventh branch shown in the board */
+/* The Unspoken — sealed seventh, floating */
 .tt-sealed{
-  text-align:center; padding:40px 24px; transform:translateZ(10px);
-  display:flex; flex-direction:column; align-items:center; gap:14px;
+  text-align:center; padding:54px 24px; transform:translateZ(16px);
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+  animation:ttBob 7.5s ease-in-out infinite;
 }
-.tt-sealed-glyph{ font-size:52px; color:rgba(200,200,210,0.7); text-shadow:0 0 22px rgba(180,180,200,0.4); line-height:1; }
-.tt-sealed-label{ font-family:var(--serif); font-size:.78rem; letter-spacing:.3em; color:rgba(220,220,230,0.85); text-transform:uppercase; }
-.tt-sealed-sub{ font-size:.5rem; color:var(--muted); font-style:italic; letter-spacing:.16em; }
+.tt-sealed-glyph{ font-size:60px; color:rgba(200,200,210,0.7); text-shadow:0 0 26px rgba(180,180,200,0.4); line-height:1; }
+.tt-sealed-label{ font-family:var(--serif); font-size:.82rem; letter-spacing:.3em; color:rgba(222,222,232,0.85); text-transform:uppercase; text-shadow:0 2px 8px rgba(0,0,0,.9); }
+.tt-sealed-sub{ font-size:.5rem; color:var(--muted); font-style:italic; letter-spacing:.16em; text-shadow:0 1px 6px rgba(0,0,0,.9); }
 
+/* Points readout — floating glow text, no pill chrome */
 .tt-points-pill{
-  display:inline-block; font-size:.5rem; padding:6px 14px;
-  background:rgba(251,191,36,.1); border:1px solid rgba(251,191,36,.3);
-  color:var(--gold); border-radius:6px; letter-spacing:.18em;
-  font-family:var(--serif); text-transform:uppercase;
-  box-shadow:0 0 14px rgba(251,191,36,0.2);
+  display:inline-block; font-size:.56rem; padding:0; background:none; border:0;
+  color:var(--gold); letter-spacing:.26em; font-family:var(--serif); text-transform:uppercase;
+  text-shadow:0 0 16px rgba(251,191,36,0.5), 0 1px 6px rgba(0,0,0,.8);
 }
 
-/* Narrow viewports — flatter tilt, tighter grid, smaller depth so nothing clips */
 @media (max-width: 640px){
-  .tt-board{ transform:rotateX(calc(5deg + var(--tilt-y,0deg))) rotateY(var(--tilt-x,0deg)); padding:14px 10px 18px; }
-  .tt-grid{ gap:9px 16px; }
-  .tt-node{ padding:8px 5px; }
-  .tt-node.tier-2{ transform:translateZ(12px); }
-  .tt-node.tier-3{ transform:translateZ(24px); }
-  .tt-node.tier-4{ transform:translateZ(38px); }
-  .tt-node.tier-2::before, .tt-node.tier-3::before, .tt-node.tier-4::before{ left:-16px; width:16px; }
-  .tt-node.tier-2::after{ right:-16px; width:16px; }
-  .tt-node-icon{ font-size:19px; }
-  .tt-head-name{ font-size:.74rem; }
+  .tt-board{ transform:rotateX(calc(4deg + var(--tilt-y,0deg))) rotateY(var(--tilt-x,0deg)); }
+  .tt-grid{ gap:18px 22px; }
+  .tt-node.tier-2{ transform:translateZ(16px); }
+  .tt-node.tier-3{ transform:translateZ(30px); }
+  .tt-node.tier-4{ transform:translateZ(46px); }
+  .tt-node.tier-2::before, .tt-node.tier-3::before, .tt-node.tier-4::before{ left:-22px; width:22px; }
+  .tt-node.tier-2::after{ right:-22px; width:22px; }
+  .tt-node-icon{ font-size:28px; }
+  .tt-syll{ width:80px; }
+  .tt-syll-glyph{ width:46px; height:46px; }
+  .tt-syll-img{ max-width:46px; max-height:46px; }
+  .tt-head-name{ font-size:.82rem; }
 }
 
 /* Soul Bonds */
@@ -5353,11 +5317,13 @@ function renderWalkerTalents(){
         <div class="tt-node tier-${n.tier} ${colCls} ${state}"
              data-id="${n.id}" tabindex="0"
              onclick="investTalentNode('${n.id}')">
-          <div class="tt-node-icon">${n.icon}</div>
-          <div class="tt-node-name">${n.name}</div>
-          <div class="tt-node-desc">${n.desc}</div>
-          ${invested ? '<div class="tt-node-check">\u2713</div>' : ''}
-          ${(!available && !invested) ? '<div class="tt-node-lock">\uD83D\uDD12</div>' : ''}
+          <div class="tt-node-inner">
+            <div class="tt-node-icon">${n.icon}</div>
+            <div class="tt-node-name">${n.name}</div>
+            <div class="tt-node-desc">${n.desc}</div>
+            ${invested ? '<div class="tt-node-check">\u2713</div>' : ''}
+            ${(!available && !invested) ? '<div class="tt-node-lock">\uD83D\uDD12</div>' : ''}
+          </div>
         </div>`;
     }).join('');
     board = `
