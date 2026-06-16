@@ -3845,13 +3845,40 @@ function load(){
 // ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-let _loaderTimer=null;
-function playPageLoader(hold){
+let _loaderTimer=null, _loaderSafety=null;
+function playPageLoader(){
   const l=document.getElementById('page-loader');
-  if(!l) return;
-  l.classList.add('show');
-  clearTimeout(_loaderTimer);
-  _loaderTimer=setTimeout(()=>l.classList.remove('show'), hold||560);
+  if(l) l.classList.add('show');
+}
+function hidePageLoader(){
+  const l=document.getElementById('page-loader');
+  if(l) l.classList.remove('show');
+}
+// Hold the loader until the destination screen has actually rendered — images
+// decoded and (for the 3D riftwalk scene) its background texture loaded plus a few
+// frames drawn — so nothing pops in afterward. Bounded by MIN (deliberate floor)
+// and MAX (safety, never hangs).
+function settlePageLoad(name){
+  const MIN=1300, MAX=6000, start=performance.now();
+  const screenEl=document.getElementById('screen-'+name);
+  clearTimeout(_loaderTimer); clearTimeout(_loaderSafety);
+  function imagesReady(){
+    if(!screenEl) return true;
+    return Array.from(screenEl.querySelectorAll('img')).every(i=>i.complete);
+  }
+  function sceneReady(){
+    if(name==='riftwalk') return !window.WalkerScene || !window.WalkerScene.isReady || window.WalkerScene.isReady();
+    return true;
+  }
+  (function poll(){
+    const elapsed=performance.now()-start;
+    if((imagesReady() && sceneReady() && elapsed>=MIN) || elapsed>=MAX){
+      requestAnimationFrame(()=>requestAnimationFrame(hidePageLoader));
+    } else {
+      _loaderTimer=setTimeout(poll, 60);
+    }
+  })();
+  _loaderSafety=setTimeout(hidePageLoader, MAX+400);
 }
 
 function switchScreen(name, btnEl){
@@ -3906,6 +3933,7 @@ function switchScreen(name, btnEl){
     window.WalkerScene.destroy();
   }
   if(name==='riftwalk' && window.WalkerScene) {
+    if(window.WalkerScene.resetReady) window.WalkerScene.resetReady();
     requestAnimationFrame(()=>{
       window.WalkerScene.init();
       // Push current cosmetics into the freshly-initialised scene
@@ -3926,6 +3954,8 @@ function switchScreen(name, btnEl){
   if(name==='codex' && window.CodexScene) {
     requestAnimationFrame(()=>window.CodexScene.init());
   }
+
+  settlePageLoad(name);
 }
 
 // ═══════════════════════════════════════════
@@ -6855,6 +6885,7 @@ window.WalkerScene = (function(){
   let clock, animationId;
   let mouseX = 0, mouseY = 0;
   let initialized = false;
+  let _bgReady = false, _navReady = false, _frames = 0, _ready = false; // page-loader readiness gate
   let currentTint = 'void';
   let currentGlyph = '⌖';
 
@@ -6876,6 +6907,7 @@ window.WalkerScene = (function(){
     // Canvas is position:fixed inset:0 — size to viewport, not the scrollable container
     let w = window.innerWidth, h = window.innerHeight;
     if (w < 50 || h < 50) { requestAnimationFrame(init); return; }
+    _bgReady = false; _navReady = false; _frames = 0; _ready = false;
 
     // ── Scene ──
     scene = new THREE.Scene();
@@ -6908,7 +6940,8 @@ window.WalkerScene = (function(){
     new THREE.TextureLoader().load('assets/ui/riftwalk_bg.jpg', function(tex){
       tex.encoding = THREE.sRGBEncoding;
       if (scene) scene.background = tex;
-    });
+      _bgReady = true;
+    }, undefined, function(){ _bgReady = true; });
 
     // ── Avatar reflection plane removed per design — the painted chamber's pool stays empty.
     //    avatarMesh / avatarCanvas / avatarCtx left as null/undefined; applyAvatarGlyph()
@@ -7082,8 +7115,11 @@ window.WalkerScene = (function(){
   // drawNavCard falls back to the unicode glyph until the image loads.
   const navImages = {};
   function loadNavImages(){
+    let navDone = 0;
+    const navTotal = NAV_SECTIONS.length;
+    const markNavDone = () => { if (++navDone >= navTotal) _navReady = true; };
     NAV_SECTIONS.forEach(section => {
-      if (navImages[section.id]) return; // already loaded
+      if (navImages[section.id]) { markNavDone(); return; } // already loaded
       const img = new Image();
       img.onload = () => {
         navImages[section.id] = img;
@@ -7094,8 +7130,9 @@ window.WalkerScene = (function(){
           drawNavCard(card.ctx, card.canvas, card.section, idx === hoveredCardIdx);
           card.texture.needsUpdate = true;
         }
+        markNavDone();
       };
-      img.onerror = () => { /* leave fallback glyph in place */ };
+      img.onerror = () => { markNavDone(); /* leave fallback glyph in place */ };
       img.src = 'assets/ui/nav_' + section.id + '.png';
     });
   }
@@ -7342,11 +7379,14 @@ window.WalkerScene = (function(){
     camera.lookAt(0, 0.5, -1);
 
     renderer.render(scene, camera);
+    _frames++;
+    if (!_ready && _bgReady && _navReady && _frames > 4) _ready = true;
   }
 
   function destroy(){
     if (animationId) cancelAnimationFrame(animationId);
     animationId = null;
+    _ready = false; _bgReady = false; _navReady = false; _frames = 0;
     window.removeEventListener('resize', onResize);
     if (canvas){
       canvas.removeEventListener('mousemove', onCanvasMouseMove);
@@ -7378,7 +7418,7 @@ window.WalkerScene = (function(){
     initialized = false;
   }
 
-  return { init, destroy, applyPoolTint, applyAvatarGlyph, refreshStatCards: refreshStatCardTextures, setActiveNav };
+  return { init, destroy, applyPoolTint, applyAvatarGlyph, refreshStatCards: refreshStatCardTextures, setActiveNav, isReady: function(){ return _ready; }, resetReady: function(){ _ready=false; _bgReady=false; _navReady=false; _frames=0; } };
 })();
 
 // ═══════════════════════════════════════════
