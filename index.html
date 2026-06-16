@@ -1071,19 +1071,15 @@ body{font-family:var(--body);color:var(--text);position:relative}
 }
 .walker-page-back{
   display:none;
-  position:fixed;top:18px;left:18px;z-index:41;
-  font-family:var(--serif);font-size:.6rem;letter-spacing:.22em;
-  color:rgba(251,191,36,0.85);text-transform:uppercase;cursor:pointer;
-  padding:10px 18px;border-radius:8px;
-  background:rgba(8,2,20,0.88);
-  border:1px solid rgba(251,191,36,0.5);
-  transition:all .2s ease;
+  position:fixed;top:14px;left:14px;z-index:41;
+  width:64px;height:92px;padding:0;border:0;cursor:pointer;
+  background:url('assets/ui/rift_walker.png') center/contain no-repeat, transparent;
+  filter:drop-shadow(0 0 9px rgba(251,191,36,0.40));
+  transition:transform .2s ease, filter .2s ease;
 }
 .walker-page-back:hover{
-  background:rgba(20,10,38,0.94);
-  border-color:rgba(251,191,36,0.95);
-  box-shadow:0 0 18px rgba(251,191,36,0.45);
-  color:rgba(255,225,150,1);
+  transform:scale(1.09);
+  filter:drop-shadow(0 0 18px rgba(251,191,36,0.78));
 }
 #screen-riftwalk.walker-page-open .walker-page-back{display:block;}
 /* Hide the floating Identity / Aesthetics rail while a page is open */
@@ -1698,6 +1694,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
   animation:ttBob 7.5s ease-in-out infinite;
 }
 .tt-sealed-glyph{ font-size:60px; color:rgba(200,200,210,0.7); text-shadow:0 0 26px rgba(180,180,200,0.4); line-height:1; }
+.tt-sealed-img{ width:96px; height:96px; object-fit:contain; opacity:.88; filter:drop-shadow(0 0 16px rgba(200,200,210,0.35)); }
 .tt-sealed-label{ font-family:var(--serif); font-size:.82rem; letter-spacing:.3em; color:rgba(222,222,232,0.85); text-transform:uppercase; text-shadow:0 2px 8px rgba(0,0,0,.9); }
 .tt-sealed-sub{ font-size:.5rem; color:var(--muted); font-style:italic; letter-spacing:.16em; text-shadow:0 1px 6px rgba(0,0,0,.9); }
 
@@ -2896,7 +2893,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
       <canvas id="walker-3d-canvas"></canvas>
 
       <!-- Back button shown only when a page overlay is open -->
-      <button class="walker-page-back" onclick="closeWalkerPage()">← back</button>
+      <button class="walker-page-back" onclick="closeWalkerPage()" aria-label="Step back through the rift"></button>
 
       <!-- Walker floating action rail — neutral class names, CSS background-images, no img/aria-label
            hooks that ad-blockers tend to match against. -->
@@ -5413,8 +5410,8 @@ function renderWalkerTalents(){
               onclick="focusTalentBranch('${bid}')">
         <span class="tt-syll-rom">${b.syllable}</span>
         <span class="tt-syll-glyph">
-          ${locked ? '' : `<img class="tt-syll-img" src="assets/ui/talent_${bid}.png" alt="" onerror="this.remove();const r=this.parentNode.querySelector('.tt-syll-rune');if(r)r.style.opacity='1'">`}
-          <span class="tt-syll-rune" style="${locked ? '' : 'opacity:0'}">${locked ? '\uD83D\uDF38' : b.icon}</span>
+          <img class="tt-syll-img" src="assets/ui/talent_${bid}.png" alt="" onerror="this.remove();const r=this.parentNode.querySelector('.tt-syll-rune');if(r)r.style.opacity='1'">
+          <span class="tt-syll-rune" style="opacity:0">${locked ? '\uD83D\uDF38' : b.icon}</span>
         </span>
         <span class="tt-syll-name">${b.name.replace(/^The /,'')}</span>
         <span class="tt-syll-prog">${locked ? 'sealed' : inv+'/'+total}</span>
@@ -5426,7 +5423,7 @@ function renderWalkerTalents(){
   if(b.locked){
     board = `
       <div class="tt-sealed">
-        <div class="tt-sealed-glyph">\uD83D\uDF38</div>
+        <div class="tt-sealed-glyph"><img class="tt-sealed-img" src="assets/ui/talent_unspoken.png" alt="" onerror="this.style.display='none';this.parentNode.insertAdjacentText('beforeend','\uD83D\uDF38')"></div>
         <div class="tt-sealed-label">The Unspoken</div>
         <div class="tt-sealed-sub">The seventh syllable. Never spoken.</div>
         <div class="tt-sealed-sub">Sealed — Season 2 · The Descent</div>
