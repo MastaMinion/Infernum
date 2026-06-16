@@ -54,6 +54,14 @@
     url('assets/ui/talents_bg.jpg') center/cover no-repeat,
     radial-gradient(ellipse at 50% 16%, rgba(46,18,82,0.55), transparent 58%),
     #05000c;
+
+  /* Equipment backdrop. Reuses the sanctum for cohesion until a dedicated forge/armoury
+     plate exists — swap url() to assets/ui/gear_bg.jpg when generated. */
+  --ui-gear-bg:
+    linear-gradient(rgba(6,0,14,0.66), rgba(6,0,14,0.86)),
+    url('assets/ui/talents_bg.jpg') center/cover no-repeat,
+    radial-gradient(ellipse at 50% 14%, rgba(46,18,82,0.5), transparent 58%),
+    #05000c;
 }
 html,body{height:100%;overflow:hidden;background:var(--bg)}
 body{font-family:var(--body);color:var(--text);position:relative}
@@ -1053,6 +1061,9 @@ body{font-family:var(--body);color:var(--text);position:relative}
 #screen-riftwalk.walker-page-open.section-talents .walker-inner{
   background:var(--ui-talents-bg);
 }
+#screen-riftwalk.walker-page-open.section-gear .walker-inner{
+  background:var(--ui-gear-bg);
+}
 #screen-riftwalk.walker-page-open .walker-panel.active{
   display:block !important;
   max-width:720px;margin:0 auto;
@@ -1141,45 +1152,100 @@ body{font-family:var(--body);color:var(--text);position:relative}
 /* Gear slots */
 /* ─── GEAR SYSTEM ─── */
 /* Equipped slot row — 6 small cards across the top of the gear panel */
-.walker-gear-equipped{
-  display:grid;grid-template-columns:repeat(6, minmax(0,1fr));gap:8px;
-  margin:14px 0 18px;
-}
+.walker-gear-equipped{ display:block; margin:16px 0 8px; }
 .gear-eqslot{
-  position:relative;background:rgba(6,0,14,0.7);
-  border:1px solid var(--border);border-radius:8px;
-  padding:10px 6px 8px;text-align:center;cursor:pointer;
-  transition:all .2s ease;min-width:0;
+  position:relative;background:none;border:0;border-radius:0;
+  padding:10px 4px 6px;text-align:center;cursor:pointer;min-width:0;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  animation:ttBobSm 5.5s ease-in-out infinite;
+  transition:filter .25s ease;
 }
-.gear-eqslot:hover{border-color:rgba(192,132,252,0.4);transform:translateY(-1px)}
-.gear-eqslot.empty{opacity:0.6}
-.gear-eqslot.filled{
-  border:1px solid rgba(var(--rar-glow),0.7);
-  background:linear-gradient(180deg, rgba(var(--rar-glow),0.08), rgba(6,0,14,0.85));
-  box-shadow:0 0 10px rgba(var(--rar-glow),0.25);
-  opacity:1;
+.gear-eqslot:nth-child(2){animation-delay:.4s}
+.gear-eqslot:nth-child(3){animation-delay:.8s}
+.gear-eqslot:nth-child(4){animation-delay:1.2s}
+.gear-eqslot:nth-child(5){animation-delay:1.6s}
+.gear-eqslot:nth-child(6){animation-delay:2s}
+/* feathered glow aura behind the icon — no edge */
+.gear-eqslot::before{
+  content:'';position:absolute;left:50%;top:22px;width:92px;height:92px;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle, rgba(var(--rar-glow,124,58,237),0.32), transparent 62%);
+  filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:-1;
 }
+.gear-eqslot:hover{filter:brightness(1.15)}
+.gear-eqslot:hover::before{opacity:.6}
+.gear-eqslot.empty{opacity:.5;animation:none}
+.gear-eqslot.filled{opacity:1}
+.gear-eqslot.filled::before{opacity:.7}
 .gear-eqslot-rar{
   font-family:var(--serif);font-size:.4rem;letter-spacing:.22em;
-  color:var(--rar-color);text-transform:uppercase;margin-bottom:3px;
+  color:var(--rar-color);text-transform:uppercase;text-shadow:0 1px 5px rgba(0,0,0,.85);
 }
-.gear-eqslot-icon{font-size:22px;line-height:1;margin-bottom:4px;color:var(--text);opacity:0.85}
-.gear-eqslot.filled .gear-eqslot-icon{color:var(--rar-color);text-shadow:0 0 10px rgba(var(--rar-glow),0.55)}
+.gear-eqslot-icon{
+  font-size:30px;line-height:1;color:var(--text);opacity:0.65;
+  text-shadow:0 1px 6px rgba(0,0,0,.7);transition:transform .25s ease,text-shadow .25s ease;
+}
+.gear-eqslot:hover .gear-eqslot-icon{transform:scale(1.12)}
+.gear-eqslot.filled .gear-eqslot-icon{color:var(--rar-color);opacity:1;text-shadow:0 0 15px rgba(var(--rar-glow),0.75)}
 .gear-eqslot-label{
   font-family:var(--serif);font-size:.46rem;letter-spacing:.16em;
-  color:var(--muted);text-transform:uppercase;
+  color:rgba(214,204,236,0.68);text-transform:uppercase;text-shadow:0 1px 5px rgba(0,0,0,.85);
 }
-.gear-eqslot-empty{font-size:.42rem;color:var(--muted);font-style:italic;margin-top:3px}
+.gear-eqslot-empty{font-size:.42rem;color:var(--muted);font-style:italic;text-shadow:0 1px 5px rgba(0,0,0,.85)}
 .gear-eqslot-primary{
-  font-size:.42rem;color:var(--gold);font-weight:600;margin-top:4px;letter-spacing:.04em;
+  font-size:.42rem;color:var(--gold);font-weight:600;letter-spacing:.04em;
+  text-shadow:0 1px 5px rgba(0,0,0,.85);
 }
-.gear-eqslot-runes{display:flex;justify-content:center;gap:6px;margin-top:4px}
+.gear-eqslot-runes{display:flex;justify-content:center;gap:6px}
 .gear-eqslot-rune-dot{font-size:11px;line-height:1}
-.gear-eqslot-rune-dot.on{color:var(--gold);text-shadow:0 0 6px rgba(251,191,36,0.7)}
+.gear-eqslot-rune-dot.on{color:var(--gold);text-shadow:0 0 7px rgba(251,191,36,0.8)}
 .gear-eqslot-rune-dot.off{color:rgba(120,120,140,0.45)}
 .gear-eqslot-set{
   font-family:var(--serif);font-size:.42rem;letter-spacing:.16em;
-  text-transform:uppercase;margin-top:4px;font-weight:500;
+  text-transform:uppercase;font-weight:500;text-shadow:0 1px 5px rgba(0,0,0,.85);
+}
+
+/* ── The Walker's binding circle — sigil centre, gear arrayed around ── */
+.gear-ring{ position:relative; width:min(440px, 92vw); aspect-ratio:1; margin:18px auto 40px; }
+.gear-ring-svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; z-index:1; }
+.gear-ring-lines line{ stroke:rgba(192,132,252,0.22); stroke-width:0.35; }
+.gear-ring-c-out, .gear-ring-c-mid{ fill:none; stroke:rgba(192,132,252,0.30); stroke-width:0.35; }
+.gear-ring-c-out{ stroke-dasharray:0.8 2.4; transform-box:fill-box; transform-origin:center; animation:gearRingSpin 90s linear infinite; }
+.gear-ring-c-mid{ stroke-dasharray:0.6 1.8; transform-box:fill-box; transform-origin:center; animation:gearRingSpin 60s linear infinite reverse; }
+@keyframes gearRingSpin{ to{ transform:rotate(360deg) } }
+
+.gear-emblem-bg{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  font-size:clamp(170px, 46vw, 290px); line-height:1; color:rgba(192,132,252,0.055);
+  font-family:var(--serif); pointer-events:none; user-select:none; z-index:0;
+}
+.gear-emblem{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  display:flex; flex-direction:column; align-items:center; gap:5px; text-align:center;
+  width:130px; z-index:2;
+}
+.gear-emblem-eyebrow{ font-family:var(--serif); font-size:.4rem; letter-spacing:.32em; color:rgba(192,132,252,0.7); text-transform:uppercase; text-shadow:0 1px 6px rgba(0,0,0,.9); }
+.gear-emblem-sigil{ font-size:52px; line-height:1; color:var(--gold); text-shadow:0 0 26px rgba(251,191,36,0.55), 0 0 10px rgba(192,132,252,0.5); animation:ttBobSm 6s ease-in-out infinite; }
+.gear-emblem-name{ font-family:var(--serif); font-size:.6rem; letter-spacing:.2em; color:var(--text); text-transform:uppercase; line-height:1.3; text-shadow:0 1px 8px rgba(0,0,0,.95); word-break:break-word; }
+
+.gear-ring-slot{ position:absolute; transform:translate(-50%,-50%); width:96px; z-index:3; }
+.gear-ring-slot.pos-0 .gear-eqslot{ animation-delay:0s }
+.gear-ring-slot.pos-1 .gear-eqslot{ animation-delay:.4s }
+.gear-ring-slot.pos-2 .gear-eqslot{ animation-delay:.8s }
+.gear-ring-slot.pos-3 .gear-eqslot{ animation-delay:1.2s }
+.gear-ring-slot.pos-4 .gear-eqslot{ animation-delay:1.6s }
+.gear-ring-slot.pos-5 .gear-eqslot{ animation-delay:2s }
+
+@media (max-width: 560px){
+  .gear-ring{
+    width:100%; aspect-ratio:auto; display:grid;
+    grid-template-columns:repeat(3, 1fr); gap:14px 6px; place-items:center;
+    margin:8px 0 22px;
+  }
+  .gear-ring-svg, .gear-emblem-bg{ display:none; }
+  .gear-emblem{ position:static; transform:none; grid-column:1 / -1; width:auto; margin-bottom:4px; }
+  .gear-emblem-sigil{ font-size:44px; }
+  .gear-ring-slot{ position:static; transform:none; width:auto; }
 }
 
 /* ─── Active set bonuses summary ─── */
@@ -1187,14 +1253,14 @@ body{font-family:var(--body);color:var(--text);position:relative}
   display:flex;flex-direction:column;gap:8px;margin-bottom:6px;
 }
 .gear-set-row{
-  background:rgba(6,0,14,0.72);
-  border:1px solid rgba(var(--set-glow),0.35);
-  border-radius:8px;padding:10px 12px;
-  position:relative;
+  background:linear-gradient(90deg, rgba(var(--set-glow),0.10), rgba(6,0,14,0.28) 62%);
+  border:0;border-left:2px solid rgba(var(--set-glow),0.6);
+  border-radius:0 8px 8px 0;padding:11px 14px;
+  position:relative;box-shadow:0 0 18px rgba(var(--set-glow),0.12);
 }
 .gear-set-row::before{
-  content:'';position:absolute;inset:0;border-radius:8px;
-  background:radial-gradient(ellipse at left, rgba(var(--set-glow),0.10), transparent 60%);
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at left, rgba(var(--set-glow),0.12), transparent 60%);
   pointer-events:none;
 }
 .gear-set-head{
@@ -1244,14 +1310,15 @@ body{font-family:var(--body);color:var(--text);position:relative}
 .walker-gear-filters{display:flex;gap:5px;flex-wrap:wrap}
 .gear-filter-pill{
   font-family:var(--serif);font-size:.48rem;letter-spacing:.18em;
-  padding:5px 10px;border-radius:5px;cursor:pointer;
-  background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);
-  color:var(--muted);text-transform:uppercase;transition:all .15s ease;
+  padding:4px 8px;border-radius:0;cursor:pointer;
+  background:none;border:0;border-bottom:1px solid transparent;
+  color:var(--muted);text-transform:uppercase;transition:all .18s ease;
+  text-shadow:0 1px 4px rgba(0,0,0,.8);
 }
-.gear-filter-pill:hover{background:rgba(124,58,237,0.15);color:var(--text)}
+.gear-filter-pill:hover{color:var(--text)}
 .gear-filter-pill.active{
-  background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.6);
-  color:var(--gold);
+  color:var(--gold);border-bottom-color:rgba(251,191,36,0.7);
+  text-shadow:0 0 10px rgba(251,191,36,0.5);
 }
 .walker-gear-count{font-size:.48rem;color:var(--muted);font-style:italic;letter-spacing:.1em}
 
@@ -1265,14 +1332,15 @@ body{font-family:var(--body);color:var(--text);position:relative}
   border:1px dashed var(--border);border-radius:8px;line-height:1.6;
 }
 .gear-card{
-  background:rgba(6,0,14,0.78);
-  border:1px solid rgba(var(--rar-glow),0.5);
-  border-radius:9px;padding:10px 10px 8px;
+  background:linear-gradient(180deg, rgba(12,4,26,0.60), rgba(6,0,14,0.46));
+  border:0;border-top:1px solid rgba(var(--rar-glow),0.55);
+  border-radius:10px;padding:11px 11px 9px;
   position:relative;transition:all .2s ease;
+  box-shadow:0 6px 22px rgba(0,0,0,0.40), 0 0 16px rgba(var(--rar-glow),0.10);
 }
 .gear-card::before{
-  content:'';position:absolute;inset:0;border-radius:9px;
-  background:radial-gradient(circle at top, rgba(var(--rar-glow),0.10), transparent 70%);
+  content:'';position:absolute;inset:0;border-radius:10px;
+  background:radial-gradient(circle at top, rgba(var(--rar-glow),0.12), transparent 70%);
   pointer-events:none;
 }
 .gear-card:hover{
@@ -1494,7 +1562,7 @@ body{font-family:var(--body);color:var(--text);position:relative}
 
 /* Narrow viewport */
 @media (max-width: 640px){
-  .walker-gear-equipped{grid-template-columns:repeat(3, minmax(0,1fr))}
+  /* equipped slots reflow via the .gear-ring media query */
   .walker-gear-inventory{grid-template-columns:repeat(auto-fill, minmax(160px,1fr))}
   .walker-rune-inventory{grid-template-columns:repeat(auto-fill, minmax(140px,1fr))}
 }
@@ -2457,6 +2525,21 @@ body{font-family:var(--body);color:var(--text);position:relative}
   background:rgba(251,191,36,0.06);
   box-shadow:0 0 16px -4px rgba(251,191,36,0.45);
 }
+
+/* Designed sigil assets (assets/ui/sigil_<id>.png) with unicode-glyph fallback */
+.sigil-mark{ position:relative; display:inline-flex; align-items:center; justify-content:center; line-height:1; }
+.sigil-img{ display:block; width:100%; height:100%; object-fit:contain; }
+.sigil-rune{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; line-height:1; }
+.char-sigil-btn .sigil-mark{ width:38px; height:38px; }
+.char-sigil-btn .sigil-img{ filter:drop-shadow(0 0 6px rgba(192,132,252,0.4)); transition:filter .2s ease; }
+.char-sigil-btn .sigil-rune{ font-size:1.8rem; }
+.char-sigil-btn.selected .sigil-img{ filter:drop-shadow(0 0 11px rgba(251,191,36,0.75)); }
+.gear-emblem-sigil .sigil-mark{ width:58px; height:58px; }
+.gear-emblem-sigil .sigil-img{ filter:drop-shadow(0 0 16px rgba(251,191,36,0.55)) drop-shadow(0 0 6px rgba(192,132,252,0.5)); }
+.gear-emblem-sigil .sigil-rune{ font-size:52px; color:var(--gold); text-shadow:0 0 26px rgba(251,191,36,0.55), 0 0 10px rgba(192,132,252,0.5); }
+.gear-emblem-bg .sigil-mark{ width:clamp(170px,46vw,290px); height:clamp(170px,46vw,290px); }
+.gear-emblem-bg .sigil-img{ opacity:.06; }
+.gear-emblem-bg .sigil-rune{ font-size:clamp(170px,46vw,290px); color:rgba(192,132,252,0.055); font-family:var(--serif); }
 .char-submit-btn{
   background:linear-gradient(180deg, rgba(124,58,237,0.22), rgba(124,58,237,0.08));
   border:1px solid rgba(192,132,252,0.55);
@@ -2960,11 +3043,11 @@ body{font-family:var(--body);color:var(--text);position:relative}
            oninput="updateCharSubmitState()" />
     <p class="char-sigil-label">Choose your sigil</p>
     <div class="char-sigil-row" id="char-sigil-row">
-      <button type="button" class="char-sigil-btn selected" data-sigil="⛧" onclick="selectCharSigil('⛧')">⛧</button>
-      <button type="button" class="char-sigil-btn" data-sigil="⸸" onclick="selectCharSigil('⸸')">⸸</button>
-      <button type="button" class="char-sigil-btn" data-sigil="☽" onclick="selectCharSigil('☽')">☽</button>
-      <button type="button" class="char-sigil-btn" data-sigil="⛤" onclick="selectCharSigil('⛤')">⛤</button>
-      <button type="button" class="char-sigil-btn" data-sigil="✠" onclick="selectCharSigil('✠')">✠</button>
+      <button type="button" class="char-sigil-btn selected" data-sigil="⛧" onclick="selectCharSigil('⛧')"><span class="sigil-mark"><img class="sigil-img" src="assets/ui/sigil_unmade.png" alt="" onerror="this.style.display='none';var r=this.nextElementSibling;if(r)r.style.opacity='1'"><span class="sigil-rune" style="opacity:0">⛧</span></span></button>
+      <button type="button" class="char-sigil-btn" data-sigil="⸸" onclick="selectCharSigil('⸸')"><span class="sigil-mark"><img class="sigil-img" src="assets/ui/sigil_penitent.png" alt="" onerror="this.style.display='none';var r=this.nextElementSibling;if(r)r.style.opacity='1'"><span class="sigil-rune" style="opacity:0">⸸</span></span></button>
+      <button type="button" class="char-sigil-btn" data-sigil="☽" onclick="selectCharSigil('☽')"><span class="sigil-mark"><img class="sigil-img" src="assets/ui/sigil_lunar.png" alt="" onerror="this.style.display='none';var r=this.nextElementSibling;if(r)r.style.opacity='1'"><span class="sigil-rune" style="opacity:0">☽</span></span></button>
+      <button type="button" class="char-sigil-btn" data-sigil="◉" onclick="selectCharSigil('◉')"><span class="sigil-mark"><img class="sigil-img" src="assets/ui/sigil_witness.png" alt="" onerror="this.style.display='none';var r=this.nextElementSibling;if(r)r.style.opacity='1'"><span class="sigil-rune" style="opacity:0">◉</span></span></button>
+      <button type="button" class="char-sigil-btn" data-sigil="∞" onclick="selectCharSigil('∞')"><span class="sigil-mark"><img class="sigil-img" src="assets/ui/sigil_endless.png" alt="" onerror="this.style.display='none';var r=this.nextElementSibling;if(r)r.style.opacity='1'"><span class="sigil-rune" style="opacity:0">∞</span></span></button>
     </div>
     <button class="char-submit-btn" id="char-submit-btn" onclick="submitCharacterCreation()">Bind the Name</button>
   </div>
@@ -4988,6 +5071,24 @@ function slotRuneFromPicker(runeId){
   renderWalker();
 }
 
+// The Walker's sigil set — chosen at the First Binding. Each maps to a designed art
+// asset (assets/ui/sigil_<id>.png); the unicode glyph stays as the fallback until art exists.
+const WALKER_SIGILS = [
+  { glyph:'\u26e7', id:'unmade',   name:'The Unmade' },
+  { glyph:'\u2e38', id:'penitent', name:'The Penitent' },
+  { glyph:'\u263d', id:'lunar',    name:'The Waning' },
+  { glyph:'\u25c9', id:'witness',  name:'The Witness' },
+  { glyph:'\u221e', id:'endless',  name:'The Endless' },
+];
+function sigilDef(glyph){ return WALKER_SIGILS.find(s => s.glyph === glyph) || WALKER_SIGILS[0]; }
+function sigilMarkup(glyph, cls){
+  const d = sigilDef(glyph);
+  return `<span class="sigil-mark ${cls||''}">`
+    + `<img class="sigil-img" src="assets/ui/sigil_${d.id}.png" alt="" `
+    + `onerror="this.style.display='none';var r=this.nextElementSibling;if(r)r.style.opacity='1'">`
+    + `<span class="sigil-rune" style="opacity:0">${glyph}</span></span>`;
+}
+
 function renderWalkerGear(){
   const eqRoot = document.getElementById('walker-gear-equipped');
   const invRoot = document.getElementById('walker-gear-inventory');
@@ -5002,39 +5103,63 @@ function renderWalkerGear(){
   const runeInv = S.walker.runeInventory || [];
   let filled = 0;
 
-  // ── Equipped slots row ──
+  // ── Equipped slots → the Walker's binding circle (sigil centre, gear arrayed around) ──
   if(eqRoot){
-    eqRoot.innerHTML = WALKER_GEAR.map(g => {
+    const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const wName  = esc(S.walker.name || 'The Walker');
+    const wSigil = S.walker.sigil || '⛧';
+    // six hex points around the circle (clockwise from top), viewBox % space
+    const PTS = [ {x:50,y:9}, {x:85,y:30}, {x:85,y:70}, {x:50,y:91}, {x:15,y:70}, {x:15,y:30} ];
+    const slots = WALKER_GEAR.map((g, i) => {
+      const p = PTS[i] || PTS[0];
       const itemId = eq[g.id];
       const item = itemId ? gearById(itemId) : null;
       if(item) filled++;
+      let inner;
       if(!item){
-        return `<div class="gear-eqslot empty" onclick="setGearFilter('${g.id}')" title="${g.label} — empty">
-          <div class="gear-eqslot-icon">${g.icon}</div>
-          <div class="gear-eqslot-label">${g.label}</div>
-          <div class="gear-eqslot-empty">empty</div>
-        </div>`;
+        inner = `<div class="gear-eqslot empty" onclick="setGearFilter('${g.id}')" title="${g.label} — empty">
+            <div class="gear-eqslot-icon">${g.icon}</div>
+            <div class="gear-eqslot-label">${g.label}</div>
+            <div class="gear-eqslot-empty">empty</div>
+          </div>`;
+      } else {
+        const rar = gearRarityDef(item.rarity);
+        const baseStat = statDef(item.baseStat.stat);
+        const set = runesetDef(item.set);
+        const major = item.majorRune ? runeById(item.majorRune) : null;
+        const minor = item.minorRune ? runeById(item.minorRune) : null;
+        inner = `<div class="gear-eqslot filled" style="--rar-glow:${rar.glow};--rar-color:${rar.color}" onclick="unequipSlot('${g.id}');renderWalker();" title="${rar.label} ${set.name} ${g.label} — click to unequip">
+            <div class="gear-eqslot-rar">${rar.label}</div>
+            <div class="gear-eqslot-icon">${g.icon}</div>
+            <div class="gear-eqslot-label">${g.label}</div>
+            <div class="gear-eqslot-primary">+${item.baseStat.value}% ${baseStat.label}</div>
+            <div class="gear-eqslot-runes">
+              <span class="gear-eqslot-rune-dot ${major?'on':'off'}">◆</span>
+              <span class="gear-eqslot-rune-dot ${minor?'on':'off'}">◇</span>
+            </div>
+            <div class="gear-eqslot-set" style="color:${set.color}">${set.name}</div>
+          </div>`;
       }
-      const rar = gearRarityDef(item.rarity);
-      const baseStat = statDef(item.baseStat.stat);
-      const set = runesetDef(item.set);
-      const major = item.majorRune ? runeById(item.majorRune) : null;
-      const minor = item.minorRune ? runeById(item.minorRune) : null;
-      const majorOn = major ? 'on' : 'off';
-      const minorOn = minor ? 'on' : 'off';
-      return `<div class="gear-eqslot filled" style="--rar-glow:${rar.glow};--rar-color:${rar.color}" onclick="unequipSlot('${g.id}');renderWalker();" title="${rar.label} ${set.name} ${g.label} — click to unequip">
-        <div class="gear-eqslot-rar">${rar.label}</div>
-        <div class="gear-eqslot-icon">${g.icon}</div>
-        <div class="gear-eqslot-label">${g.label}</div>
-        <div class="gear-eqslot-primary">+${item.baseStat.value}% ${baseStat.label}</div>
-        <div class="gear-eqslot-runes">
-          <span class="gear-eqslot-rune-dot ${majorOn}" title="Major rune ${major?'slotted':'empty'}">◆</span>
-          <span class="gear-eqslot-rune-dot ${minorOn}" title="Minor rune ${minor?'slotted':'empty'}">◇</span>
-        </div>
-        <div class="gear-eqslot-set" style="color:${set.color}">${set.name}</div>
-      </div>`;
+      return `<div class="gear-ring-slot pos-${i}" style="left:${p.x}%;top:${p.y}%">${inner}</div>`;
     }).join('');
+    const lines = PTS.map(p => `<line x1="50" y1="50" x2="${p.x}" y2="${p.y}"/>`).join('');
+    const svg = `<svg class="gear-ring-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <g class="gear-ring-lines">${lines}</g>
+        <circle class="gear-ring-c-out" cx="50" cy="50" r="41"/>
+        <circle class="gear-ring-c-mid" cx="50" cy="50" r="20"/>
+      </svg>`;
+    eqRoot.innerHTML = `<div class="gear-ring">
+        <div class="gear-emblem-bg">${sigilMarkup(wSigil,'sigil-watermark')}</div>
+        ${svg}
+        <div class="gear-emblem">
+          <div class="gear-emblem-eyebrow">The Walker</div>
+          <div class="gear-emblem-sigil">${sigilMarkup(wSigil)}</div>
+          <div class="gear-emblem-name">${wName}</div>
+        </div>
+        ${slots}
+      </div>`;
   }
+
   const fc = document.getElementById('gear-fill-count');
   if(fc) fc.textContent = '— '+filled+'/6 forged';
 
@@ -5439,11 +5564,13 @@ function openWalkerPage(sectionId){
   const el = document.getElementById('screen-riftwalk');
   el.classList.add('walker-page-open');
   el.classList.toggle('section-talents', sectionId === 'talents');
+  el.classList.toggle('section-gear', sectionId === 'gear');
 }
 function closeWalkerPage(){
   const el = document.getElementById('screen-riftwalk');
   el.classList.remove('walker-page-open');
   el.classList.remove('section-talents');
+  el.classList.remove('section-gear');
 }
 
 // Talent investment
