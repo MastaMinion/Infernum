@@ -6129,20 +6129,25 @@ window.TutorialTour = (function(){
   }
   function positionFor(step){
     const hole=root.querySelector('.tut-hole'), card=root.querySelector('.tut-card');
+    const M=14, GAP=22, vh=window.innerHeight;
     let rect=null;
     if(step.rift){ const el=document.querySelector('.rift-cutout[data-rift="'+step.rift+'"]'); if(el) rect=el.getBoundingClientRect(); }
+    card.style.left='50%'; card.style.transform='translateX(-50%)'; card.style.bottom='auto';
+    const cardH = card.offsetHeight || 180;
     if(rect && rect.width){
       const pad=14;
       hole.style.display='block';
       hole.style.left=(rect.left-pad)+'px'; hole.style.top=(rect.top-pad)+'px';
       hole.style.width=(rect.width+pad*2)+'px'; hole.style.height=(rect.height+pad*2)+'px';
-      const below = rect.top < window.innerHeight*0.46;
-      card.style.left='50%'; card.style.transform='translateX(-50%)';
-      if(below){ card.style.top=(rect.bottom+26)+'px'; card.style.bottom='auto'; }
-      else { card.style.bottom=(window.innerHeight-rect.top+26)+'px'; card.style.top='auto'; }
+      const spaceBelow = vh - rect.bottom, spaceAbove = rect.top;
+      let top;
+      if(spaceBelow >= cardH + GAP + M) top = rect.bottom + GAP;          // room below the rift
+      else if(spaceAbove >= cardH + GAP + M) top = rect.top - GAP - cardH; // room above
+      else top = (vh - cardH) / 2;                                        // neither — center over it
+      card.style.top = Math.max(M, Math.min(top, vh - cardH - M)) + 'px'; // clamp on-screen
     } else {
       hole.style.display='none';
-      card.style.left='50%'; card.style.top='50%'; card.style.bottom='auto'; card.style.transform='translate(-50%,-50%)';
+      card.style.top = Math.max(M, (vh - cardH) / 2) + 'px';
     }
   }
   function render(){
