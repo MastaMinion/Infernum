@@ -127,6 +127,44 @@ body.hide-topbar #topbar{ display:none; }
   .page-loader-logo, .page-loader-text{ animation:none; }
   .page-loader-bar::after{ animation-duration:2.2s; }
 }
+
+/* ── First-run guided tour ── */
+#tutorial-tour{ position:fixed; inset:0; z-index:9998; display:none; }
+#tutorial-tour.show{ display:block; }
+.tut-hole{
+  position:fixed; border-radius:46% / 50%;
+  box-shadow:0 0 0 9999px rgba(4,0,12,0.84);
+  outline:1px solid rgba(251,191,36,0.5);
+  pointer-events:none;
+  transition:left .4s cubic-bezier(.4,0,.2,1), top .4s cubic-bezier(.4,0,.2,1), width .4s cubic-bezier(.4,0,.2,1), height .4s cubic-bezier(.4,0,.2,1);
+}
+.tut-skip{
+  position:fixed; top:16px; right:18px; z-index:2;
+  font-family:var(--serif); font-size:.5rem; letter-spacing:.2em; text-transform:uppercase;
+  color:rgba(214,204,236,0.6); background:none; border:0; cursor:pointer; padding:8px;
+}
+.tut-skip:hover{ color:var(--text); }
+.tut-card{
+  position:fixed; z-index:2; width:min(340px,84vw);
+  background:linear-gradient(180deg,rgba(20,10,38,0.97),rgba(6,0,14,0.98));
+  border:0.5px solid rgba(251,191,36,0.35); border-radius:14px;
+  padding:18px 20px 14px; text-align:center;
+  box-shadow:0 18px 50px rgba(0,0,0,0.6), 0 0 30px rgba(124,58,237,0.18);
+  transition:left .4s cubic-bezier(.4,0,.2,1), top .4s cubic-bezier(.4,0,.2,1), bottom .4s cubic-bezier(.4,0,.2,1);
+}
+.tut-eyebrow{ font-family:var(--serif); font-size:.48rem; letter-spacing:.4em; text-transform:uppercase; color:var(--gold); opacity:.85; margin-bottom:8px; }
+.tut-text{ font-family:var(--body); font-size:1rem; line-height:1.5; color:var(--text); }
+.tut-text b{ color:var(--gold); font-weight:600; }
+.tut-foot{ display:flex; align-items:center; justify-content:space-between; margin-top:16px; }
+.tut-dots{ display:flex; gap:6px; }
+.tut-dot{ width:5px; height:5px; border-radius:50%; background:rgba(192,132,252,0.3); }
+.tut-dot.on{ background:var(--gold); box-shadow:0 0 6px rgba(251,191,36,0.6); }
+.tut-next{
+  font-family:var(--serif); font-size:.5rem; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--gold); background:rgba(251,191,36,0.08); border:0.5px solid rgba(251,191,36,0.5);
+  border-radius:8px; padding:9px 16px; cursor:pointer; transition:all .2s ease;
+}
+.tut-next:hover{ background:rgba(251,191,36,0.18); color:#ffe9a8; }
 .logo-mark{
   font-family:var(--deco);font-size:1.3rem;letter-spacing:.12em;
   color:var(--purple);
@@ -2794,7 +2832,7 @@ body.hide-topbar #topbar{ display:none; }
       <div class="sanctum-stage">
 
         <!-- Walker — gold rift, bottom-right corner (player's bond, closest to player) -->
-        <a class="rift rift-cutout" data-tone="gold" href="javascript:void(0)" onclick="switchScreen('riftwalk')"
+        <a class="rift rift-cutout" data-tone="gold" data-rift="riftwalk" href="javascript:void(0)" onclick="switchScreen('riftwalk')"
            style="--x:76%;--y:74%;--w:14%;--rift-tilt:-8deg;--rift-delay:0s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_walker.png')"></div>
           <div class="rift-label">
@@ -2805,7 +2843,7 @@ body.hide-topbar #topbar{ display:none; }
         </a>
 
         <!-- Whisper — violet center rift, sits over the pentagram on the floor as the focal -->
-        <a class="rift rift-cutout" data-tone="purple" href="javascript:void(0)" onclick="switchScreen('summon')"
+        <a class="rift rift-cutout" data-tone="purple" data-rift="summon" href="javascript:void(0)" onclick="switchScreen('summon')"
            style="--x:50%;--y:52%;--w:26%;--rift-tilt:0deg;--rift-delay:-1.8s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_whisper.png')"></div>
           <div class="rift-label">
@@ -2816,7 +2854,7 @@ body.hide-topbar #topbar{ display:none; }
         </a>
 
         <!-- Realms — violet master-rift containing all 8 realms, top-left corner -->
-        <a class="rift rift-cutout" data-tone="purple" href="javascript:void(0)" onclick="switchScreen('realms')"
+        <a class="rift rift-cutout" data-tone="purple" data-rift="realms" href="javascript:void(0)" onclick="switchScreen('realms')"
            style="--x:20%;--y:28%;--w:20%;--rift-tilt:10deg;--rift-delay:-3.2s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_realms.png')"></div>
           <div class="rift-label">
@@ -2827,7 +2865,7 @@ body.hide-topbar #topbar{ display:none; }
         </a>
 
         <!-- Codex — violet torn-rift portal, top-right corner (mirror of Realms) -->
-        <a class="rift rift-cutout" data-tone="purple" href="javascript:void(0)" onclick="switchScreen('codex')"
+        <a class="rift rift-cutout" data-tone="purple" data-rift="codex" href="javascript:void(0)" onclick="switchScreen('codex')"
            style="--x:80%;--y:28%;--w:20%;--rift-tilt:-10deg;--rift-delay:-4.6s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_codex.png')"></div>
           <div class="rift-label">
@@ -2838,7 +2876,7 @@ body.hide-topbar #topbar{ display:none; }
         </a>
 
         <!-- Garrison — green chained-altar rift, bottom-left corner (mirror of Walker) -->
-        <a class="rift rift-cutout" data-tone="green" href="javascript:void(0)" onclick="switchScreen('garrison')"
+        <a class="rift rift-cutout" data-tone="green" data-rift="garrison" href="javascript:void(0)" onclick="switchScreen('garrison')"
            style="--x:24%;--y:74%;--w:14%;--rift-tilt:8deg;--rift-delay:-5.5s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_garrison.png')"></div>
           <div class="rift-label">
@@ -3289,6 +3327,7 @@ let S={
   bannerExpiry:null,activeScroll:'whisper',level:1,
   scrollInv:{whisper:0,twilight:0,infernal:0,bloodpact:0,sincodex:0,realmrift:0,voidtear:0},
   hasVisitedSummon:false,
+  tutorialSeen:false,
   walker:{
     name:'Walker', title:'initiate', level:1, xp:0,
     cosmetics:{robe:'robe:novice',hood:'hood:none',aura:'aura:pale',pool:'pool:void'},
@@ -3820,6 +3859,7 @@ function load(){
   try{const d=localStorage.getItem('inf_hub');if(d)S=Object.assign(S,JSON.parse(d));}catch(e){}
   if(!S.scrollInv) S.scrollInv={whisper:0,twilight:0,infernal:0,bloodpact:0,sincodex:0,realmrift:0,voidtear:0};
   if(typeof S.hasVisitedSummon==='undefined') S.hasVisitedSummon=false;
+  if(typeof S.tutorialSeen==='undefined') S.tutorialSeen=true; // grandfather existing players past onboarding
   if(!S.walker){
     S.walker={
       name:'Walker', title:'initiate', level:1, xp:0,
@@ -6066,6 +6106,72 @@ function submitCharacterCreation(){
   }
   // Start music — infernum_welcome.mp3 is now unlocked (character created)
   startMusic();
+  // First-run: guided tour of the sanctum once the modal has faded
+  if(!S.tutorialSeen) setTimeout(startWalkerTutorial, 850);
+}
+
+// ═══════════════════════════════════════════
+// FIRST-RUN GUIDED TOUR
+// ═══════════════════════════════════════════
+window.TutorialTour = (function(){
+  let steps=[], idx=0, root=null, active=false, onResize=null, onEnd=null;
+  function buildDOM(){
+    root=document.createElement('div'); root.id='tutorial-tour';
+    root.innerHTML='<div class="tut-hole"></div>'+
+      '<button class="tut-skip" type="button">Skip</button>'+
+      '<div class="tut-card"><div class="tut-eyebrow"></div><div class="tut-text"></div>'+
+      '<div class="tut-foot"><div class="tut-dots"></div><button class="tut-next" type="button">Next</button></div></div>';
+    document.body.appendChild(root);
+    root.querySelector('.tut-skip').onclick=end;
+    root.querySelector('.tut-next').onclick=next;
+  }
+  function positionFor(step){
+    const hole=root.querySelector('.tut-hole'), card=root.querySelector('.tut-card');
+    let rect=null;
+    if(step.rift){ const el=document.querySelector('.rift-cutout[data-rift="'+step.rift+'"]'); if(el) rect=el.getBoundingClientRect(); }
+    if(rect && rect.width){
+      const pad=14;
+      hole.style.display='block';
+      hole.style.left=(rect.left-pad)+'px'; hole.style.top=(rect.top-pad)+'px';
+      hole.style.width=(rect.width+pad*2)+'px'; hole.style.height=(rect.height+pad*2)+'px';
+      const below = rect.top < window.innerHeight*0.46;
+      card.style.left='50%'; card.style.transform='translateX(-50%)';
+      if(below){ card.style.top=(rect.bottom+26)+'px'; card.style.bottom='auto'; }
+      else { card.style.bottom=(window.innerHeight-rect.top+26)+'px'; card.style.top='auto'; }
+    } else {
+      hole.style.display='none';
+      card.style.left='50%'; card.style.top='50%'; card.style.bottom='auto'; card.style.transform='translate(-50%,-50%)';
+    }
+  }
+  function render(){
+    const step=steps[idx];
+    root.querySelector('.tut-eyebrow').textContent=step.eyebrow||'';
+    root.querySelector('.tut-text').innerHTML=step.text||'';
+    root.querySelector('.tut-next').textContent = step.cta ? (step.ctaLabel||'Begin') : (idx===steps.length-1?'Done':'Next');
+    root.querySelector('.tut-dots').innerHTML=steps.map((s,i)=>'<span class="tut-dot'+(i===idx?' on':'')+'"></span>').join('');
+    positionFor(step);
+  }
+  function next(){ const step=steps[idx]; if(step.cta && step.action){ end(); step.action(); return; } if(idx>=steps.length-1){ end(); return; } idx++; render(); }
+  function start(list, endCb){ if(active) return; steps=list; idx=0; active=true; onEnd=endCb||null; if(!root) buildDOM(); root.classList.add('show'); render(); onResize=function(){ if(active) positionFor(steps[idx]); }; window.addEventListener('resize', onResize); }
+  function end(){ if(!active) return; active=false; if(root) root.classList.remove('show'); window.removeEventListener('resize', onResize); if(onEnd) onEnd(); }
+  return { start, end, isActive:function(){ return active; } };
+})();
+
+function startWalkerTutorial(){
+  if(S.tutorialSeen || !window.TutorialTour) return;
+  if(TutorialTour.isActive()) return;
+  const nm=(S.walker && S.walker.name) ? S.walker.name : 'Walker';
+  const esc=function(s){ return String(s).replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); };
+  const steps=[
+    {rift:null,       eyebrow:'The Rift Walker', text:'Welcome, <b>'+esc(nm)+'</b>. This is your sanctum — the still point at the heart of the rift. Five gates open from here.'},
+    {rift:'summon',   eyebrow:'Summon',          text:'The <b>Whisper Rift</b>. Step through to call demons out of the void and bind them to you.'},
+    {rift:'codex',    eyebrow:'Chronicle',       text:'The <b>Codex</b> remembers every demon you bind.'},
+    {rift:'riftwalk', eyebrow:'Ascend',          text:'The <b>Walker</b> — your binding power. Talents and gear sharpen the strength that flows through your demons.'},
+    {rift:'realms',   eyebrow:'Conquer',         text:'The <b>Realms</b>. Send your bound to claim them, rift by rift.'},
+    {rift:'garrison', eyebrow:'Tribute',         text:'The <b>Garrison</b>. Station demons here in tribute.'},
+    {rift:'summon',   eyebrow:'Begin',           text:'A first Whisper waits for you. Step through and summon your first demon.', cta:true, ctaLabel:'Summon', action:function(){ switchScreen('summon'); }},
+  ];
+  TutorialTour.start(steps, function(){ S.tutorialSeen=true; save(); });
 }
 
 function openPlaylist(){
