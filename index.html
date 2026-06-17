@@ -2532,22 +2532,37 @@ body.hide-topbar #topbar{ display:none; }
 .splash-embers::after{ animation-duration:26s; opacity:.4; background-size:78% 62%; }
 @keyframes emberRise{ from{transform:translateY(10%);} to{transform:translateY(-26%);} }
 .splash-logo-wrap{ position:relative; display:flex; align-items:center; justify-content:center; padding:18px 0; }
-.splash-rift{
-  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-  width:min(330px,72vw); height:min(440px,94vw); border-radius:46% / 50%;
-  background:radial-gradient(ellipse at center, rgba(124,58,237,0.30), rgba(124,58,237,0.07) 54%, transparent 72%);
-  box-shadow:0 0 90px 14px rgba(124,58,237,0.16); filter:blur(2px); z-index:0;
-  animation:riftBreathe 5.5s ease-in-out infinite;
-}
-@keyframes riftBreathe{ 0%,100%{opacity:.72;transform:translate(-50%,-50%) scale(.97);} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.04);} }
-.splash-logo-img{ position:relative; z-index:1; width:min(360px,82vw); height:auto; display:block; filter:drop-shadow(0 0 26px rgba(251,191,36,0.40)); animation:logoBreathe 5.5s ease-in-out infinite; }
+.splash-logo-img{ position:relative; z-index:1; width:min(480px,92vw); height:auto; display:block; filter:drop-shadow(0 0 30px rgba(251,191,36,0.42)); animation:logoBreathe 5.5s ease-in-out infinite; }
 @keyframes logoBreathe{ 0%,100%{filter:drop-shadow(0 0 20px rgba(251,191,36,0.30));} 50%{filter:drop-shadow(0 0 36px rgba(251,191,36,0.52));} }
-.splash-logo{ position:relative; z-index:1; font-size:3rem; letter-spacing:.3em; }
+.splash-logo{ position:relative; z-index:1; font-size:clamp(2.3rem, 13vw, 4.2rem); letter-spacing:.22em; }
 .splash-logo span{ color:var(--crimson); }
 .splash-eyebrow{ font-family:var(--serif); font-style:italic; font-size:.55rem; letter-spacing:.5em; text-transform:uppercase; color:rgba(251,191,36,0.62); }
 .splash-btn{ position:relative; animation:ctaPulse 2.8s ease-in-out infinite; }
 @keyframes ctaPulse{ 0%,100%{box-shadow:0 0 0 0 rgba(192,132,252,0);} 50%{box-shadow:0 0 26px -2px rgba(192,132,252,0.5);} }
 @media (prefers-reduced-motion: reduce){ .splash-embers::before,.splash-embers::after,.splash-rift,.splash-logo-img,.splash-btn{ animation:none; } }
+/* ── Splash: rift-into-void gate → video → enter ── */
+.splash-screen{ cursor:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSI0MyIgdmlld0JveD0iMCAwIDM0IDQ2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InMiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM4YTZmOWUiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzU1M2E2YiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzJlMWM0NCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIHN0cm9rZT0iIzBjMDcxOCIgc3Ryb2tlLXdpZHRoPSIxLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PHBhdGggZD0iTTggMjZxLTYgMC03IDRxLTEgMyAyIDRsMi0xcTMtMSA0LTR6IiBmaWxsPSJ1cmwoI3MpIi8+PHBhdGggZD0iTTIgMzJsLTItMS40cTEuNCAxLjggMi4yIDIuOHoiIGZpbGw9IiNlY2U2ZGEiLz48cGF0aCBkPSJNNyAyMnEwLTMgMy0zaDEycTQgMCA0IDR2OHEwIDgtOCA4aC00cS03IDAtNy03eiIgZmlsbD0idXJsKCNzKSIvPjxwYXRoIGQ9Ik0xNC41IDIxcTEuNS01IDMuNS0xeiIgZmlsbD0iI2VjZTZkYSIvPjxwYXRoIGQ9Ik0xOC41IDIwLjVxMS42LTUgMy42LTF6IiBmaWxsPSIjZWNlNmRhIi8+PHBhdGggZD0iTTIyLjUgMjFxMS40LTQuNSAzLjItMXoiIGZpbGw9IiNlY2U2ZGEiLz48cGF0aCBkPSJNMTQgMjFxMi0zIDQgMHoiIGZpbGw9InVybCgjcykiLz48cGF0aCBkPSJNMTggMjAuNXEyLTMgNCAweiIgZmlsbD0idXJsKCNzKSIvPjxwYXRoIGQ9Ik0yMiAyMXExLjgtMyAzLjQgMHoiIGZpbGw9InVybCgjcykiLz48cGF0aCBkPSJNOSAyM0w5LjQgOFE5LjkgMi41IDEyIDFRMTQuNCAyLjUgMTQuOCA4TDE1IDIzWiIgZmlsbD0idXJsKCNzKSIvPjxwYXRoIGQ9Ik05LjYgNlExMSAuMyAxMiAxUTEzLjIgLjQgMTQuNCA2UTEyIDMuNCA5LjYgNloiIGZpbGw9IiNlY2U2ZGEiLz48L2c+PC9zdmc+') 11 1, pointer; }
+.splash-screen button{ cursor:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSI0MyIgdmlld0JveD0iMCAwIDM0IDQ2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InMiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM4YTZmOWUiLz48c3RvcCBvZmZzZXQ9Ii41NSIgc3RvcC1jb2xvcj0iIzU1M2E2YiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzJlMWM0NCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIHN0cm9rZT0iIzBjMDcxOCIgc3Ryb2tlLXdpZHRoPSIxLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PHBhdGggZD0iTTggMjZxLTYgMC03IDRxLTEgMyAyIDRsMi0xcTMtMSA0LTR6IiBmaWxsPSJ1cmwoI3MpIi8+PHBhdGggZD0iTTIgMzJsLTItMS40cTEuNCAxLjggMi4yIDIuOHoiIGZpbGw9IiNlY2U2ZGEiLz48cGF0aCBkPSJNNyAyMnEwLTMgMy0zaDEycTQgMCA0IDR2OHEwIDgtOCA4aC00cS03IDAtNy03eiIgZmlsbD0idXJsKCNzKSIvPjxwYXRoIGQ9Ik0xNC41IDIxcTEuNS01IDMuNS0xeiIgZmlsbD0iI2VjZTZkYSIvPjxwYXRoIGQ9Ik0xOC41IDIwLjVxMS42LTUgMy42LTF6IiBmaWxsPSIjZWNlNmRhIi8+PHBhdGggZD0iTTIyLjUgMjFxMS40LTQuNSAzLjItMXoiIGZpbGw9IiNlY2U2ZGEiLz48cGF0aCBkPSJNMTQgMjFxMi0zIDQgMHoiIGZpbGw9InVybCgjcykiLz48cGF0aCBkPSJNMTggMjAuNXEyLTMgNCAweiIgZmlsbD0idXJsKCNzKSIvPjxwYXRoIGQ9Ik0yMiAyMXExLjgtMyAzLjQgMHoiIGZpbGw9InVybCgjcykiLz48cGF0aCBkPSJNOSAyM0w5LjQgOFE5LjkgMi41IDEyIDFRMTQuNCAyLjUgMTQuOCA4TDE1IDIzWiIgZmlsbD0idXJsKCNzKSIvPjxwYXRoIGQ9Ik05LjYgNlExMSAuMyAxMiAxUTEzLjIgLjQgMTQuNCA2UTEyIDMuNCA5LjYgNloiIGZpbGw9IiNlY2U2ZGEiLz48L2c+PC9zdmc+') 11 1, pointer; }
+.splash-embers{ z-index:0; }
+.splash-gate{ position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center; transition:opacity .9s ease; }
+.splash-gate.gate-out{ opacity:0; pointer-events:none; }
+.splash-gate-inner{ position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:22px; padding:24px; }
+.splash-portal-space{ position:relative; width:min(300px,66vw); height:min(400px,52vh); display:flex; align-items:center; justify-content:center; }
+.splash-rift-portal{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:100%; height:100%; border-radius:50% / 46%;
+  background:radial-gradient(ellipse at center, #000 30%, rgba(20,6,38,0.92) 46%, rgba(90,30,150,0.42) 62%, rgba(124,58,237,0.20) 72%, transparent 82%);
+  box-shadow:0 0 70px 12px rgba(124,58,237,0.30), inset 0 0 70px 24px rgba(0,0,0,0.95), inset 0 0 140px 16px rgba(124,58,237,0.22);
+  animation:portalPulse 5s ease-in-out infinite; }
+.splash-rift-portal::before{ content:''; position:absolute; inset:-2px; border-radius:inherit; border:1px solid rgba(251,191,36,0.30); box-shadow:0 0 26px 3px rgba(251,191,36,0.22), inset 0 0 24px rgba(251,191,36,0.16); }
+.splash-rift-portal::after{ content:''; position:absolute; inset:16% 22%; border-radius:50% / 46%; background:radial-gradient(ellipse at center, transparent 58%, rgba(124,58,237,0.16)); animation:portalSwirl 9s linear infinite; }
+@keyframes portalPulse{ 0%,100%{ transform:translate(-50%,-50%) scale(1); } 50%{ transform:translate(-50%,-50%) scale(1.035); box-shadow:0 0 95px 18px rgba(124,58,237,0.42), inset 0 0 70px 24px rgba(0,0,0,0.96), inset 0 0 150px 14px rgba(124,58,237,0.30); } }
+@keyframes portalSwirl{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+.splash-dark-btn{ border-color:rgba(244,63,94,0.55); }
+.splash-dark-btn:hover{ border-color:rgba(244,63,94,0.95); background:linear-gradient(180deg, rgba(120,20,40,0.40), rgba(120,20,40,0.16)); }
+.splash-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1; background:#06000e; opacity:0; pointer-events:none; transition:opacity .6s ease; }
+.splash-screen.playing-video .splash-video{ opacity:1; }
+.splash-end{ position:absolute; inset:0; z-index:4; display:flex; align-items:flex-end; justify-content:center; padding-bottom:13vh; opacity:0; pointer-events:none; transition:opacity .8s ease; }
+.splash-screen.show-enter .splash-end{ opacity:1; pointer-events:auto; }
+@media (prefers-reduced-motion: reduce){ .splash-rift-portal, .splash-rift-portal::after{ animation:none; } }
 
 /* CHARACTER CREATION — the first binding. Surfaces after the splash if the player
    has not yet created their walker. Lets them speak their name + choose a sigil. */
@@ -3168,17 +3183,24 @@ body.hide-topbar #topbar{ display:none; }
 <!-- ═══ MUSIC SYSTEM UI ═══ -->
 <!-- SPLASH — shown on first load; click "Walk the Rift" to satisfy autoplay policy + start soundtrack -->
 <div id="splash-screen" class="splash-screen">
-  <div class="splash-embers" aria-hidden="true"></div>
-  <div class="splash-inner">
-    <div class="splash-eyebrow">The loop begins again</div>
-    <div class="splash-logo-wrap">
-      <div class="splash-rift" aria-hidden="true"></div>
+  <!-- Phase 1 — the gate: a rift into the void -->
+  <div class="splash-gate" id="splash-gate">
+    <div class="splash-embers" aria-hidden="true"></div>
+    <div class="splash-gate-inner">
       <img class="splash-logo-img" src="assets/ui/infernum_logo.png" alt="INFERNUM"
            onerror="this.style.display='none';var t=this.nextElementSibling;if(t)t.style.display='block'">
       <h1 class="splash-logo" style="display:none">INF<span>E</span>RNUM</h1>
+      <div class="splash-portal-space"><div class="splash-rift-portal" aria-hidden="true"></div></div>
+      <button class="splash-btn splash-dark-btn" id="splash-enter-dark" onclick="enterTheDarkness()"><span>Enter the Darkness</span></button>
     </div>
-    <p class="splash-tagline">A walk between worlds</p>
-    <button class="splash-btn" onclick="dismissSplash()"><span>Walk the Rift</span></button>
+  </div>
+  <!-- Phase 2 — the intro video (plays with sound) -->
+  <video id="splash-video" class="splash-video" playsinline preload="auto">
+    <source src="assets/ui/splash_intro.mp4" type="video/mp4">
+  </video>
+  <!-- Phase 3 — enter the game -->
+  <div class="splash-end" id="splash-end">
+    <button class="splash-btn" id="splash-enter-btn" onclick="dismissSplash()"><span>Enter the Rift</span></button>
   </div>
 </div>
 
@@ -6119,6 +6141,28 @@ function startMusic(){
   document.getElementById('music-player').classList.add('show');
 }
 
+let _splashPhase='gate';
+function enterTheDarkness(){
+  if(_splashPhase!=='gate') return; _splashPhase='video';
+  const s=document.getElementById('splash-screen');
+  const gate=document.getElementById('splash-gate');
+  const v=document.getElementById('splash-video');
+  if(gate) gate.classList.add('gate-out');
+  if(v && v.querySelector('source')){
+    s.classList.add('playing-video');
+    v.muted=false; try{ v.volume=1; v.currentTime=0; }catch(e){}
+    const pr=v.play();
+    if(pr && pr.catch) pr.catch(function(){ try{ v.muted=true; v.play(); }catch(_){ splashShowEnter(); } });
+    v.addEventListener('ended', splashShowEnter, {once:true});
+    v.addEventListener('error', splashShowEnter, {once:true});
+    setTimeout(function(){ if(_splashPhase==='video' && !v.videoWidth) splashShowEnter(); }, 1800);
+  } else { splashShowEnter(); }
+}
+function splashShowEnter(){
+  if(_splashPhase==='end') return; _splashPhase='end';
+  const s=document.getElementById('splash-screen');
+  if(s) s.classList.add('show-enter');
+}
 function dismissSplash(){
   const splash=document.getElementById('splash-screen');
   if(!splash) return;
@@ -6261,13 +6305,13 @@ function startWalkerTutorial(){
   const nm=(S.walker && S.walker.name) ? S.walker.name : 'Walker';
   const esc=function(s){ return String(s).replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); };
   const steps=[
-    {rift:null,       eyebrow:'The Rift Walker', text:'Welcome, <b>'+esc(nm)+'</b>. This is your sanctum — the still point at the heart of the rift. Five gates open from here.'},
-    {rift:'summon',   eyebrow:'Summon',          text:'The <b>Whisper Rift</b>. Step through to call demons out of the void and bind them to you.'},
-    {rift:'codex',    eyebrow:'Chronicle',       text:'The <b>Codex</b> remembers every demon you bind.'},
-    {rift:'riftwalk', eyebrow:'Ascend',          text:'The <b>Walker</b> — your binding power. Talents and gear sharpen the strength that flows through your demons.'},
-    {rift:'realms',   eyebrow:'Conquer',         text:'The <b>Realms</b>. Send your bound to claim them, rift by rift.'},
-    {rift:'garrison', eyebrow:'Tribute',         text:'The <b>Garrison</b>. Station demons here in tribute.'},
-    {rift:'summon',   eyebrow:'Begin',           text:'A first Whisper waits for you. Step through and summon your first demon.', cta:true, ctaLabel:'Summon', action:function(){ switchScreen('summon'); }},
+    {rift:null,       eyebrow:'The Rift Walker', text:'<b>'+esc(nm)+'</b>. The void has waited a long time to hear that name. This is your sanctum — the one still place the rift turns around. Five gates open from here; let me show you each.'},
+    {rift:'summon',   eyebrow:'The Whisper',     text:'The <b>Whisper Rift</b>, where the void leans close enough to be heard. Spend a scroll and something answers — not captured, but bound the moment you and it recognize each other.'},
+    {rift:'codex',    eyebrow:'The Chronicle',   text:'The <b>Codex</b>. Every demon you bind is inscribed here — its seals, its sins, the name it carried before the rift. Power deepens in the remembering.'},
+    {rift:'riftwalk', eyebrow:'The Ascent',      text:'The <b>Walker</b> — that’s you. Your demons do the fighting, but their strength runs through your binding. Sharpen it with talents and gear, and every demon you hold grows with you.'},
+    {rift:'realms',   eyebrow:'The Conquest',    text:'The <b>Realms</b> — kingdoms the rift swallowed whole. Send your bound demons through to take them back, one rift at a time. This is where a binding is tested.'},
+    {rift:'garrison', eyebrow:'The Tribute',     text:'The <b>Garrison</b>. Demons stationed here stand watch and pay tribute while you’re away — the rift never sleeps, and neither do they.'},
+    {rift:'summon',   eyebrow:'Begin',           text:'Enough watching. A first Whisper is already paid for, waiting in the dark. Step through and meet what the void chose for you.', cta:true, ctaLabel:'Summon', action:function(){ switchScreen('summon'); }},
   ];
   TutorialTour.start(steps, function(){ S.tutorialSeen=true; save(); });
 }
