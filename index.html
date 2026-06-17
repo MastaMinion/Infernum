@@ -2509,6 +2509,41 @@ body.hide-topbar #topbar{ display:none; }
 }
 .splash-btn:active{transform:translateY(0) scale(.98)}
 
+/* ── Splash redesign: cinematic threshold ── */
+.splash-screen{ background:radial-gradient(ellipse 90% 70% at 50% 46%, #160a32 0%, #0a0420 42%, #050009 78%); overflow:hidden; }
+.splash-embers{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.splash-embers::before, .splash-embers::after{
+  content:''; position:absolute; left:-10%; right:-10%; top:-25%; height:150%;
+  background-image:
+    radial-gradient(1.6px 1.6px at 18% 32%, rgba(251,191,36,0.55), transparent),
+    radial-gradient(1.4px 1.4px at 72% 58%, rgba(251,191,36,0.40), transparent),
+    radial-gradient(1.2px 1.2px at 41% 80%, rgba(192,132,252,0.45), transparent),
+    radial-gradient(1.6px 1.6px at 86% 24%, rgba(251,191,36,0.35), transparent),
+    radial-gradient(1.2px 1.2px at 55% 14%, rgba(192,132,252,0.38), transparent),
+    radial-gradient(1.3px 1.3px at 9% 66%, rgba(251,191,36,0.30), transparent);
+  background-repeat:repeat; background-size:58% 46%;
+  animation:emberRise 16s linear infinite; opacity:.75;
+}
+.splash-embers::after{ animation-duration:26s; opacity:.4; background-size:78% 62%; }
+@keyframes emberRise{ from{transform:translateY(10%);} to{transform:translateY(-26%);} }
+.splash-logo-wrap{ position:relative; display:flex; align-items:center; justify-content:center; padding:18px 0; }
+.splash-rift{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:min(330px,72vw); height:min(440px,94vw); border-radius:46% / 50%;
+  background:radial-gradient(ellipse at center, rgba(124,58,237,0.30), rgba(124,58,237,0.07) 54%, transparent 72%);
+  box-shadow:0 0 90px 14px rgba(124,58,237,0.16); filter:blur(2px); z-index:0;
+  animation:riftBreathe 5.5s ease-in-out infinite;
+}
+@keyframes riftBreathe{ 0%,100%{opacity:.72;transform:translate(-50%,-50%) scale(.97);} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.04);} }
+.splash-logo-img{ position:relative; z-index:1; width:min(360px,82vw); height:auto; display:block; filter:drop-shadow(0 0 26px rgba(251,191,36,0.40)); animation:logoBreathe 5.5s ease-in-out infinite; }
+@keyframes logoBreathe{ 0%,100%{filter:drop-shadow(0 0 20px rgba(251,191,36,0.30));} 50%{filter:drop-shadow(0 0 36px rgba(251,191,36,0.52));} }
+.splash-logo{ position:relative; z-index:1; font-size:3rem; letter-spacing:.3em; }
+.splash-logo span{ color:var(--crimson); }
+.splash-eyebrow{ font-family:var(--serif); font-style:italic; font-size:.55rem; letter-spacing:.5em; text-transform:uppercase; color:rgba(251,191,36,0.62); }
+.splash-btn{ position:relative; animation:ctaPulse 2.8s ease-in-out infinite; }
+@keyframes ctaPulse{ 0%,100%{box-shadow:0 0 0 0 rgba(192,132,252,0);} 50%{box-shadow:0 0 26px -2px rgba(192,132,252,0.5);} }
+@media (prefers-reduced-motion: reduce){ .splash-embers::before,.splash-embers::after,.splash-rift,.splash-logo-img,.splash-btn{ animation:none; } }
+
 /* CHARACTER CREATION — the first binding. Surfaces after the splash if the player
    has not yet created their walker. Lets them speak their name + choose a sigil. */
 .char-creation{
@@ -2635,6 +2670,30 @@ body.hide-topbar #topbar{ display:none; }
 .char-submit-btn:disabled:hover{
   background:linear-gradient(180deg, rgba(124,58,237,0.22), rgba(124,58,237,0.08));
 }
+
+/* ── Character creation redesign: the binding ritual ── */
+.char-creation{ overflow-y:auto; }
+.char-creation-inner{ gap:18px; margin:auto 0; }
+.char-creation-title{ font-size:1.7rem; letter-spacing:.22em; }
+.char-circle{ position:relative; width:158px; height:158px; display:flex; align-items:center; justify-content:center; }
+.char-circle-rings{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.char-circle-rings .ccr{ fill:none; transform-origin:60px 60px; }
+.char-circle-rings .ccr-out{ stroke:rgba(251,191,36,0.32); stroke-width:0.5; stroke-dasharray:2 6; animation:ccrSpin 40s linear infinite; }
+.char-circle-rings .ccr-mid{ stroke:rgba(192,132,252,0.32); stroke-width:0.5; stroke-dasharray:1 4; animation:ccrSpin 28s linear infinite reverse; }
+.char-circle-rings .ccr-in{ stroke:rgba(251,191,36,0.22); stroke-width:0.4; animation:ccrSpin 54s linear infinite; }
+@keyframes ccrSpin{ from{transform:rotate(0);} to{transform:rotate(360deg);} }
+.char-circle-core{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; }
+.char-circle-sigil .sigil-mark{ width:66px; height:66px; }
+.char-circle-sigil .sigil-img{ filter:drop-shadow(0 0 18px rgba(251,191,36,0.6)) drop-shadow(0 0 7px rgba(192,132,252,0.5)); }
+.char-circle-sigil .sigil-rune{ font-size:58px; color:var(--gold); text-shadow:0 0 26px rgba(251,191,36,0.55),0 0 10px rgba(192,132,252,0.5); }
+.char-circle-name{ font-family:var(--deco); font-weight:700; font-size:.74rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text); min-height:1em; text-shadow:0 0 12px rgba(192,132,252,0.55); }
+.char-circle-name:empty::before{ content:'—'; color:rgba(190,170,220,0.4); }
+.char-name-input{ width:100%; max-width:320px; padding:10px 8px; background:transparent; border:0; border-bottom:1px solid rgba(192,132,252,0.4); color:var(--gold); font-family:var(--deco); font-weight:700; font-size:1.15rem; letter-spacing:.16em; text-align:center; text-transform:uppercase; outline:none; transition:all .2s ease; }
+.char-name-input:focus{ border-bottom-color:rgba(251,191,36,0.8); box-shadow:0 8px 20px -12px rgba(251,191,36,0.7); background:transparent; }
+.char-name-input::placeholder{ color:var(--muted); font-style:italic; text-transform:none; letter-spacing:.06em; }
+.char-sigil-meaning{ display:flex; flex-direction:column; gap:3px; min-height:32px; }
+.csm-name{ font-family:var(--deco); font-weight:700; font-size:.66rem; letter-spacing:.26em; text-transform:uppercase; color:var(--gold); text-shadow:0 0 14px rgba(251,191,36,0.4); }
+.csm-desc{ font-family:var(--serif); font-style:italic; font-size:.74rem; letter-spacing:.03em; color:rgba(214,204,236,0.72); }
 
 /* MINI PLAYER BAR — sits just above the bottom nav; always visible after splash. */
 .music-player{
@@ -3104,10 +3163,17 @@ body.hide-topbar #topbar{ display:none; }
 <!-- ═══ MUSIC SYSTEM UI ═══ -->
 <!-- SPLASH — shown on first load; click "Walk the Rift" to satisfy autoplay policy + start soundtrack -->
 <div id="splash-screen" class="splash-screen">
+  <div class="splash-embers" aria-hidden="true"></div>
   <div class="splash-inner">
-    <h1 class="splash-logo">INFERNUM</h1>
+    <div class="splash-eyebrow">The loop begins again</div>
+    <div class="splash-logo-wrap">
+      <div class="splash-rift" aria-hidden="true"></div>
+      <img class="splash-logo-img" src="assets/ui/infernum_logo.png" alt="INFERNUM"
+           onerror="this.style.display='none';var t=this.nextElementSibling;if(t)t.style.display='block'">
+      <h1 class="splash-logo" style="display:none">INF<span>E</span>RNUM</h1>
+    </div>
     <p class="splash-tagline">A walk between worlds</p>
-    <button class="splash-btn" onclick="dismissSplash()">Walk the Rift</button>
+    <button class="splash-btn" onclick="dismissSplash()"><span>Walk the Rift</span></button>
   </div>
 </div>
 
@@ -3115,12 +3181,16 @@ body.hide-topbar #topbar{ display:none; }
 <div id="char-creation" class="char-creation">
   <div class="char-creation-inner">
     <p class="char-creation-eyebrow">The First Binding</p>
-    <h1 class="char-creation-title">SPEAK YOUR NAME</h1>
-    <div class="char-creation-rule"></div>
+    <h1 class="char-creation-title">Speak Your Name</h1>
+
+    <div class="char-circle" aria-hidden="true">
+      <svg class="char-circle-rings" viewBox="0 0 120 120"><circle class="ccr ccr-out" cx="60" cy="60" r="56"/><circle class="ccr ccr-mid" cx="60" cy="60" r="44"/><circle class="ccr ccr-in" cx="60" cy="60" r="33"/></svg>
+      <div class="char-circle-core"><div class="char-circle-sigil" id="char-circle-sigil"></div><div class="char-circle-name" id="char-circle-name"></div></div>
+    </div>
     <p class="char-creation-prompt">The void already knows you. Teach it what to call you when it comes looking.</p>
     <input type="text" id="char-name-input" class="char-name-input"
-           placeholder="Walker" maxlength="24" autocomplete="off" spellcheck="false"
-           oninput="updateCharSubmitState()" />
+           placeholder="speak your name…" maxlength="24" autocomplete="off" spellcheck="false"
+           oninput="onCharNameInput()" />
     <p class="char-sigil-label">Choose your sigil</p>
     <div class="char-sigil-row" id="char-sigil-row">
       <button type="button" class="char-sigil-btn selected" data-sigil="⛧" onclick="selectCharSigil('⛧')"><span class="sigil-mark"><img class="sigil-img" src="assets/ui/sigil_unmade.png" alt="" onerror="this.style.display='none';var r=this.nextElementSibling;if(r)r.style.opacity='1'"><span class="sigil-rune" style="opacity:0">⛧</span></span></button>
@@ -3129,6 +3199,7 @@ body.hide-topbar #topbar{ display:none; }
       <button type="button" class="char-sigil-btn" data-sigil="◉" onclick="selectCharSigil('◉')"><span class="sigil-mark"><img class="sigil-img" src="assets/ui/sigil_witness.png" alt="" onerror="this.style.display='none';var r=this.nextElementSibling;if(r)r.style.opacity='1'"><span class="sigil-rune" style="opacity:0">◉</span></span></button>
       <button type="button" class="char-sigil-btn" data-sigil="∞" onclick="selectCharSigil('∞')"><span class="sigil-mark"><img class="sigil-img" src="assets/ui/sigil_endless.png" alt="" onerror="this.style.display='none';var r=this.nextElementSibling;if(r)r.style.opacity='1'"><span class="sigil-rune" style="opacity:0">∞</span></span></button>
     </div>
+    <div class="char-sigil-meaning"><span class="csm-name" id="char-sigil-name">The Unmade</span><span class="csm-desc" id="char-sigil-desc">Broken into the right shape to receive the rift.</span></div>
     <button class="char-submit-btn" id="char-submit-btn" onclick="submitCharacterCreation()">Bind the Name</button>
   </div>
 </div>
@@ -5199,11 +5270,11 @@ function slotRuneFromPicker(runeId){
 // The Walker's sigil set — chosen at the First Binding. Each maps to a designed art
 // asset (assets/ui/sigil_<id>.png); the unicode glyph stays as the fallback until art exists.
 const WALKER_SIGILS = [
-  { glyph:'\u26e7', id:'unmade',   name:'The Unmade' },
-  { glyph:'\u2e38', id:'penitent', name:'The Penitent' },
-  { glyph:'\u263d', id:'lunar',    name:'The Waning' },
-  { glyph:'\u25c9', id:'witness',  name:'The Witness' },
-  { glyph:'\u221e', id:'endless',  name:'The Endless' },
+  { glyph:'\u26e7', id:'unmade',   name:'The Unmade', meaning:'Broken into the right shape to receive the rift.' },
+  { glyph:'\u2e38', id:'penitent', name:'The Penitent', meaning:'Marked by what you carry.' },
+  { glyph:'\u263d', id:'lunar',    name:'The Waning', meaning:'Always becoming, never whole.' },
+  { glyph:'\u25c9', id:'witness',  name:'The Witness', meaning:'The void already sees you.' },
+  { glyph:'\u221e', id:'endless',  name:'The Endless', meaning:'The loop that has always been running.' },
 ];
 function sigilDef(glyph){ return WALKER_SIGILS.find(s => s.glyph === glyph) || WALKER_SIGILS[0]; }
 function sigilMarkup(glyph, cls){
@@ -6071,6 +6142,8 @@ function showCharacterCreation(){
   document.querySelectorAll('#char-sigil-row .char-sigil-btn').forEach(btn=>{
     btn.classList.toggle('selected', btn.dataset.sigil===_pendingSigil);
   });
+  updateCharCircle();
+  const cn=document.getElementById('char-circle-name'); if(cn) cn.textContent='';
   updateCharSubmitState();
   m.classList.add('show');
   // Focus the name input shortly after the modal animates in
@@ -6081,6 +6154,19 @@ function selectCharSigil(sigil){
   document.querySelectorAll('#char-sigil-row .char-sigil-btn').forEach(btn=>{
     btn.classList.toggle('selected', btn.dataset.sigil===sigil);
   });
+  updateCharCircle();
+}
+function updateCharCircle(){
+  const d=sigilDef(_pendingSigil);
+  const sig=document.getElementById('char-circle-sigil'); if(sig) sig.innerHTML=sigilMarkup(_pendingSigil,'');
+  const nm=document.getElementById('char-sigil-name'); if(nm) nm.textContent=d.name;
+  const ds=document.getElementById('char-sigil-desc'); if(ds) ds.textContent=d.meaning||'';
+}
+function onCharNameInput(){
+  updateCharSubmitState();
+  const input=document.getElementById('char-name-input');
+  const cn=document.getElementById('char-circle-name');
+  if(cn) cn.textContent=(input && input.value)?input.value:'';
 }
 function updateCharSubmitState(){
   const input=document.getElementById('char-name-input');
