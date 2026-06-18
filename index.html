@@ -3224,10 +3224,6 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
     <source src="assets/ui/splash_intro.mp4" type="video/mp4">
   </video>
   <button class="splash-skip" id="splash-skip" onclick="skipIntro()">Skip the descent &#9656;</button>
-  <!-- Phase 3 — enter the game -->
-  <div class="splash-end" id="splash-end">
-    <button class="splash-btn" id="splash-enter-btn" onclick="dismissSplash()"><span>Enter the Rift</span></button>
-  </div>
 </div>
 
 <!-- CHARACTER CREATION — first-binding ritual. Shown after splash if walker not yet created. -->
@@ -6191,8 +6187,8 @@ function enterTheDarkness(){
 function skipIntro(){ var v=document.getElementById('splash-video'); if(v){ try{ v.pause(); }catch(e){} } splashShowEnter(); }
 function splashShowEnter(){
   if(_splashPhase==='end') return; _splashPhase='end';
-  const s=document.getElementById('splash-screen');
-  if(s) s.classList.add('show-enter');
+  var v=document.getElementById('splash-video'); if(v){ try{ v.pause(); }catch(e){} }
+  dismissSplash();   // intro over -> straight into character creation (or hub for returning players)
 }
 function dismissSplash(){
   const splash=document.getElementById('splash-screen');
