@@ -2559,10 +2559,14 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
 @keyframes portalSwirl{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
 .splash-dark-btn{ border-color:rgba(244,63,94,0.55); }
 .splash-dark-btn:hover{ border-color:rgba(244,63,94,0.95); background:linear-gradient(180deg, rgba(120,20,40,0.40), rgba(120,20,40,0.16)); }
-.splash-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1; background:#06000e; opacity:0; pointer-events:none; transition:opacity .6s ease; }
+.splash-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; z-index:1; background:#06000e; opacity:0; pointer-events:none; transition:opacity .6s ease; }
 .splash-screen.playing-video .splash-video{ opacity:1; }
 .splash-end{ position:absolute; inset:0; z-index:4; display:flex; align-items:flex-end; justify-content:center; padding-bottom:13vh; opacity:0; pointer-events:none; transition:opacity .8s ease; }
 .splash-screen.show-enter .splash-end{ opacity:1; pointer-events:auto; }
+.splash-skip{ position:absolute; right:18px; bottom:20px; z-index:6; display:none; background:rgba(8,4,16,0.5); border:1px solid rgba(180,160,210,0.32); color:var(--muted); font-family:var(--deco); letter-spacing:.18em; text-transform:uppercase; font-size:.68rem; padding:8px 14px; border-radius:8px; opacity:0; transition:opacity .6s ease 4s; }
+.splash-screen.playing-video .splash-skip{ display:block; opacity:.65; }
+.splash-screen.playing-video .splash-skip:hover{ opacity:1; color:var(--text); }
+.splash-screen.show-enter .splash-skip{ display:none; }
 @media (prefers-reduced-motion: reduce){ .splash-rift-portal, .splash-rift-portal::after{ animation:none; } }
 .splash-logo-bg{ position:absolute; inset:0; z-index:0; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:0.12; overflow:hidden; }
 .splash-logo-bg-img{ width:160%; max-width:none; height:auto; display:block; }
@@ -3219,6 +3223,7 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
   <video id="splash-video" class="splash-video" playsinline preload="auto">
     <source src="assets/ui/splash_intro.mp4" type="video/mp4">
   </video>
+  <button class="splash-skip" id="splash-skip" onclick="skipIntro()">Skip the descent &#9656;</button>
   <!-- Phase 3 — enter the game -->
   <div class="splash-end" id="splash-end">
     <button class="splash-btn" id="splash-enter-btn" onclick="dismissSplash()"><span>Enter the Rift</span></button>
@@ -6172,13 +6177,18 @@ function enterTheDarkness(){
   if(v && v.querySelector('source')){
     s.classList.add('playing-video');
     v.muted=false; try{ v.volume=1; v.currentTime=0; }catch(e){}
-    const pr=v.play();
-    if(pr && pr.catch) pr.catch(function(){ try{ v.muted=true; v.play(); }catch(_){ splashShowEnter(); } });
+    var started=false; var ok=function(){ started=true; };
+    v.addEventListener('playing', ok, {once:true});
+    v.addEventListener('loadeddata', ok, {once:true});
     v.addEventListener('ended', splashShowEnter, {once:true});
     v.addEventListener('error', splashShowEnter, {once:true});
-    setTimeout(function(){ if(_splashPhase==='video' && !v.videoWidth) splashShowEnter(); }, 1800);
+    const pr=v.play();
+    if(pr && pr.catch) pr.catch(function(){ try{ v.muted=true; v.play(); }catch(_){ splashShowEnter(); } });
+    // only bail if the video genuinely never starts (missing/undecodable), not just slow to buffer
+    setTimeout(function(){ if(_splashPhase==='video' && !started && !v.videoWidth) splashShowEnter(); }, 9000);
   } else { splashShowEnter(); }
 }
+function skipIntro(){ var v=document.getElementById('splash-video'); if(v){ try{ v.pause(); }catch(e){} } splashShowEnter(); }
 function splashShowEnter(){
   if(_splashPhase==='end') return; _splashPhase='end';
   const s=document.getElementById('splash-screen');
