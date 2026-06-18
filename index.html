@@ -3199,7 +3199,7 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
     </div>
     <div class="splash-gate-inner">
       <div class="splash-portal-space">
-        <img class="splash-rift-img" src="assets/ui/rift_gate.png" alt="" onerror="this.style.display='none'">
+        <img class="splash-rift-img" src="assets/ui/rift_gate.png" alt="" onload="var p=this.parentNode.querySelector('.splash-rift-portal'); if(p) p.style.display='none';" onerror="this.style.display='none'">
         <div class="splash-rift-portal" aria-hidden="true"></div>
       </div>
       <button class="splash-btn splash-dark-btn" id="splash-enter-dark" onclick="enterTheDarkness()"><span>Enter the Darkness</span></button>
