@@ -123,9 +123,13 @@ body.hide-topbar #topbar{ display:none; }
 }
 @keyframes loaderPulse{ 0%,100%{ opacity:.72; transform:scale(.985) } 50%{ opacity:1; transform:scale(1.015) } }
 @keyframes loaderSweep{ 0%{ left:-40% } 100%{ left:100% } }
+.page-loader-ring{ position:absolute; top:50%; left:50%; width:min(360px,76vw); height:min(360px,76vw); transform:translate(-50%,-50%); pointer-events:none; opacity:.75; }
+.page-loader-ring svg{ width:100%; height:100%; display:block; transform-origin:center; animation:loaderRingSpin 48s linear infinite; }
+@keyframes loaderRingSpin{ from{ transform:rotate(0); } to{ transform:rotate(360deg); } }
 @media (prefers-reduced-motion: reduce){
   .page-loader-logo, .page-loader-text{ animation:none; }
   .page-loader-bar::after{ animation-duration:2.2s; }
+  .page-loader-ring svg{ animation:none; }
 }
 
 /* ── First-run guided tour ── */
@@ -157,8 +161,8 @@ body.hide-topbar #topbar{ display:none; }
   box-shadow:0 18px 50px rgba(0,0,0,0.6), 0 0 30px rgba(124,58,237,0.18);
   transition:left .4s cubic-bezier(.4,0,.2,1), top .4s cubic-bezier(.4,0,.2,1), bottom .4s cubic-bezier(.4,0,.2,1);
 }
-.tut-eyebrow{ font-family:var(--serif); font-size:.48rem; letter-spacing:.4em; text-transform:uppercase; color:var(--gold); opacity:.85; margin-bottom:8px; }
-.tut-text{ font-family:var(--body); font-size:1rem; line-height:1.5; color:var(--text); }
+.tut-eyebrow{ font-family:var(--serif); font-size:.48rem; letter-spacing:.4em; text-transform:uppercase; color:var(--gold); opacity:.85; margin-bottom:8px; transition:opacity .32s ease; }
+.tut-text{ font-family:var(--body); font-size:1rem; line-height:1.5; color:var(--text); transition:opacity .32s ease; }
 .tut-text b{ color:var(--gold); font-weight:600; }
 .tut-foot{ display:flex; align-items:center; justify-content:space-between; margin-top:16px; }
 .tut-dots{ display:flex; gap:6px; }
@@ -2735,6 +2739,27 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
 .csm-name{ font-family:var(--deco); font-weight:700; font-size:.66rem; letter-spacing:.26em; text-transform:uppercase; color:var(--gold); text-shadow:0 0 14px rgba(251,191,36,0.4); }
 .csm-desc{ font-family:var(--serif); font-style:italic; font-size:.74rem; letter-spacing:.03em; color:rgba(214,204,236,0.72); }
 
+/* ── Live name inscribed curving along the binding ring ── */
+.ccr-name{ font-family:var(--deco); font-weight:700; font-size:7px; letter-spacing:.4px; fill:var(--gold); filter:drop-shadow(0 0 5px rgba(251,191,36,0.55)); }
+/* ── Sigil selection flare + the First Binding bloom ── */
+.char-circle-flash{
+  position:absolute; left:50%; top:50%; width:24px; height:24px;
+  transform:translate(-50%,-50%) scale(.2); border-radius:50%;
+  background:radial-gradient(circle, rgba(251,191,36,0.95) 0%, rgba(251,191,36,0.4) 34%, rgba(192,132,252,0.14) 60%, transparent 72%);
+  opacity:0; pointer-events:none; z-index:2;
+}
+#char-circle-sigil.sel-flare{ animation:sigilSelPulse .5s ease-out; }
+@keyframes sigilSelPulse{ 0%{ transform:scale(1); } 40%{ transform:scale(1.14); } 100%{ transform:scale(1); } }
+.char-circle.binding .char-circle-flash{ animation:bindBloom 1s cubic-bezier(.22,1,.36,1) forwards; }
+@keyframes bindBloom{ 0%{ opacity:0; transform:translate(-50%,-50%) scale(.2); } 18%{ opacity:1; } 100%{ opacity:0; transform:translate(-50%,-50%) scale(9); } }
+.char-circle.binding .ccr{ animation-duration:1.1s !important; }
+.char-circle.binding #char-circle-sigil{ animation:bindSigilFlare 1s ease-out forwards; }
+@keyframes bindSigilFlare{ 0%{ transform:scale(1); } 30%{ transform:scale(1.2); } 100%{ transform:scale(1); } }
+@media (prefers-reduced-motion: reduce){
+  #char-circle-sigil.sel-flare, .char-circle.binding #char-circle-sigil{ animation:none; }
+  .char-circle.binding .char-circle-flash{ animation:none; opacity:0; }
+}
+
 /* MINI PLAYER BAR — sits just above the bottom nav; always visible after splash. */
 .music-player{
   position:fixed;left:50%;
@@ -2916,6 +2941,7 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
 
   <!-- PAGE LOADER (INFERNUM logo transition between screens) -->
   <div id="page-loader" aria-hidden="true">
+    <div class="page-loader-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="54" fill="none" stroke="rgba(251,191,36,0.16)" stroke-width="0.5" stroke-dasharray="2 6"/><circle cx="60" cy="60" r="45" fill="none" stroke="rgba(192,132,252,0.14)" stroke-width="0.5" stroke-dasharray="1 5"/></svg></div>
     <div class="page-loader-inner">
       <img class="page-loader-logo" src="assets/ui/infernum_logo.png" alt="INFERNUM" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='block'">
       <div class="page-loader-text" style="display:none">INF<span>E</span>RNUM</div>
@@ -3233,8 +3259,15 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
     <h1 class="char-creation-title">Speak Your Name</h1>
 
     <div class="char-circle" aria-hidden="true">
-      <svg class="char-circle-rings" viewBox="0 0 120 120"><circle class="ccr ccr-out" cx="60" cy="60" r="56"/><circle class="ccr ccr-mid" cx="60" cy="60" r="44"/><circle class="ccr ccr-in" cx="60" cy="60" r="33"/></svg>
-      <div class="char-circle-core"><div class="char-circle-sigil" id="char-circle-sigil"></div><div class="char-circle-name" id="char-circle-name"></div></div>
+      <svg class="char-circle-rings" viewBox="0 0 120 120">
+        <defs><path id="ccNameArc" d="M 18,66 A 42,42 0 0 1 102,66" fill="none"/></defs>
+        <circle class="ccr ccr-out" cx="60" cy="60" r="56"/>
+        <circle class="ccr ccr-mid" cx="60" cy="60" r="44"/>
+        <circle class="ccr ccr-in" cx="60" cy="60" r="33"/>
+        <text class="ccr-name" text-anchor="middle"><textPath id="char-circle-name" href="#ccNameArc" startOffset="50%"></textPath></text>
+      </svg>
+      <div class="char-circle-flash"></div>
+      <div class="char-circle-core"><div class="char-circle-sigil" id="char-circle-sigil"></div></div>
     </div>
     <p class="char-creation-prompt">The void already knows you. Teach it what to call you when it comes looking.</p>
     <input type="text" id="char-name-input" class="char-name-input"
@@ -6231,6 +6264,8 @@ function selectCharSigil(sigil){
     btn.classList.toggle('selected', btn.dataset.sigil===sigil);
   });
   updateCharCircle();
+  const sc=document.getElementById('char-circle-sigil');
+  if(sc){ sc.classList.remove('sel-flare'); void sc.offsetWidth; sc.classList.add('sel-flare'); }
 }
 function updateCharCircle(){
   const d=sigilDef(_pendingSigil);
@@ -6242,7 +6277,7 @@ function onCharNameInput(){
   updateCharSubmitState();
   const input=document.getElementById('char-name-input');
   const cn=document.getElementById('char-circle-name');
-  if(cn) cn.textContent=(input && input.value)?input.value:'';
+  if(cn) cn.textContent=(input && input.value)?input.value.toUpperCase():'';
 }
 function updateCharSubmitState(){
   const input=document.getElementById('char-name-input');
@@ -6262,16 +6297,26 @@ function submitCharacterCreation(){
   // Update any walker UI that's already on screen (defensive — walker screen may
   // not be rendered yet, but renderWalker is safe to call regardless)
   if(typeof renderWalker==='function') renderWalker();
-  // Fade out the creation modal
+  // ── The binding lands. Play the ritual bloom, THEN dissolve into the sanctum ──
+  const btn=document.getElementById('char-submit-btn');
+  if(btn) btn.disabled=true; // lock the moment; no double-bind
+  const circle=document.querySelector('.char-circle');
+  if(circle) circle.classList.add('binding');
   const m=document.getElementById('char-creation');
-  if(m){
-    m.classList.add('fading');
-    setTimeout(()=>m.classList.remove('show','fading'), 600);
-  }
-  // Start music — infernum_welcome.mp3 is now unlocked (character created)
-  startMusic();
-  // First-run: guided tour of the sanctum once the modal has faded
-  if(!S.tutorialSeen) setTimeout(startWalkerTutorial, 850);
+  setTimeout(function(){
+    if(m){
+      m.classList.add('fading');
+      setTimeout(function(){
+        m.classList.remove('show','fading');
+        if(circle) circle.classList.remove('binding');
+        if(btn) btn.disabled=false;
+      }, 700);
+    }
+    // Start music — infernum_welcome.mp3 is now unlocked (character created)
+    startMusic();
+    // First-run: guided tour of the sanctum once the modal has faded
+    if(!S.tutorialSeen) setTimeout(startWalkerTutorial, 950);
+  }, 950);
 }
 
 // ═══════════════════════════════════════════
@@ -6314,10 +6359,14 @@ window.TutorialTour = (function(){
   }
   function render(){
     const step=steps[idx];
-    root.querySelector('.tut-eyebrow').textContent=step.eyebrow||'';
-    root.querySelector('.tut-text').innerHTML=step.text||'';
+    const eb=root.querySelector('.tut-eyebrow'), tx=root.querySelector('.tut-text');
+    eb.textContent=step.eyebrow||'';
+    tx.innerHTML=step.text||'';
     root.querySelector('.tut-next').textContent = step.cta ? (step.ctaLabel||'Begin') : (idx===steps.length-1?'Done':'Next');
     root.querySelector('.tut-dots').innerHTML=steps.map((s,i)=>'<span class="tut-dot'+(i===idx?' on':'')+'"></span>').join('');
+    // beat-by-beat fade so each line reads as spoken, not snapped
+    eb.style.opacity='0'; tx.style.opacity='0';
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ eb.style.opacity=''; tx.style.opacity=''; }); });
     positionFor(step);
   }
   function next(){ const step=steps[idx]; if(step.cta && step.action){ end(); step.action(); return; } if(idx>=steps.length-1){ end(); return; } idx++; render(); }
