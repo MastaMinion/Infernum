@@ -713,7 +713,7 @@ body.hide-topbar #topbar{ display:none; }
 /* ══════════════════════════════════════
    REALMS HALL — the void between worlds.
    Not a place. The non-space where the player stands momentarily to choose
-   which realm to step into. Black abyssal backdrop, 8 realm rifts scattered
+   which realm to step into. Black abyssal backdrop, 9 realm rifts scattered
    across it like tears in nothingness. Each rift is a portal into a realm.
 ══════════════════════════════════════ */
 #screen-realms{
@@ -1937,6 +1937,42 @@ body.hide-topbar #topbar{ display:none; }
 }
 .identity-apply:hover{border-color:var(--purple);box-shadow:0 0 16px rgba(192,132,252,.2)}
 
+/* Report entry link + modal */
+.identity-report-link{
+  display:block;width:100%;margin-top:12px;padding:8px;
+  background:none;border:0;color:var(--muted);cursor:pointer;
+  font-family:var(--serif);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;
+  transition:color .2s;
+}
+.identity-report-link:hover{color:var(--crimson)}
+.report-type{display:flex;gap:8px;margin-bottom:18px}
+.report-type-btn{
+  flex:1;padding:10px;cursor:pointer;
+  background:rgba(8,2,20,.6);border:0.5px solid rgba(192,132,252,.22);
+  color:rgba(190,170,220,.7);
+  font-family:var(--serif);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;
+  border-radius:7px;transition:all .2s;
+}
+.report-type-btn.selected{border-color:rgba(251,191,36,.7);color:var(--gold);background:rgba(251,191,36,.06)}
+.report-reasons{display:flex;flex-wrap:wrap;gap:7px}
+.report-reason{
+  padding:7px 12px;cursor:pointer;
+  background:rgba(8,2,20,.6);border:0.5px solid rgba(192,132,252,.22);
+  color:rgba(200,186,226,.78);
+  font-family:var(--serif);font-size:.62rem;letter-spacing:.05em;border-radius:20px;transition:all .2s;
+}
+.report-reason:hover{border-color:rgba(192,132,252,.5)}
+.report-reason.selected{border-color:rgba(244,63,94,.7);color:#ffd9df;background:rgba(244,63,94,.08)}
+.report-optional{color:var(--muted);font-size:.9em}
+.report-textarea{
+  width:100%;padding:10px 12px;resize:vertical;min-height:64px;
+  background:rgba(8,2,20,.85);border:0.5px solid rgba(192,132,252,.28);
+  color:var(--text);border-radius:8px;
+  font-family:var(--body);font-size:.92rem;line-height:1.4;
+}
+.report-textarea:focus{outline:none;border-color:var(--purple)}
+.report-fineprint{margin:12px 0 0;text-align:center;font-family:var(--serif);font-style:italic;font-size:.62rem;color:var(--muted);letter-spacing:.02em}
+
 /* Aesthetic shop */
 .shop-currency{display:flex;gap:10px;margin-bottom:16px}
 .currency-pill{
@@ -2588,7 +2624,7 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
 @keyframes hintPulse{ 0%,100%{ opacity:.5; } 50%{ opacity:.95; } }
 @media (prefers-reduced-motion: reduce){ .splash-rift-img, .splash-enter-hint{ animation:none; } }
 
-/* CHARACTER CREATION — the first binding. Surfaces after the splash if the player
+/* CHARACTER CREATION — the Naming. Surfaces after the splash if the player
    has not yet created their walker. Lets them speak their name + choose a sigil. */
 .char-creation{
   position:fixed;inset:0;z-index:190;
@@ -2715,7 +2751,7 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
   background:linear-gradient(180deg, rgba(124,58,237,0.22), rgba(124,58,237,0.08));
 }
 
-/* ── Character creation redesign: the binding ritual ── */
+/* ── Character creation redesign: the Naming ritual ── */
 .char-creation{ overflow-y:auto; }
 .char-creation-inner{ gap:18px; margin:auto 0; }
 .char-creation-title{ font-size:1.7rem; letter-spacing:.22em; }
@@ -2738,10 +2774,15 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
 .char-sigil-meaning{ display:flex; flex-direction:column; gap:3px; min-height:32px; }
 .csm-name{ font-family:var(--deco); font-weight:700; font-size:.66rem; letter-spacing:.26em; text-transform:uppercase; color:var(--gold); text-shadow:0 0 14px rgba(251,191,36,0.4); }
 .csm-desc{ font-family:var(--serif); font-style:italic; font-size:.74rem; letter-spacing:.03em; color:rgba(214,204,236,0.72); }
+.char-name-error{ min-height:1.1em; margin:0; font-family:var(--serif); font-style:italic; font-size:.74rem; letter-spacing:.02em; color:var(--crimson); text-shadow:0 0 12px rgba(244,63,94,0.35); opacity:0; transition:opacity .2s ease; }
+.char-name-error.show{ opacity:1; }
+.char-name-input.invalid{ border-bottom-color:rgba(244,63,94,0.85) !important; animation:nameShake .42s ease; }
+@keyframes nameShake{ 0%,100%{ transform:translateX(0); } 18%{ transform:translateX(-6px); } 38%{ transform:translateX(5px); } 58%{ transform:translateX(-4px); } 78%{ transform:translateX(3px); } }
+@media (prefers-reduced-motion: reduce){ .char-name-input.invalid{ animation:none; } }
 
 /* ── Live name inscribed curving along the binding ring ── */
 .ccr-name{ font-family:var(--deco); font-weight:700; font-size:7px; letter-spacing:.4px; fill:var(--gold); filter:drop-shadow(0 0 5px rgba(251,191,36,0.55)); }
-/* ── Sigil selection flare + the First Binding bloom ── */
+/* ── Sigil selection flare + the Naming bloom ── */
 .char-circle-flash{
   position:absolute; left:50%; top:50%; width:24px; height:24px;
   transform:translate(-50%,-50%) scale(.2); border-radius:50%;
@@ -2978,7 +3019,7 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
           </div>
         </a>
 
-        <!-- Realms — violet master-rift containing all 8 realms, top-left corner -->
+        <!-- Realms — violet master-rift containing all 9 realms, top-left corner -->
         <a class="rift rift-cutout" data-tone="purple" data-rift="realms" href="javascript:void(0)" onclick="switchScreen('realms')"
            style="--x:20%;--y:28%;--w:20%;--rift-tilt:10deg;--rift-delay:-3.2s">
           <div class="rift-opening" style="background-image:url('assets/ui/rift_realms.png')"></div>
@@ -3054,7 +3095,7 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
       <div class="sanctum-back-btn" onclick="switchScreen('hub')"></div>
     </div>
 
-    <!-- REALMS HALL — the void between worlds; 8 realm rifts scattered across nothing -->
+    <!-- REALMS HALL — the void between worlds; 9 realm rifts scattered across nothing -->
     <div id="screen-realms" class="screen">
       <div class="realms-void"></div>
       <div class="realms-rifts" id="realms-rifts"></div>
@@ -3252,10 +3293,10 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
   <button class="splash-skip" id="splash-skip" onclick="skipIntro()">Skip the descent &#9656;</button>
 </div>
 
-<!-- CHARACTER CREATION — first-binding ritual. Shown after splash if walker not yet created. -->
+<!-- CHARACTER CREATION — the Naming ritual. Shown after splash if walker not yet created. -->
 <div id="char-creation" class="char-creation">
   <div class="char-creation-inner">
-    <p class="char-creation-eyebrow">The First Binding</p>
+    <p class="char-creation-eyebrow">The Naming</p>
     <h1 class="char-creation-title">Speak Your Name</h1>
 
     <div class="char-circle" aria-hidden="true">
@@ -3282,7 +3323,8 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
       <button type="button" class="char-sigil-btn" data-sigil="∞" onclick="selectCharSigil('∞')"><span class="sigil-mark"><img class="sigil-img" src="assets/ui/sigil_endless.png" alt="" onerror="this.style.display='none';var r=this.nextElementSibling;if(r)r.style.opacity='1'"><span class="sigil-rune" style="opacity:0">∞</span></span></button>
     </div>
     <div class="char-sigil-meaning"><span class="csm-name" id="char-sigil-name">The Unmade</span><span class="csm-desc" id="char-sigil-desc">Broken into the right shape to receive the rift.</span></div>
-    <button class="char-submit-btn" id="char-submit-btn" onclick="submitCharacterCreation()">Bind the Name</button>
+    <p class="char-name-error" id="char-name-error" role="alert" aria-live="polite"></p>
+    <button class="char-submit-btn" id="char-submit-btn" onclick="submitCharacterCreation()">Speak It</button>
   </div>
 </div>
 
@@ -3332,13 +3374,45 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
     </header>
     <div class="identity-field">
       <div class="identity-label">Name</div>
-      <input class="identity-input" id="identity-name-input" maxlength="24" type="text" placeholder="Walker">
+      <input class="identity-input" id="identity-name-input" maxlength="24" type="text" placeholder="Walker" oninput="clearIdentityNameError()">
+      <p class="char-name-error" id="identity-name-error" role="alert" aria-live="polite"></p>
     </div>
     <div class="identity-field">
       <div class="identity-label">Title</div>
       <div class="title-options" id="identity-title-options"></div>
     </div>
-    <button class="identity-apply" onclick="applyIdentity()">Bind this name</button>
+    <button class="identity-apply" onclick="applyIdentity()">Speak It</button>
+    <button class="identity-report-link" onclick="openReport()">⚑ Report a name or issue</button>
+  </div>
+</div>
+
+<!-- REPORT — players flag abusive names / issues. Delivered off-device via
+     REPORT_ENDPOINT (or mailto fallback); queued + retried if offline. -->
+<div id="report-modal" class="walker-modal" role="dialog" aria-modal="true">
+  <div class="walker-modal-inner">
+    <header class="walker-modal-header">
+      <div class="walker-modal-title">Report to the Wardens</div>
+      <button class="walker-modal-close" onclick="closeReport()" aria-label="Close">×</button>
+    </header>
+    <div class="report-type" id="report-type">
+      <button type="button" class="report-type-btn selected" data-rtype="name" onclick="setReportType('name')">A name</button>
+      <button type="button" class="report-type-btn" data-rtype="issue" onclick="setReportType('issue')">A bug / issue</button>
+    </div>
+    <div class="identity-field" id="report-name-field">
+      <div class="identity-label">Name being reported</div>
+      <input class="identity-input" id="report-name-input" maxlength="24" type="text" placeholder="the offending name">
+    </div>
+    <div class="identity-field">
+      <div class="identity-label" id="report-reason-label">Reason</div>
+      <div class="report-reasons" id="report-reasons"></div>
+    </div>
+    <div class="identity-field">
+      <div class="identity-label">Details <span class="report-optional">(optional)</span></div>
+      <textarea class="report-textarea" id="report-details" maxlength="600" rows="3" placeholder="Anything that helps us judge it…"></textarea>
+    </div>
+    <p class="char-name-error" id="report-error" role="alert" aria-live="polite"></p>
+    <button class="identity-apply" id="report-submit" onclick="submitReport()">Send report</button>
+    <p class="report-fineprint">A human reads every report. Abusing the report tool may itself be actioned.</p>
   </div>
 </div>
 
@@ -3483,7 +3557,7 @@ let S={
   tutorialSeen:false,
   walker:{
     name:'Walker', title:'initiate', level:1, xp:0,
-    sigil:'⛧',       // chosen during the First Binding
+    sigil:'⛧',       // chosen during the Naming
     created:false,   // flips to true only after character creation completes
     cosmetics:{robe:'robe:novice',hood:'hood:none',aura:'aura:pale',pool:'pool:void'},
     ownedCosmetics:['robe:novice','hood:none','aura:pale','pool:void'],
@@ -3511,6 +3585,7 @@ const REALMS=[
   {id:'envy',name:'Mirror Maze',icon:'🪞',color:'#2dd4bf',stages:13,conquered:0},
   {id:'pride',name:'Crumbling Throne',icon:'👑',color:'#fde68a',stages:13,conquered:0},
   {id:'glut',name:"Gorgethorn's Maw",icon:'💀',color:'#a78bfa',stages:13,conquered:0},
+  {id:'lust',name:'The Silken Snare',icon:'🥀',color:'#be123c',stages:13,conquered:0},
 ];
 
 // ═══════════════════════════════════════════
@@ -4530,7 +4605,7 @@ function renderCodex(){
 // REALMS
 // ═══════════════════════════════════════════
 // ─── REALMS HALL ─────────────────────────────────────────────────────────
-// The void between worlds. 8 realm rifts scattered across nothing; clicking
+// The void between worlds. 9 realm rifts scattered across nothing; clicking
 // a rift enters that realm. There is no selection state — every rift is a
 // choice the player can make from the moment they arrive. Difficulty scales
 // hard enough at later realms to organically gate progression order.
@@ -4545,7 +4620,7 @@ function _hexToRgba(hex, a){
   return `rgba(${(v>>16)&255},${(v>>8)&255},${v&255},${a})`;
 }
 
-// Layout for the 8 realm rifts across the void.
+// Layout for the 9 realm rifts across the void.
 // Positions ordered by difficulty progression: reading order (left-to-right, top-to-bottom)
 // matches the realm difficulty curve. Players' eyes naturally land on Vale first (intro),
 // then sweep down through the seven sins, ending at Void (endgame) in the bottom-right.
@@ -4558,6 +4633,7 @@ const _REALMS_LAYOUT = [
   { id:'greed',  x:77, y:21, w:11, tilt:-10, delay:-3.7 },
   // MID ROW — mid-tier realms (y ~50%)
   { id:'envy',   x:33, y:49, w:13, tilt:  8, delay:-1.3 },
+  { id:'lust',   x:50, y:50, w:12, tilt:  9, delay:-3.3 },
   { id:'sloth',  x:67, y:51, w:13, tilt:-14, delay:-4.9 },
   // BOT ROW — late realms (y ~75%)
   { id:'pride',  x:23, y:76, w:12, tilt: 12, delay:-2.8 },
@@ -5349,7 +5425,7 @@ function slotRuneFromPicker(runeId){
   renderWalker();
 }
 
-// The Walker's sigil set — chosen at the First Binding. Each maps to a designed art
+// The Walker's sigil set — chosen at the Naming. Each maps to a designed art
 // asset (assets/ui/sigil_<id>.png); the unicode glyph stays as the fallback until art exists.
 const WALKER_SIGILS = [
   { glyph:'\u26e7', id:'unmade',   name:'The Unmade', meaning:'Broken into the right shape to receive the rift.' },
@@ -5910,6 +5986,7 @@ function openIdentityEditor(){
       <span class="title-option-req">${t.req}</span>
     </div>`;
   }).join('');
+  clearIdentityNameError();
   m.setAttribute('data-open','true');
 }
 function closeIdentityEditor(){
@@ -5921,8 +5998,11 @@ function selectTitle(id){
   S.walker._pendingTitle = id;
 }
 function applyIdentity(){
-  const name = document.getElementById('identity-name-input').value.trim().slice(0,24) || 'Walker';
-  S.walker.name = name;
+  const input = document.getElementById('identity-name-input');
+  const v = validateWalkerName(input.value);
+  if(!v.ok){ showIdentityNameError(v.msg); return; } // same filter as the Naming
+  clearIdentityNameError();
+  S.walker.name = v.name;
   if(S.walker._pendingTitle){ S.walker.title = S.walker._pendingTitle; delete S.walker._pendingTitle; }
   save();
   renderWalker();
@@ -6087,12 +6167,12 @@ const MUSIC_TRACKS=[
   {id:'the_binding',      name:'The Binding',          file:'the_binding.mp3',      isUnlocked:()=>_mBoundCount()>=1,              hint:'Complete your first pull'},
   {id:'shade',            name:'Shade',                file:'shade.mp3',            isUnlocked:()=>_mAllOfTierBound('shade'),      hint:'Bind every Shade'},
   {id:'the_garrison',     name:'The Garrison',         file:'the_garrison.mp3',     isUnlocked:()=>_mGarrisoned(),                 hint:'Garrison your first demon'},
-  {id:'shattered_vale',   name:'The Shattered Vale',   file:'shattered_vale.mp3',   isUnlocked:()=>_mRealmConquered('vale'),       hint:'Conquer the Shattered Vale', realm:'vale'},
+  {id:'shattered_vale',   name:'The Shattered Vale',   file:'the_shattered_vale.mp3',   isUnlocked:()=>_mRealmConquered('vale'),       hint:'Conquer the Shattered Vale', realm:'vale'},
   {id:'sin_lords_anthem', name:"Sin Lords' Anthem",    file:'sin_lords_anthem.mp3', isUnlocked:()=>_mOwnedTier('sinlord')>=1,      hint:'Bind your first Sin Lord'},
   {id:'the_codex',        name:'The Codex',            file:'the_codex.mp3',        isUnlocked:()=>_mBoundCount()>=14,             hint:'Bind 14 demons'},
   {id:'rift_walker',      name:'Rift Walker',          file:'rift_walker.mp3',      isUnlocked:()=>_mAllOfTierBound('archdemon'),  hint:'Bind all 3 Archdemons'},
   {id:'the_unnamed_one',  name:'The Unnamed One',      file:'the_unnamed_one.mp3',  isUnlocked:()=>_mOwnedTier('void')>=1,         hint:'Pull your first Void Primordial'},
-  {id:'sanctum_rising',   name:'Sanctum Rising',       file:'sanctum_rising.mp3',   isUnlocked:()=>_mAllRealmsConquered(),         hint:'Conquer all 8 realms'},
+  {id:'sanctum_rising',   name:'Sanctum Rising',       file:'sanctum_rising.mp3',   isUnlocked:()=>_mAllRealmsConquered(),         hint:'Conquer all 9 realms'},
   {id:'the_rift_between', name:'The Rift Between',     file:'the_rift_between.mp3', isUnlocked:()=>_mCodexComplete(),              hint:'Complete the codex — bind all 28'},
   {id:'the_apex',         name:'The Apex',             file:'the_apex.mp3',         isUnlocked:()=>_mCodexComplete() && _mAllRealmsConquered(), hint:'Complete everything'},
   // ── REALM TRACKS (7) — unlock on first visit to that realm ──
@@ -6102,6 +6182,7 @@ const MUSIC_TRACKS=[
   {id:'mirror_maze',      name:'Mirror Maze',          file:'mirror_maze.mp3',      isUnlocked:()=>_mRealmVisited('envy'),         hint:'Enter the Mirror Maze',       realm:'envy'},
   {id:'crumbling_throne', name:'Crumbling Throne',     file:'crumbling_throne.mp3', isUnlocked:()=>_mRealmVisited('pride'),        hint:'Enter the Crumbling Throne',  realm:'pride'},
   {id:'gorgethorns_maw',  name:"Gorgethorn's Maw",     file:'gorgethorns_maw.mp3',  isUnlocked:()=>_mRealmVisited('glut'),         hint:"Enter Gorgethorn's Maw",      realm:'glut'},
+  {id:'silken_snare',     name:'The Silken Snare',     file:'silken_snare.mp3',     isUnlocked:()=>_mRealmVisited('lust'),         hint:'Enter the Silken Snare',      realm:'lust'},
   {id:'void_wastes',      name:'The Void Wastes',      file:'void_wastes.mp3',      isUnlocked:()=>_mRealmVisited('void'),         hint:'Enter the Void Wastes',       realm:'void'},
 ];
 
@@ -6231,28 +6312,275 @@ function dismissSplash(){
   // If the walker hasn't gone through character creation yet, route there next.
   // Otherwise, start the music straight away (returning player).
   if(S.walker && !S.walker.created){
-    setTimeout(showCharacterCreation, 400);
+    setTimeout(function(){ showCharacterCreation(); }, 400);
+  } else if(S.walker && nameIsForbidden(S.walker.name)){
+    // Existing save carrying an offensive/garbage name — force a rename before entry.
+    _forcedRenameActive=true;
+    setTimeout(function(){ showCharacterCreation({mode:'rename'}); }, 400);
   } else {
     startMusic();
   }
 }
 
-// CHARACTER CREATION — first-binding ritual that runs after splash on a fresh
+// CHARACTER CREATION — the Naming ritual that runs after splash on a fresh
 // vessel. Sets the walker's name + sigil and flips S.walker.created = true so
 // it never re-prompts. Existing saves are grandfathered as already-created.
 let _pendingSigil='⛧';
-function showCharacterCreation(){
+let _ccMode='create';
+
+// ═══════════════════════════════════════════
+// WALKER NAME VALIDATION
+// Keeps the sanctum free of junk / offensive names. NOTE: this is CLIENT-SIDE
+// only — a determined user can bypass it via devtools. When the Supabase account
+// layer ships, mirror this exact check server-side; that is the real gate.
+// The word lists are a starter set. Extend NAME_BLOCK.hard / .tokens / .reserved
+// freely — hard[] matches anywhere (catches evasions like "f4g", "s h i t"),
+// tokens[] matches whole words only (avoids flagging "Cockburn", "Assassin").
+// ═══════════════════════════════════════════
+const NAME_BLOCK = {
+  // Distinctive terms — matched ANYWHERE in the de-leeted, symbol-stripped string.
+  hard: [
+    'nigger','nigga','faggot','retard','kike','wetback','tranny','beaner',
+    'molest','pedophile','pedophil','rapist','rape','childporn','hitler',
+    'fuck','motherfuck','shit','bullshit','bitch','asshole','bastard','pussy',
+    'whore','wanker','twat','jizz','cumshot','blowjob','handjob','dickhead','nazi'
+  ],
+  // Short / ambiguous terms — matched as WHOLE WORDS only (Scunthorpe-safe).
+  tokens: [
+    'fag','spic','chink','coon','gook','paki','dyke','cunt','pedo','kkk',
+    'cock','dick','cum','sex','anal','porn','ass','tit','tits','slut','fapp'
+  ],
+  // Reserved / impersonation.
+  reserved: [
+    'admin','administrator','moderator','mod','gamemaster','gm','system','staff',
+    'support','official','developer','dev','owner','infernum','unnamed',
+    'theunnamedone','anthropic','claude'
+  ]
+};
+function _normName(s){
+  s = String(s==null?'':s).toLowerCase();
+  s = s.normalize('NFKD').replace(/[\u0300-\u036f]/g,''); // strip accents
+  const leet = {'0':'o','1':'i','2':'z','3':'e','4':'a','5':'s','6':'g','7':'t','8':'b','9':'g','@':'a','$':'s','!':'i','|':'i','+':'t','€':'e','£':'l','¥':'y'};
+  s = s.replace(/[0-9@$!|+€£¥]/g, c=>leet[c]||c);
+  return s;
+}
+function _collapseName(s){ return _normName(s).replace(/[^a-z]/g,''); }
+// ── Moderator ban lists ──────────────────────────────────────────────────────
+// Names/terms a moderator has banned AFTER reviewing a report. Two ways to add:
+//   1. Hard-code here (requires a redeploy).
+//   2. Serve them live from BANLIST_URL (see fetchRemoteBans) — ban a reported
+//      handle by editing one hosted JSON file, NO redeploy. The offending player
+//      is force-renamed on their next boot (nameIsForbidden → the rename modal).
+// exact[] = whole normalized names (e.g. 'shadowreaper'); terms[] = substrings.
+const NAME_BANNED_EXACT = [ /* 'someexacthandle', */ ];
+const NAME_BANNED_TERMS = [ /* 'slurthatslippedthrough', */ ];
+const _runtimeBans = { exact:new Set(), terms:[] };
+(function seedBans(){
+  NAME_BANNED_EXACT.forEach(n=>{ const c=_collapseName(n); if(c) _runtimeBans.exact.add(c); });
+  NAME_BANNED_TERMS.forEach(t=>{ const c=_collapseName(t); if(c && _runtimeBans.terms.indexOf(c)<0) _runtimeBans.terms.push(c); });
+})();
+function validateWalkerName(raw){
+  // strip zero-width / bidi-override characters, collapse whitespace
+  const name = String(raw==null?'':raw).replace(/[\u200b-\u200f\u202a-\u202e\ufeff]/g,'').trim().replace(/\s+/g,' ');
+  if(!name)                                return {ok:false, code:'empty',  msg:'The void needs a name. Speak one.'};
+  if((name.match(/\p{L}/gu)||[]).length < 2) return {ok:false, code:'short',  msg:'Too little to hold on to. At least two letters.'};
+  if(/[^\p{L}\p{M} '’\-]/u.test(name))     return {ok:false, code:'chars',  msg:'A true name — letters, not numbers or symbols.'};
+  if(/\p{M}{3,}/u.test(name) || (name.normalize('NFC').match(/\p{M}/gu)||[]).length >= 3) return {ok:false, code:'zalgo',  msg:'The name writhes. Speak it plainly.'};
+  if(/(.)\1{4,}/u.test(name) || /^(.)\1+$/u.test(name.replace(/\s/g,'')))
+                                           return {ok:false, code:'repeat', msg:'The void will not echo one sound. Try again.'};
+  const norm = _normName(name);
+  const collapsed = norm.replace(/[^a-z]/g,'');
+  const tokens = norm.split(/[^a-z]+/).filter(Boolean);
+  if(_runtimeBans.exact.has(collapsed)) return {ok:false, code:'blocked', msg:'The void turns away from that name. Choose another.'};
+  for(const t of _runtimeBans.terms){ if(collapsed.indexOf(t) !== -1) return {ok:false, code:'blocked', msg:'The void turns away from that name. Choose another.'}; }
+  for(const w of NAME_BLOCK.reserved){ if(tokens.includes(w) || collapsed===w) return {ok:false, code:'reserved', msg:'That name belongs to something older. Choose another.'}; }
+  for(const w of NAME_BLOCK.hard){ if(collapsed.includes(w)) return {ok:false, code:'blocked', msg:'The void turns away from that name. Choose another.'}; }
+  for(const w of NAME_BLOCK.tokens){ if(tokens.includes(w)) return {ok:false, code:'blocked', msg:'The void turns away from that name. Choose another.'}; }
+  return {ok:true, code:'ok', name:name};
+}
+// "Genuinely terrible" test — forces existing saves with an offensive/garbage name
+// to rename, WITHOUT nagging legacy players whose only issue is empty/short.
+function nameIsForbidden(raw){ const v=validateWalkerName(raw); return !v.ok && ['blocked','reserved','zalgo','chars','repeat'].indexOf(v.code) !== -1; }
+function _flagField(input, err, msg){
+  if(err){ err.textContent=msg||'That name will not hold.'; err.classList.add('show'); }
+  if(input){ input.classList.remove('invalid'); void input.offsetWidth; input.classList.add('invalid'); input.focus(); }
+}
+function _clearField(input, err){
+  if(err){ err.classList.remove('show'); err.textContent=''; }
+  if(input) input.classList.remove('invalid');
+}
+function showNameError(msg){ _flagField(document.getElementById('char-name-input'), document.getElementById('char-name-error'), msg); }
+function clearNameError(){ _clearField(document.getElementById('char-name-input'), document.getElementById('char-name-error')); }
+function showIdentityNameError(msg){ _flagField(document.getElementById('identity-name-input'), document.getElementById('identity-name-error'), msg); }
+function clearIdentityNameError(){ _clearField(document.getElementById('identity-name-input'), document.getElementById('identity-name-error')); }
+
+// ═══════════════════════════════════════════
+// REPORTS & MODERATION
+// Players report abusive names / issues → a human reviews → the fix ("issue a
+// rename") is adding the name to a ban list, which force-renames that player on
+// their next boot (nameIsForbidden → the rename modal).
+//
+// DELIVERY (static site, no backend yet) — set ONE so reports actually reach you:
+//   • REPORT_ENDPOINT — HTTPS URL taking a JSON POST (Formspree / Google Apps
+//     Script web app / Cloudflare Worker / later a Supabase function). Silent,
+//     no mail client. Must return permissive CORS.
+//   • REPORT_EMAIL — fallback; opens the player's mail client (mailto) prefilled.
+// If neither is set, reports queue locally and retry against REPORT_ENDPOINT on
+// future boots, so they still arrive once you configure it.
+//
+// ISSUE A RENAME WITHOUT A REDEPLOY — set BANLIST_URL to a hosted JSON file:
+//   { "names": ["exacthandle"], "terms": ["substr"] }
+// Add a reported name there → that player is force-renamed next load.
+// When Supabase lands: point REPORT_ENDPOINT at an insert fn, serve the ban list
+// from a table behind BANLIST_URL, and mirror validateWalkerName server-side.
+// ═══════════════════════════════════════════
+const REPORT_ENDPOINT = ''; // e.g. 'https://formspree.io/f/xxxxxxx'
+const REPORT_EMAIL    = ''; // e.g. 'reports@yourdomain.com'
+const BANLIST_URL     = ''; // e.g. 'https://yoursite.com/bans.json'
+const REPORT_QUEUE_KEY = 'inf_reports';
+const APP_BUILD = 'infernum-v1.2';
+
+function getClientId(){
+  try{
+    let id=localStorage.getItem('inf_cid');
+    if(!id){ id='w_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem('inf_cid', id); }
+    return id;
+  }catch(_){ return 'w_anon'; }
+}
+
+const REPORT_REASONS = {
+  name: [
+    {id:'hate', label:'Slur / hate'}, {id:'harassment', label:'Harassment'},
+    {id:'sexual', label:'Sexual'}, {id:'impersonation', label:'Impersonation'},
+    {id:'spam', label:'Gibberish / spam'}, {id:'other', label:'Other'}
+  ],
+  issue: [
+    {id:'bug', label:'Bug'}, {id:'visual', label:'Visual glitch'},
+    {id:'audio', label:'Audio'}, {id:'progress', label:'Lost progress'},
+    {id:'payment', label:'Payment'}, {id:'other', label:'Other'}
+  ]
+};
+let _reportType='name', _reportReason=null, _lastReportAt=0;
+
+function openReport(prefill){
+  _reportType=(prefill && prefill.type)||'name';
+  _reportReason=null;
+  const nameInput=document.getElementById('report-name-input');
+  if(nameInput) nameInput.value=(prefill && prefill.reportedName) ? String(prefill.reportedName).slice(0,24) : '';
+  const det=document.getElementById('report-details'); if(det) det.value='';
+  _clearField(null, document.getElementById('report-error'));
+  setReportType(_reportType);
+  const m=document.getElementById('report-modal'); if(m) m.setAttribute('data-open','true');
+}
+function closeReport(){ const m=document.getElementById('report-modal'); if(m) m.setAttribute('data-open','false'); }
+function setReportType(t){
+  _reportType=(t==='issue')?'issue':'name';
+  _reportReason=null;
+  document.querySelectorAll('#report-type .report-type-btn').forEach(b=>b.classList.toggle('selected', b.dataset.rtype===_reportType));
+  const nameField=document.getElementById('report-name-field');
+  if(nameField) nameField.style.display=(_reportType==='name')?'':'none';
+  const lbl=document.getElementById('report-reason-label'); if(lbl) lbl.textContent=(_reportType==='name')?'Reason':'Category';
+  const root=document.getElementById('report-reasons');
+  if(root) root.innerHTML=REPORT_REASONS[_reportType].map(r=>`<button type="button" class="report-reason" data-reason="${r.id}" onclick="selectReportReason('${r.id}')">${r.label}</button>`).join('');
+  _clearField(null, document.getElementById('report-error'));
+}
+function selectReportReason(id){
+  _reportReason=id;
+  document.querySelectorAll('#report-reasons .report-reason').forEach(b=>b.classList.toggle('selected', b.dataset.reason===id));
+  _clearField(null, document.getElementById('report-error'));
+}
+function submitReport(){
+  const errEl=document.getElementById('report-error'), now=Date.now();
+  if(now-_lastReportAt < 4000){ _flagField(null, errEl, 'Slow down a moment before sending again.'); return; }
+  const reportedName=((document.getElementById('report-name-input')||{}).value)||'';
+  const details=(((document.getElementById('report-details')||{}).value)||'').trim().slice(0,600);
+  if(_reportType==='name' && !reportedName.trim()){ _flagField(document.getElementById('report-name-input'), errEl, 'Which name? Enter the one you mean.'); return; }
+  if(!_reportReason){ _flagField(null, errEl, _reportType==='name'?'Pick a reason.':'Pick a category.'); return; }
+  _clearField(null, errEl);
+  const payload={
+    kind:'report', type:_reportType, reason:_reportReason,
+    reportedName: _reportType==='name' ? reportedName.trim().slice(0,24) : null,
+    details: details||null,
+    reporter:{ name:(window.S && S.walker && S.walker.name)||null, clientId:getClientId() },
+    meta:{ ts:new Date().toISOString(), build:APP_BUILD, ua:(navigator.userAgent||'').slice(0,180) }
+  };
+  _lastReportAt=now;
+  enqueueReport(payload);
+  deliverReports();
+  const btn=document.getElementById('report-submit');
+  if(btn){ btn.textContent='Sent — the wardens have it'; btn.disabled=true; }
+  setTimeout(()=>{ if(btn){ btn.textContent='Send report'; btn.disabled=false; } closeReport(); }, 1200);
+}
+function _loadQueue(){ try{ return JSON.parse(localStorage.getItem(REPORT_QUEUE_KEY)||'[]'); }catch(_){ return []; } }
+function _saveQueue(q){ try{ localStorage.setItem(REPORT_QUEUE_KEY, JSON.stringify(q.slice(-50))); }catch(_){ } }
+function enqueueReport(p){ const q=_loadQueue(); q.push(p); _saveQueue(q); }
+function deliverReports(){
+  const q=_loadQueue();
+  if(!q.length) return;
+  if(!REPORT_ENDPOINT){ if(REPORT_EMAIL) _mailtoReport(q[q.length-1]); return; }
+  const survivors=[]; let pending=q.length;
+  q.forEach(p=>{
+    fetch(REPORT_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) })
+      .then(r=>{ if(!r.ok) survivors.push(p); })
+      .catch(()=>{ survivors.push(p); })
+      .finally(()=>{ if(--pending===0) _saveQueue(survivors); });
+  });
+}
+function _mailtoReport(p){
+  const subj=encodeURIComponent(`[INFERNUM] ${p.type} report — ${p.reason}`);
+  const body=[`Type: ${p.type}`,`Reason: ${p.reason}`,p.reportedName?`Reported name: ${p.reportedName}`:null,
+    p.details?`Details: ${p.details}`:null,`Reporter: ${p.reporter.name||'—'} (${p.reporter.clientId})`,
+    `When: ${p.meta.ts}`,`Build: ${p.meta.build}`].filter(Boolean).join('\n');
+  try{ window.location.href=`mailto:${REPORT_EMAIL}?subject=${subj}&body=${encodeURIComponent(body)}`; }catch(_){ }
+}
+// Live moderator bans (no redeploy). Merges into runtime sets + re-checks the name.
+function fetchRemoteBans(){
+  if(!BANLIST_URL) return;
+  fetch(BANLIST_URL, {cache:'no-store'})
+    .then(r=> r.ok ? r.json() : null)
+    .then(d=>{
+      if(!d) return;
+      (d.names||[]).forEach(n=>{ const c=_collapseName(String(n)); if(c) _runtimeBans.exact.add(c); });
+      (d.terms||[]).forEach(t=>{ const c=_collapseName(String(t)); if(c && _runtimeBans.terms.indexOf(c)<0) _runtimeBans.terms.push(c); });
+      maybeForceRename();
+    })
+    .catch(()=>{});
+}
+let _forcedRenameActive=false;
+function maybeForceRename(){
+  if(_forcedRenameActive) return;
+  if(!(window.S && S.walker && S.walker.created)) return;
+  const cc=document.getElementById('char-creation');
+  if(cc && cc.classList.contains('show')) return;
+  if(nameIsForbidden(S.walker.name)){ _forcedRenameActive=true; showCharacterCreation({mode:'rename'}); }
+}
+function showCharacterCreation(opts){
+  const mode=(opts && opts.mode)||'create';
+  _ccMode=mode;
   const m=document.getElementById('char-creation');
   if(!m) return;
   // Reset to defaults each time it opens
   const input=document.getElementById('char-name-input');
   if(input){ input.value=''; }
-  _pendingSigil='⛧';
+  // Preserve the existing sigil when re-naming; default to Unmade on first bind.
+  _pendingSigil = (mode==='rename' && S.walker && S.walker.sigil) ? S.walker.sigil : '⛧';
   document.querySelectorAll('#char-sigil-row .char-sigil-btn').forEach(btn=>{
     btn.classList.toggle('selected', btn.dataset.sigil===_pendingSigil);
   });
+  // Swap the ritual copy for the forced-rename path.
+  const eb=m.querySelector('.char-creation-eyebrow'), ti=m.querySelector('.char-creation-title'), pr=m.querySelector('.char-creation-prompt');
+  if(mode==='rename'){
+    if(eb) eb.textContent='The Naming';
+    if(ti) ti.textContent='Speak It Again';
+    if(pr) pr.textContent='That name will not hold in the void. Give it another.';
+  } else {
+    if(eb) eb.textContent='The Naming';
+    if(ti) ti.textContent='Speak Your Name';
+    if(pr) pr.textContent='The void already knows you. Teach it what to call you when it comes looking.';
+  }
   updateCharCircle();
   const cn=document.getElementById('char-circle-name'); if(cn) cn.textContent='';
+  clearNameError();
   updateCharSubmitState();
   m.classList.add('show');
   // Focus the name input shortly after the modal animates in
@@ -6275,6 +6603,7 @@ function updateCharCircle(){
 }
 function onCharNameInput(){
   updateCharSubmitState();
+  clearNameError();
   const input=document.getElementById('char-name-input');
   const cn=document.getElementById('char-circle-name');
   if(cn) cn.textContent=(input && input.value)?input.value.toUpperCase():'';
@@ -6283,17 +6612,23 @@ function updateCharSubmitState(){
   const input=document.getElementById('char-name-input');
   const btn=document.getElementById('char-submit-btn');
   if(!input || !btn) return;
-  const hasName=input.value.trim().length>=1;
+  // Enable once the name is structurally plausible; full content check runs on
+  // submit so an offensive name gets a clear "choose another" rather than a dead button.
+  const hasName=input.value.trim().length>=2;
   btn.disabled=!hasName;
 }
 function submitCharacterCreation(){
   const input=document.getElementById('char-name-input');
-  const name=(input.value||'').trim().slice(0,24);
-  if(!name) return; // submit guard; button is also disabled when empty
+  const raw=(input.value||'');
+  const v=validateWalkerName(raw);
+  if(!v.ok){ showNameError(v.msg); return; } // flag it, force another name — no bind
+  clearNameError();
+  const name=v.name; // normalized (trimmed, whitespace collapsed)
   S.walker.name=name;
   S.walker.sigil=_pendingSigil||'⛧';
   S.walker.created=true;
   save();
+  _forcedRenameActive=false; // a fresh valid name clears any pending force-rename
   // Update any walker UI that's already on screen (defensive — walker screen may
   // not be rendered yet, but renderWalker is safe to call regardless)
   if(typeof renderWalker==='function') renderWalker();
@@ -6438,6 +6773,9 @@ function showSplash(){
 
 (function init(){
   load();
+  getClientId();      // stable per-device id for report attribution
+  fetchRemoteBans();  // pull live moderator bans (force-renames a banned name)
+  deliverReports();   // flush any reports queued from a previous offline session
   INF.migrate();
   INF.wire();
   INF.renderEchoes();
