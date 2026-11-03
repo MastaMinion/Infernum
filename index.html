@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- The app build loads index.html?app=1: it is landscape-only on every device (Rob, 2026-10-26), so the
+     browser's rotate-to-portrait prompt is switched off and the phone-landscape layouts below take effect. -->
+<script>if(/[?&]app=1(&|$)/.test(location.search))document.documentElement.classList.add('app-shell');</script>
 <title>INFERNUM</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<link href="fonts/fonts.css" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -181,7 +183,8 @@ body.hide-topbar #topbar{ display:none; }
 }
 .logo-mark span{color:var(--crimson)}
 .logo-sub{font-size:.5rem;letter-spacing:.35em;color:var(--muted);font-family:var(--serif);display:block;margin-top:1px}
-.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-right{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:1 1 auto;min-width:0;margin-left:10px}
+.topbar-right > :not(#echoes-bar){flex-shrink:0}
 #shard-display{
   display:flex;align-items:center;gap:7px;
   /* IMAGE SLOT: assets/ui/shard_pill.png — carved dark metal pill */
@@ -461,15 +464,17 @@ body.hide-topbar #topbar{ display:none; }
 
 
 /* ══════════════════════════════════════
-   ROTATE LOCK — block landscape on mobile
+   ROTATE LOCK — block landscape on phones
    Browser tabs can't actually lock orientation;
    this shows a "rotate device" prompt instead.
+   Phones held sideways are 500px tall or less;
+   tablets (600px+) play in landscape.
 ══════════════════════════════════════ */
 #rotate-lock {
   display: none;
 }
-@media (max-width: 1024px) and (orientation: landscape) {
-  #rotate-lock {
+@media (max-width: 1024px) and (max-height: 500px) and (orientation: landscape) {
+  html:not(.app-shell) #rotate-lock {
     display: flex !important;
     position: fixed;
     inset: 0;
@@ -760,7 +765,7 @@ body.hide-topbar #topbar{ display:none; }
 /* ══════════════════════════════════════
    REALM STAGE VIEW — entered by clicking a rift in the void hall.
    Full-screen realm bg + realm title + 13 stage nodes + back-to-void button.
-   Battle system is not yet wired; stage nodes are visual placeholders.
+   Playable stage nodes open the battle party select.
 ══════════════════════════════════════ */
 #screen-realm{
   position:fixed;inset:0;overflow:hidden;background:#06000e;
@@ -920,7 +925,8 @@ body.hide-topbar #topbar{ display:none; }
   background:rgba(6,0,14,.7);pointer-events:none;
 }
 #screen-garrison > *{position:relative;z-index:1}
-.garrison-inner{padding:16px 16px 30px}
+#screen-garrison > .sanctum-back-btn{position:fixed;z-index:50}
+.garrison-inner{padding:16px 84px 30px 16px} /* right lane keeps the return button clear of Collect All */
 .garrison-summary{
   background:rgba(6,0,14,.8);border:0.5px solid rgba(74,222,128,.2);
   border-radius:10px;padding:14px 16px;margin-bottom:16px;
@@ -2225,7 +2231,7 @@ body.hide-topbar #topbar{ display:none; }
    ═══════════════════════════════════════════ */
 
 /* topbar logo image */
-.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-left{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .topbar-logo{
   height:48px;width:auto;max-width:200px;object-fit:contain;
   filter:drop-shadow(0 0 12px rgba(251,191,36,.30)) drop-shadow(0 0 22px rgba(192,132,252,.25));
@@ -2246,18 +2252,25 @@ body.hide-topbar #topbar{ display:none; }
 @keyframes wmBreathe{0%,100%{opacity:.14}50%{opacity:.32}}
 
 /* echoes pill row in topbar-right */
-#echoes-bar{display:flex;gap:6px}
+/* The strip takes only the space left over and scrolls sideways (swipe on touch) when the pills do not fit;
+   fitEchoes() hides the labels when space is tight and fades whichever edge has more pills behind it. */
+#echoes-bar{display:flex;gap:6px;min-width:0;flex:0 1 auto;overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x}
+#echoes-bar::-webkit-scrollbar{display:none}
+#echoes-bar.compact .echoes-pill .label{display:none}
+#echoes-bar.compact .echoes-pill{padding:3px 7px}
+#echoes-bar.fade-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 18px),transparent)}
+#echoes-bar.fade-l{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 18px),transparent)}
+#echoes-bar.fade-l.fade-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 18px,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(to right,transparent,#000 18px,#000 calc(100% - 18px),transparent)}
 .echoes-pill{
-  display:flex;align-items:center;gap:5px;
+  display:flex;align-items:center;gap:5px;flex-shrink:0;white-space:nowrap;
   background:rgba(124,58,237,.08);
   border:0.5px solid var(--border);
   border-radius:14px;padding:4px 9px;
   font-family:var(--serif);font-size:.6rem;letter-spacing:.1em;
 }
 .echoes-pill .ed{width:5px;height:5px;border-radius:50%;box-shadow:0 0 8px currentColor}
-.echoes-pill.void{color:#a78bfa}.echoes-pill.void .ed{background:#a78bfa}
-.echoes-pill.rift{color:#67e8f9}.echoes-pill.rift .ed{background:#67e8f9}
-.echoes-pill.soul{color:var(--gold)}.echoes-pill.soul .ed{background:var(--gold)}
+.echoes-pill .ed{background:currentColor}
 .echoes-pill b{color:var(--text);font-weight:600}
 @media (max-width:480px){
   .echoes-pill{padding:3px 7px;font-size:.55rem}
@@ -2330,6 +2343,7 @@ body.hide-topbar #topbar{ display:none; }
 .detail-card-slot.aura-rebound{box-shadow:0 0 40px -8px var(--purple)}
 .detail-card-slot.aura-deepbound{box-shadow:0 0 40px -8px var(--crimson)}
 .detail-card-slot.aura-soulbound{box-shadow:0 0 50px -6px var(--gold)}
+.detail-card-slot.aura-unwritten{box-shadow:0 0 60px -4px #f5f3ff}
 
 /* card-overlay seals (1-6 small marks at the bottom border) */
 .card-seals{
@@ -2445,9 +2459,7 @@ body.hide-topbar #topbar{ display:none; }
   font-family:var(--serif);font-size:.7rem;letter-spacing:.06em;
 }
 .cost-pill .dot{width:6px;height:6px;border-radius:50%;box-shadow:0 0 8px currentColor}
-.cost-pill.void{color:#a78bfa}.cost-pill.void .dot{background:#a78bfa}
-.cost-pill.rift{color:#67e8f9}.cost-pill.rift .dot{background:#67e8f9}
-.cost-pill.soul{color:var(--gold)}.cost-pill.soul .dot{background:var(--gold)}
+.cost-pill.echo .dot{background:currentColor}
 .cost-pill.dup{color:var(--purple)}.cost-pill.dup .dot{background:var(--purple)}
 .cost-pill b{color:var(--text);font-weight:600}
 .cost-pill.short b{color:var(--crimson)}
@@ -2924,9 +2936,158 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
   color:var(--muted);margin-top:2px;
 }
 
+/* ═══════════════════════════════════════════
+   BATTLE — stage nodes become clickable, party select overlay, battle screen, results.
+   ═══════════════════════════════════════════ */
+.stage-node.playable{cursor:pointer}
+.stage-node.playable:hover{transform:scale(1.1);box-shadow:0 0 18px var(--node-glow, rgba(251,191,36,0.55))}
+.stage-node.boss{width:52px;height:52px;font-size:1rem;border-width:2px}
+
+#battle-party{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;
+  background:rgba(4,0,10,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:16px}
+#battle-party.show{display:flex}
+#garrison-pick{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;
+  background:rgba(4,0,10,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:16px}
+#garrison-pick.show{display:flex}
+.gp-tags{color:rgba(251,191,36,.8)}
+.gsect-title{font-family:var(--deco);font-size:.85rem;margin:10px 2px 2px;text-shadow:0 0 8px rgba(0,0,0,.9)}
+.gslot-initial{opacity:1;color:var(--c);font-family:var(--deco);font-size:1.3rem}
+.gslot-recall{background:transparent;border-color:rgba(255,255,255,.18);color:var(--text)}
+.gslot > *{position:relative}
+.bp-panel{width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;gap:10px;
+  background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.7)}
+.bp-title{font-family:var(--deco);font-size:1rem;text-align:center;color:var(--text)}
+.bp-foes{font-family:var(--body);font-style:italic;font-size:.85rem;color:rgba(226,217,243,.75);text-align:center}
+.bp-list{overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:80px}
+.bp-row{display:grid;grid-template-columns:1fr auto auto auto;grid-template-rows:auto auto;gap:2px 10px;text-align:left;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-left:3px solid var(--c);
+  border-radius:8px;padding:8px 10px;color:var(--text);cursor:pointer;font:inherit}
+.bp-row.on{background:rgba(124,58,237,.18);border-color:var(--c);box-shadow:0 0 12px rgba(124,58,237,.25)}
+.bp-name{font-family:var(--serif);font-size:.8rem;color:var(--c)}
+.bp-tier{font-family:var(--serif);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(226,217,243,.55);text-align:right}
+.bp-stat{font-family:var(--serif);font-size:.6rem;color:rgba(226,217,243,.75);grid-row:2}
+.bp-row .bp-name{grid-column:1 / 4}
+.bp-row .bp-tier{grid-column:4}
+.bp-empty{font-family:var(--body);font-style:italic;color:rgba(226,217,243,.7);text-align:center;padding:20px}
+.bp-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bp-count{font-family:var(--serif);font-size:.65rem;letter-spacing:.15em;color:rgba(226,217,243,.7)}
+.bt-btn{font-family:var(--serif);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text);
+  background:var(--ui-btn-purple);border:1px solid rgba(192,132,252,.45);border-radius:9px;padding:10px 14px;cursor:pointer}
+.bt-btn:disabled{opacity:.35;cursor:default}
+.bt-btn.ghost{background:transparent;border-color:rgba(255,255,255,.18)}
+.bt-btn.gold{background:var(--ui-btn-gold);border-color:rgba(251,191,36,.55)}
+
+#screen-battle{position:fixed;inset:0;overflow:hidden;background:#06000e}
+#screen-battle.bt-flash .realm-stage-vignette{background:radial-gradient(ellipse at center,rgba(192,132,252,.35),rgba(6,0,14,.6))}
+.bt-wrap{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;
+  padding:72px 16px max(12px,env(safe-area-inset-bottom));gap:8px} /* 72px clears the topbar, as the other sub-screens do */
+.bt-top{width:100%;max-width:900px;display:flex;align-items:center;gap:10px}
+.bt-title{flex:1;text-align:center;padding-right:76px}
+#bt-realm{font-family:var(--deco);font-size:1rem;text-shadow:0 0 10px rgba(0,0,0,.9)}
+.bt-sub{font-family:var(--serif);font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(226,217,243,.7)}
+.bt-row{display:flex;justify-content:center;gap:10px;flex-wrap:nowrap;width:100%;max-width:900px}
+#bt-enemies{margin-top:auto}
+.bt-slot{position:relative;display:flex;flex-direction:column;gap:3px;transition:transform .2s ease,filter .3s ease,opacity .3s ease}
+.bt-art{border-radius:6px;overflow:hidden;line-height:0}
+.bt-art .demon-card{width:100% !important;height:auto !important;aspect-ratio:360/504}
+.bt-slot.active .bt-art{box-shadow:0 0 0 2px var(--gold),0 0 18px rgba(251,191,36,.6)}
+.bt-slot.active{transform:translateY(-4px)}
+.bt-slot.boss .bt-art{box-shadow:0 0 0 1px rgba(244,63,94,.6),0 0 20px rgba(244,63,94,.35)}
+.bt-slot.targetable{cursor:crosshair}
+.bt-slot.targetable:not(.dead):hover .bt-art{box-shadow:0 0 0 2px var(--crimson),0 0 16px rgba(244,63,94,.6)}
+.bt-slot.dead{filter:grayscale(1) brightness(.35);opacity:.6;pointer-events:none}
+.bt-slot.hit .bt-art{animation:bt-hit .28s ease}
+@keyframes bt-hit{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.bt-hp{height:6px;border-radius:3px;background:rgba(0,0,0,.6);overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+.bt-hp-fill{height:100%;background:var(--c);transition:width .3s ease}
+.bt-hp-num{font-family:var(--serif);font-size:.55rem;color:rgba(226,217,243,.8);text-align:center;text-shadow:0 1px 2px #000}
+.bt-status{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;min-height:14px}
+.bt-chip{font-family:var(--serif);font-size:.48rem;letter-spacing:.08em;padding:1px 5px;border-radius:6px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.15);color:var(--text)}
+.bt-chip.burn{border-color:#fb923c;color:#fdba74}
+.bt-chip.stun{border-color:#60a5fa;color:#93c5fd}
+.bt-chip.cd{opacity:.7}
+.bt-float{position:absolute;left:50%;top:30%;transform:translateX(-50%);pointer-events:none;z-index:5;
+  font-family:var(--deco);font-size:1rem;color:#fff;text-shadow:0 0 6px #000,0 2px 3px #000;animation:bt-float 1.1s ease-out forwards;white-space:nowrap}
+.bt-float.crit{color:var(--gold);font-size:1.25rem}
+.bt-float.heal{color:#4ade80}
+.bt-float.burn{color:#fb923c}
+.bt-float.status{color:#c4b5fd;font-size:.8rem}
+@keyframes bt-float{0%{opacity:0;transform:translate(-50%,6px)}15%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px)}}
+.bt-log{min-height:1.4em;font-family:var(--body);font-style:italic;font-size:.9rem;color:var(--text);text-align:center;text-shadow:0 0 8px #000,0 1px 2px #000;margin:auto 0}
+.bt-walker{width:100%;max-width:520px;display:flex;align-items:center;gap:8px;margin-top:auto}
+.bt-ie{flex:1;display:flex;flex-direction:column;gap:2px}
+.bt-ie-bar{height:8px;border-radius:4px;background:rgba(0,0,0,.6);border:1px solid rgba(192,132,252,.3);overflow:hidden}
+#bt-ie-fill{height:100%;background:linear-gradient(90deg,#7c3aed,#c084fc);transition:width .3s ease}
+.bt-ie-label{font-family:var(--serif);font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(226,217,243,.7);display:flex;justify-content:space-between}
+.bt-actions{width:100%;max-width:520px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.bt-actions .bt-btn.sel{border-color:var(--gold);box-shadow:0 0 12px rgba(251,191,36,.4)}
+.bt-actions small{opacity:.7}
+.bt-auto-group{display:flex;gap:6px}
+.bt-btn.locked{opacity:.4}
+.bt-btn.on{border-color:var(--gold);color:var(--gold)}
+.bt-hint{min-height:1.2em;font-family:var(--serif);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(226,217,243,.6)}
+.bt-result{position:absolute;inset:0;z-index:10;display:none;align-items:center;justify-content:center;background:rgba(4,0,10,.78);padding:16px}
+.bt-result.show{display:flex}
+.bt-result-panel{width:100%;max-width:380px;text-align:center;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px 18px;display:flex;flex-direction:column;gap:12px}
+#bt-result-title{font-family:var(--deco);font-size:1.6rem}
+#bt-result-lines{font-family:var(--body);font-size:.95rem;color:var(--text);display:flex;flex-direction:column;gap:4px}
+.bt-result-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+/* ══════════════════════════════════════
+   PHONE LANDSCAPE — the app (landscape-only, Rob 2026-10-26)
+   Same size rule as the rotate prompt: in the browser these sizes are
+   covered by the prompt; the app (html.app-shell) plays them.
+   Gate: tools/landscape_check.js. Kept last in the stylesheet so it
+   wins over the base rules it adjusts.
+══════════════════════════════════════ */
+@media (max-width: 1024px) and (max-height: 500px) and (orientation: landscape) {
+  /* Sanctum: the stage is the screen, rifts placed and sized by height (the portrait rules below 680px are overridden). */
+  .sanctum-stage{width:100% !important;height:100% !important;top:0 !important;left:0 !important;transform:none !important}
+  .rift.rift-cutout[data-rift="realms"]  {--x:17% !important;--y:42% !important;--w:29vh !important;--rift-tilt:10deg !important}
+  .rift.rift-cutout[data-rift="codex"]   {--x:83% !important;--y:42% !important;--w:29vh !important;--rift-tilt:-10deg !important}
+  .rift.rift-cutout[data-rift="summon"]  {--x:50% !important;--y:58% !important;--w:34vh !important;--rift-tilt:0deg !important}
+  .rift.rift-cutout[data-rift="garrison"]{--x:31% !important;--y:79% !important;--w:24vh !important;--rift-tilt:8deg !important}
+  .rift.rift-cutout[data-rift="riftwalk"]{--x:69% !important;--y:79% !important;--w:24vh !important;--rift-tilt:-8deg !important}
+
+  /* Demon detail: two columns that fit the screen; the info column scrolls. */
+  #detail-overlay{padding:8px}
+  #detail-card{height:calc(100vh - 16px);max-height:calc(100vh - 16px);grid-template-columns:minmax(170px,.75fr) 1.25fr;
+    grid-template-rows:minmax(0,1fr);overflow:hidden}
+  .detail-card-side{padding:16px 12px 10px;border-right:1px solid var(--border);border-bottom:none}
+  .detail-card-slot{width:min(200px,calc((100vh - 64px) / 1.45))}
+  .detail-info{min-height:0;overflow-y:auto}
+
+  /* Battle: party left, enemies right, log between; Walker bar and actions along the bottom. */
+  .bt-wrap{display:grid;padding:70px 12px max(6px,env(safe-area-inset-bottom));gap:4px 10px;
+    grid-template-columns:minmax(0,1fr) minmax(90px,20%) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto auto;
+    grid-template-areas:"top top top" "party log enemies" "party hint enemies" "walker walker walker" "actions actions actions";
+    align-items:center;justify-items:center}
+  .bt-top{grid-area:top}
+  #bt-party{grid-area:party;margin:0}
+  #bt-enemies{grid-area:enemies;margin:0}
+  .bt-log{grid-area:log;margin:0;font-size:.72rem;align-self:end}
+  .bt-hint{grid-area:hint;align-self:start;text-align:center}
+  .bt-walker{grid-area:walker;margin:0}
+  .bt-actions{grid-area:actions;flex-wrap:nowrap}
+  .bt-row{gap:6px}
+  .bt-slot{width:clamp(46px,min(calc((50vw - 100px) / 4.4),calc((100vh - 204px) / 1.4)),110px) !important}
+
+  /* The First Binding: circle and words on the left, name and sigils on the right. */
+  .char-creation-inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-auto-flow:dense;column-gap:32px;row-gap:8px;
+    max-width:780px;width:94vw;padding:14px 20px;align-items:center;justify-items:center}
+  .char-creation-inner > *{grid-column:2}
+  .char-creation-eyebrow,.char-creation-title,.char-circle,.char-creation-prompt{grid-column:1}
+  .char-circle{grid-row:span 3;width:120px;height:120px}
+  .char-creation-title{font-size:1.3rem}
+}
+/* Short screens: the Walker's Identity/Aesthetics rail would reach the return button (top 72px + 140px), so it
+   steps left into the lane beside it. Taller screens keep the rail at the edge. */
+@media (max-height: 540px) {
+  .wfab-rail{right:84px}
+}
+
 </style>
 <!-- Three.js for 3D summon screen -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="vendor/three.r128.min.js"></script>
 </head>
 <body>
 
@@ -2965,9 +3126,6 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
     </div>
     <div class="topbar-right">
       <div id="echoes-bar">
-        <div class="echoes-pill void"><span class="ed"></span><span class="label">VOID</span><b id="echo-void">0</b></div>
-        <div class="echoes-pill rift"><span class="ed"></span><span class="label">RIFT</span><b id="echo-rift">0</b></div>
-        <div class="echoes-pill soul"><span class="ed"></span><span class="label">SOUL</span><b id="echo-soul">0</b></div>
       </div>
       <div id="shard-display" onclick="addDemoShards()">
         <span class="shard-gem">◆</span>
@@ -3103,8 +3261,7 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
     </div>
 
     <!-- REALM (singular) — per-realm stage view; entered by clicking a rift in the hall.
-         Uses the realm's bg image as full-screen backdrop. Stage nodes are placeholders
-         until the battle system is wired. -->
+         Uses the realm's bg image as full-screen backdrop. Playable stage nodes open the party select. -->
     <div id="screen-realm" class="screen">
       <div class="realm-stage-bg" id="realm-stage-bg"></div>
       <div class="realm-stage-vignette"></div>
@@ -3116,9 +3273,55 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
           <div class="realm-stage-progress" id="realm-stage-progress"></div>
         </div>
         <div class="realm-stage-nodes" id="realm-stage-nodes"></div>
-        <div class="realm-stage-coming">Battles coming soon</div>
+        <div class="realm-stage-coming">Choose a stage to descend</div>
       </div>
       <div class="sanctum-back-btn" onclick="switchScreen('hub')"></div>
+    </div>
+
+
+    <!-- BATTLE — turn-based combat for a realm stage. Entered from the party select overlay. -->
+    <div id="screen-battle" class="screen">
+      <div class="realm-stage-bg" id="battle-bg"></div>
+      <div class="realm-stage-vignette"></div>
+      <div class="bt-wrap">
+        <div class="bt-top">
+          <button class="bt-btn ghost" onclick="BattleUI.retreat()">Retreat</button>
+          <div class="bt-title"><div id="bt-realm"></div><div class="bt-sub"><span id="bt-stage"></span> <span id="bt-round"></span></div></div>
+        </div>
+        <div class="bt-row" id="bt-enemies"></div>
+        <div class="bt-log" id="bt-log"></div>
+        <div class="bt-row" id="bt-party"></div>
+        <div class="bt-walker">
+          <div class="bt-ie">
+            <div class="bt-ie-label"><span>Infernal Energy</span><span id="bt-ie-num"></span></div>
+            <div class="bt-ie-bar"><div id="bt-ie-fill"></div></div>
+          </div>
+          <button class="bt-btn gold" id="bt-mend" title="Heal the party for 35% of max Vigor and cleanse every debuff." onclick="BattleUI.useSanctum('mend')">Mend</button>
+          <button class="bt-btn gold" id="bt-lance" title="The Walker strikes every enemy, ignoring half their Ward." onclick="BattleUI.useSanctum('lance')">Rift Lance</button>
+        </div>
+        <div class="bt-actions" id="bt-actions">
+          <button class="bt-btn" id="bt-strike" onclick="BattleUI.chooseStrike()">Strike</button>
+          <button class="bt-btn" id="bt-skill" onclick="BattleUI.chooseSkill()">Skill</button>
+          <div class="bt-auto-group">
+            <button class="bt-btn ghost" id="bt-auto" onclick="BattleUI.toggleAuto()">Auto</button>
+            <button class="bt-btn ghost bt-speed" data-speed="1" onclick="BattleUI.setSpeed(1)">1×</button>
+            <button class="bt-btn ghost bt-speed" data-speed="2" onclick="BattleUI.setSpeed(2)">2×</button>
+            <button class="bt-btn ghost bt-speed" data-speed="3" onclick="BattleUI.setSpeed(3)">3×</button>
+          </div>
+        </div>
+        <div class="bt-hint" id="bt-hint"></div>
+      </div>
+      <div class="bt-result" id="bt-result">
+        <div class="bt-result-panel">
+          <div id="bt-result-title"></div>
+          <div id="bt-result-lines"></div>
+          <div class="bt-result-btns">
+            <button class="bt-btn ghost" onclick="BattleUI.exit()">Return</button>
+            <button class="bt-btn" id="bt-retry" onclick="BattleUI.retry()">Try Again</button>
+            <button class="bt-btn gold" id="bt-next" onclick="BattleUI.next()">Next Stage</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- GARRISON -->
@@ -3270,7 +3473,7 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
 <!-- ═══ MUSIC SYSTEM UI ═══ -->
 <!-- SPLASH — shown on first load; click "Walk the Rift" to satisfy autoplay policy + start soundtrack -->
 <div id="splash-screen" class="splash-screen">
-  <!-- Phase 1 — the gate: a rift into the void -->
+  <!-- Phase 1 — the Threshold: a rift into the void -->
   <div class="splash-gate" id="splash-gate">
     <div class="splash-logo-bg" aria-hidden="true">
       <img class="splash-logo-bg-img" src="assets/ui/infernum_logo.png" alt=""
@@ -3348,6 +3551,30 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
 </div>
 
 <!-- DETAIL OVERLAY -->
+<!-- BATTLE PARTY SELECT — choose up to 4 bound demons before descending into a stage. -->
+<div id="battle-party" role="dialog" aria-modal="true" aria-labelledby="bp-title">
+  <div class="bp-panel">
+    <div class="bp-title" id="bp-title"></div>
+    <div class="bp-foes" id="bp-foes"></div>
+    <div class="bp-list" id="bp-list"></div>
+    <div class="bp-foot">
+      <span class="bp-count" id="bp-count"></span>
+      <div style="display:flex;gap:8px">
+        <button class="bt-btn ghost" onclick="closePartySelect()">Cancel</button>
+        <button class="bt-btn gold" id="bp-go" onclick="confirmPartySelect()">Descend</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- GARRISON PICKER — choose a bound demon to station on a cleared stage. -->
+<div id="garrison-pick" role="dialog" aria-modal="true" aria-labelledby="gp-title">
+  <div class="bp-panel">
+    <div class="bp-title" id="gp-title"></div>
+    <div class="bp-foes">A demon holds one post at a time. Choosing one stationed elsewhere moves it here.</div>
+    <div class="bp-list" id="gp-list"></div>
+    <div class="bp-foot"><span></span><button class="bt-btn ghost" onclick="closeGarrisonPick()">Cancel</button></div>
+  </div>
+</div>
 <div id="detail-overlay" role="dialog" aria-modal="true" aria-labelledby="detail-name">
   <div id="detail-card">
     <span class="detail-corner tl"></span>
@@ -3435,7 +3662,6 @@ input[type="text"], input[type="search"], input[type="email"], input[type="numbe
 <!-- CORNER WATERMARK -->
 <div class="inf-watermark"><img src="assets/ui/infernum_logo.png" alt="" aria-hidden="true" onerror="this.parentElement.style.display='none'"></div>
 
-<!-- TEST PANEL (dev-only — remove before launch) -->
 <script>
 // ═══════════════════════════════════════════
 // DEMON CARD CLASS (inline)
@@ -3491,6 +3717,291 @@ function applyStyles(el,styles){for(var k in styles)if(Object.prototype.hasOwnPr
 global.DemonCard=DemonCard;
 })(typeof window!=='undefined'?window:this);
 </script>
+<script>
+// ═══════════════════════════════════════════
+// BATTLE ENGINE — pure turn-based combat (no DOM). Rounds run in Tempo order; the Rift Walker
+// stands behind the party, fills Infernal Energy (IE) each round and spends it on a Sanctum Ability.
+// Damage = Power reduced by the target's Ward; Focus = crit chance (x1.5); Will resists statuses.
+// The UI layer (BattleUI) drives this and animates the returned events.
+// ═══════════════════════════════════════════
+(function(global){
+'use strict';
+
+// One shared skill kit per tier (index = tier idx 0-6). Per-demon kits come later.
+const SKILL_KITS=[
+  {id:'siphon',   name:'Siphon',        cd:3, desc:'Strike for 130% and heal for 30% of the damage.',             mult:1.3, aoe:false, lifesteal:0.3},
+  {id:'cinder',   name:'Cinder Hex',    cd:3, desc:'Strike for 80% and Burn the target for 3 turns.',             mult:0.8, aoe:false, burn:true},
+  {id:'flay',     name:'Flay',          cd:3, desc:'A brutal strike for 180%.',                                    mult:1.8, aoe:false},
+  {id:'dread',    name:'Dread Roar',    cd:4, desc:'Strike every enemy for 90%.',                                  mult:0.9, aoe:true},
+  {id:'sunder',   name:'Sunder',        cd:4, desc:'Strike for 150% and Stun the target for 1 turn.',             mult:1.5, aoe:false, stun:true},
+  {id:'verdict',  name:"Sin's Verdict", cd:5, desc:'Strike every enemy for 140% and Burn them.',                  mult:1.4, aoe:true,  burn:true},
+  {id:'unmaking', name:'Unmaking',      cd:5, desc:'Strike every enemy for 220%, ignoring half their Ward.',      mult:2.2, aoe:true,  pierce:0.5},
+];
+const SANCTUM={
+  mend:  {id:'mend',  name:'Mend',      desc:'Heal the party for 35% of max Vigor and cleanse every debuff.'},
+  lance: {id:'lance', name:'Rift Lance',desc:'The Walker strikes every enemy, ignoring half their Ward.'},
+};
+const IE_MAX=100, IE_PER_ROUND=20;
+const CRIT_MULT=1.5, CRIT_CAP=60, BURN_TURNS=3, BURN_RATIO=0.3;
+
+// Base combat stats by tier, with a small per-demon variance from a name hash.
+function hashName(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*16777619)>>>0;}return h;}
+function tierBase(tIdx){return 10+tIdx*tIdx*3+tIdx*5;} // 10, 18, 32, 52, 78, 110, 148
+function demonBaseStats(name,tIdx){
+  const h=hashName(name), B=tierBase(tIdx);
+  const v=(shift)=>(((h>>shift)&15)-7.5)/7.5; // -1..+1
+  return{
+    Power: Math.max(1,Math.round(B*(1+0.08*v(0)))),
+    Ward:  Math.max(1,Math.round(B*0.6*(1+0.08*v(4)))),
+    Vigor: Math.max(1,Math.round(B*5*(1+0.08*v(8)))),
+    Tempo: Math.max(1,Math.round(80+tIdx*6+6*v(12))),
+    Focus: Math.max(1,Math.round(5+tIdx*2)),
+    Will:  Math.max(1,Math.round(5+tIdx*4)),
+  };
+}
+
+// Enemy power level for a stage: geometric across all 117 stages (realm order x 13 + stage).
+const ENEMY_L0=8, ENEMY_GROWTH=1.044;
+function enemyLevel(realmOrder,stageIdx){return ENEMY_L0*Math.pow(ENEMY_GROWTH,realmOrder*13+stageIdx);}
+// bossCount: when a stage fields two bosses (the Void), each is a little lighter than a lone ruler.
+function enemyStats(name,tIdx,L,boss,bossCount){
+  const h=hashName(name), f=1+0.06*((((h)&15)-7.5)/7.5), pair=boss&&bossCount>1;
+  return{
+    Power: Math.max(1,Math.round(L*f*(boss?(pair?1.1:1.25):1))),
+    Ward:  Math.max(1,Math.round(L*0.6*f)),
+    Vigor: Math.max(1,Math.round(L*5*f*(boss?(pair?2.5:4):1))),
+    Tempo: Math.round(80+tIdx*6),
+    Focus: 5+tIdx*2,
+    Will:  5+tIdx*4+(boss?20:0),
+  };
+}
+
+// Stage encounter. Deterministic per realm+stage so a replay meets the same foes.
+// roster: {pool:{tierIdx:[{name,slug,color}]}, bosses:[{name,slug,tierIdx,color}]}
+function seeded(seed){let x=(seed>>>0)||1;return()=>{x^=x<<13;x>>>=0;x^=x>>17;x^=x<<5;x>>>=0;return x/4294967296;};}
+function encounter(realmOrder,stageIdx,roster){
+  const L=enemyLevel(realmOrder,stageIdx), boss=stageIdx===12;
+  const r=seeded(hashName('stage'+realmOrder+':'+stageIdx));
+  const maxT=Math.min(4,Math.floor(realmOrder/2)+1);
+  const n=boss?2:(stageIdx<2?1:stageIdx<5?2:stageIdx<9?3:4);
+  const out=[];
+  if(boss) for(const b of roster.bosses) out.push(Object.assign({},b,{boss:true,stats:enemyStats(b.name,b.tierIdx,L,true,roster.bosses.length)}));
+  const adds=boss&&roster.bosses.length>1?0:n;
+  for(let i=0;i<adds;i++){
+    let t=Math.min(maxT,Math.max(0,Math.round(realmOrder*0.5+stageIdx*0.1)+((i%3)-1)));
+    while(t>0&&!(roster.pool[t]&&roster.pool[t].length)) t--;
+    const list=roster.pool[t]; const d=list[Math.floor(r()*list.length)];
+    out.push(Object.assign({},d,{tierIdx:t,boss:false,stats:enemyStats(d.name+i,t,L,false)}));
+  }
+  return out;
+}
+
+function mkUnit(side,i,def,stats){
+  return{
+    id:side[0]+i, side, name:def.name, slug:def.slug, tierIdx:def.tierIdx, color:def.color, boss:!!def.boss,
+    stats:Object.assign({},stats), maxHp:stats.Vigor, hp:stats.Vigor, cd:0,
+    kit:SKILL_KITS[def.tierIdx]||SKILL_KITS[0], statuses:[], alive:true,
+  };
+}
+
+// cfg: {party:[{name,slug,tierIdx,color,stats}], enemies:[{name,slug,tierIdx,color,boss,stats}],
+//       mods:{critPct,firstHitPct,critIE,firstTurnTempo,firstCritTriple,hpPct,statusResPct,regenPct,
+//             cleanseEvery,blockFirstLethal,sanctumCostPct,startIE,dmgPct,startHpPct,walkerPower}, rng}
+function create(cfg){
+  const m=Object.assign({critPct:0,firstHitPct:0,critIE:0,firstTurnTempo:0,firstCritTriple:false,hpPct:0,
+    statusResPct:0,regenPct:0,cleanseEvery:0,blockFirstLethal:false,sanctumCostPct:0,startIE:0,dmgPct:0,startHpPct:100,walkerPower:1},cfg.mods||{});
+  const party=cfg.party.map((d,i)=>{
+    const s=Object.assign({},d.stats); s.Vigor=Math.round(s.Vigor*(1+m.hpPct/100));
+    const u=mkUnit('party',i,d,s); u.hp=Math.max(1,Math.round(u.maxHp*m.startHpPct/100)); return u;
+  });
+  const enemies=cfg.enemies.map((d,i)=>mkUnit('enemy',i,d,d.stats));
+  const st={
+    round:0, order:[], turn:-1, units:party.concat(enemies), ie:Math.min(IE_MAX,m.startIE), mods:m,
+    rng:cfg.rng||Math.random, flags:{firstHitUsed:false,firstCritUsed:false,lethalBlocked:false},
+    outcome:null, awaiting:null, sanctumCost:Math.round(IE_MAX*(1+m.sanctumCostPct/100)),
+  };
+  return st;
+}
+const unit=(st,id)=>st.units.find(u=>u.id===id);
+const living=(st,side)=>st.units.filter(u=>u.alive&&u.side===side);
+const foes=(st,u)=>living(st,u.side==='party'?'enemy':'party');
+
+function startRound(st,ev){
+  st.round++;
+  st.ie=Math.min(IE_MAX,st.ie+IE_PER_ROUND);
+  ev.push({t:'round',round:st.round,ie:st.ie});
+  if(st.mods.cleanseEvery>0 && st.round>1 && (st.round-1)%st.mods.cleanseEvery===0){
+    for(const u of living(st,'party')){
+      const i=u.statuses.findIndex(s=>s.type==='burn'||s.type==='stun');
+      if(i>=0){const s=u.statuses.splice(i,1)[0];ev.push({t:'cleanse',tgt:u.id,status:s.type});}
+    }
+  }
+  const tempo=u=>u.stats.Tempo*((st.round===1&&u.side==='party')?(1+st.mods.firstTurnTempo/100):1);
+  st.order=st.units.filter(u=>u.alive).sort((a,b)=>tempo(b)-tempo(a)||a.id.localeCompare(b.id)).map(u=>u.id);
+  st.turn=-1;
+}
+
+function checkEnd(st,ev){
+  if(st.outcome) return true;
+  if(living(st,'enemy').length===0) st.outcome='victory';
+  else if(living(st,'party').length===0) st.outcome='defeat';
+  if(st.outcome){ev.push({t:'end',outcome:st.outcome});st.awaiting=null;return true;}
+  return false;
+}
+
+function hurt(st,ev,tgt,amt,info){
+  amt=Math.max(1,Math.round(amt));
+  if(tgt.side==='party' && st.mods.blockFirstLethal && !st.flags.lethalBlocked && amt>=tgt.hp){
+    st.flags.lethalBlocked=true; amt=Math.max(0,tgt.hp-1);
+    ev.push({t:'block',tgt:tgt.id});
+  }
+  tgt.hp=Math.max(0,tgt.hp-amt);
+  ev.push(Object.assign({t:'dmg',tgt:tgt.id,amt,hp:tgt.hp},info||{}));
+  if(tgt.hp<=0&&tgt.alive){tgt.alive=false;tgt.statuses=[];ev.push({t:'death',tgt:tgt.id});}
+  return amt;
+}
+function resistChance(st,tgt){
+  const res=tgt.stats.Will/(tgt.stats.Will+100)+(tgt.side==='party'?st.mods.statusResPct/100:0);
+  return Math.min(0.9,res);
+}
+function applyStatus(st,ev,src,tgt,type){
+  if(!tgt.alive) return;
+  if(st.rng()<resistChance(st,tgt)){ev.push({t:'resist',tgt:tgt.id,status:type});return;}
+  const ex=tgt.statuses.find(s=>s.type===type);
+  if(type==='burn'){
+    const dmg=Math.max(1,Math.round(src.stats.Power*BURN_RATIO));
+    if(ex){ex.turns=BURN_TURNS;ex.dmg=Math.max(ex.dmg,dmg);} else tgt.statuses.push({type,turns:BURN_TURNS,dmg});
+  }else if(type==='stun'){
+    if(ex) ex.turns=1; else tgt.statuses.push({type,turns:1});
+  }
+  ev.push({t:'status',tgt:tgt.id,status:type});
+}
+
+// Advance to the next actor. Processes start-of-turn effects (burn, regen, stun).
+// Returns events; sets st.awaiting = unit id of the actor who must now choose an action.
+function advance(st){
+  const ev=[];
+  if(checkEnd(st,ev)) return ev;
+  for(let guard=0;guard<200;guard++){
+    if(st.turn+1>=st.order.length) startRound(st,ev);
+    st.turn++;
+    const u=unit(st,st.order[st.turn]);
+    if(!u||!u.alive) continue;
+    // start of turn
+    if(u.side==='party'&&st.mods.regenPct>0&&u.hp<u.maxHp){
+      const h=Math.max(1,Math.round(u.maxHp*st.mods.regenPct/100)); u.hp=Math.min(u.maxHp,u.hp+h);
+      ev.push({t:'heal',tgt:u.id,amt:h,hp:u.hp,src:'regen'});
+    }
+    const burn=u.statuses.find(s=>s.type==='burn');
+    if(burn){
+      hurt(st,ev,u,burn.dmg,{src:null,burn:true});
+      burn.turns--; if(burn.turns<=0) u.statuses=u.statuses.filter(s=>s!==burn);
+      if(checkEnd(st,ev)) return ev;
+      if(!u.alive) continue;
+    }
+    if(u.cd>0) u.cd--;
+    const stun=u.statuses.find(s=>s.type==='stun');
+    if(stun){
+      u.statuses=u.statuses.filter(s=>s!==stun);
+      ev.push({t:'stunned',tgt:u.id});
+      continue;
+    }
+    st.awaiting=u.id;
+    ev.push({t:'turn',actor:u.id});
+    return ev;
+  }
+  return ev;
+}
+
+function strikeOnce(st,ev,src,tgt,mult,pierce){
+  const P=src.stats.Power, W=tgt.stats.Ward*(1-(pierce||0));
+  let dmg=P*mult*(P/(P+W))*(0.92+0.16*st.rng());
+  if(src.side==='party'){
+    dmg*=1+st.mods.dmgPct/100;
+    if(!st.flags.firstHitUsed){st.flags.firstHitUsed=true; dmg*=1+st.mods.firstHitPct/100;}
+  }
+  const critPct=Math.min(CRIT_CAP,src.stats.Focus+(src.side==='party'?st.mods.critPct:0));
+  let crit=false;
+  if(st.rng()*100<critPct){
+    crit=true;
+    if(src.side==='party'&&st.mods.firstCritTriple&&!st.flags.firstCritUsed){st.flags.firstCritUsed=true;dmg*=3;}
+    else dmg*=CRIT_MULT;
+    if(src.side==='party'&&st.mods.critIE>0) st.ie=Math.min(IE_MAX,st.ie+st.mods.critIE);
+  }
+  return hurt(st,ev,tgt,dmg,{src:src.id,crit});
+}
+
+// action: {kind:'strike'|'skill', target:unitId}
+function act(st,action){
+  const ev=[];
+  const src=unit(st,st.awaiting);
+  if(!src||st.outcome) return ev;
+  const fs=foes(st,src);
+  let tgt=unit(st,action.target);
+  if(!tgt||!tgt.alive||tgt.side===src.side) tgt=fs[0];
+  if(!tgt) {checkEnd(st,ev);return ev;}
+  if(action.kind==='skill'&&src.cd===0){
+    const k=src.kit;
+    ev.push({t:'skill',src:src.id,skill:k.id,name:k.name});
+    const targets=k.aoe?fs:[tgt];
+    let dealt=0;
+    for(const t of targets){
+      if(!t.alive) continue;
+      dealt+=strikeOnce(st,ev,src,t,k.mult,k.pierce);
+      if(k.burn) applyStatus(st,ev,src,t,'burn');
+      if(k.stun) applyStatus(st,ev,src,t,'stun');
+    }
+    if(k.lifesteal&&src.alive){
+      const h=Math.round(dealt*k.lifesteal); src.hp=Math.min(src.maxHp,src.hp+h);
+      ev.push({t:'heal',tgt:src.id,amt:h,hp:src.hp,src:'siphon'});
+    }
+    src.cd=k.cd;
+  }else{
+    ev.push({t:'strike',src:src.id});
+    strikeOnce(st,ev,src,tgt,1,0);
+  }
+  st.awaiting=null;
+  checkEnd(st,ev);
+  return ev;
+}
+
+function canSanctum(st){return !st.outcome&&st.ie>=st.sanctumCost&&!!st.awaiting&&unit(st,st.awaiting).side==='party';}
+// The Walker's Sanctum Ability. Does not consume the current demon's turn.
+function sanctum(st,kind){
+  const ev=[];
+  if(!canSanctum(st)) return ev;
+  st.ie-=st.sanctumCost;
+  ev.push({t:'sanctum',kind,ie:st.ie,name:SANCTUM[kind].name});
+  const party=living(st,'party');
+  if(kind==='mend'){
+    for(const u of party){
+      const h=Math.round(u.maxHp*0.35); u.hp=Math.min(u.maxHp,u.hp+h);
+      u.statuses=u.statuses.filter(s=>s.type!=='burn'&&s.type!=='stun');
+      ev.push({t:'heal',tgt:u.id,amt:h,hp:u.hp,src:'mend'});
+    }
+  }else{
+    const avgP=party.reduce((a,u)=>a+u.stats.Power,0)/Math.max(1,party.length);
+    const P=avgP*1.2*st.mods.walkerPower;
+    for(const t of living(st,'enemy')){
+      const W=t.stats.Ward*0.5;
+      hurt(st,ev,t,P*(P/(P+W))*(0.95+0.1*st.rng()),{src:'walker',crit:false});
+    }
+  }
+  checkEnd(st,ev);
+  return ev;
+}
+
+// Choice for enemies, and for party demons on Auto: skill when ready, else strike the weakest foe.
+function autoChoice(st){
+  const src=unit(st,st.awaiting); if(!src) return null;
+  const fs=foes(st,src); if(!fs.length) return null;
+  const weakest=fs.slice().sort((a,b)=>a.hp-b.hp)[0];
+  return{kind:src.cd===0?'skill':'strike',target:weakest.id};
+}
+
+global.BattleEngine={SKILL_KITS,SANCTUM,IE_MAX,demonBaseStats,enemyLevel,enemyStats,encounter,seeded,create,advance,act,sanctum,canSanctum,autoChoice,unit,living};
+})(typeof window!=='undefined'?window:globalThis);
+</script>
 
 <script>
 // ═══════════════════════════════════════════
@@ -3529,7 +4040,7 @@ const DEMON_IDS={
   "Bal'zeth":'balzeth','Xerathos':'xerathos','Malvekis the Sundered':'malvekis',
   "Vrath'ax":'vrathax','Avara':'avara','Luxiel':'luxiel',
   "Gorm'than":'gormthan','Envar':'envar','Vainglory':'vainglory','Gorgethorn':'gorgethorn',
-  'The Unnamed One':'the_unnamed_one','Null-That-Speaks':'null_that_speaks',
+  'The Unnamed One':'unnamed_one','Null-That-Speaks':'null_that_speaks',
 };
 const TIER_BORDER_SLUGS=['shade','imp','fiend','greater','archdemon','sinlord','void'];
 
@@ -3550,7 +4061,7 @@ const SCROLLS=[
 let S={
   shards:1200,epicPity:0,legPity:0,scrollPity:{},
   collection:{},garrison:{},garrisonAccum:0,
-  echoes:{void:0,rift:0,soul:0},echoesAccum:{void:0,rift:0,soul:0},
+  echoes:{},echoesAccum:{}, // one balance per demon tier; filled by INF.migrate
   bannerExpiry:null,activeScroll:'whisper',level:1,
   scrollInv:{whisper:0,twilight:0,infernal:0,bloodpact:0,sincodex:0,realmrift:0,voidtear:0},
   hasVisitedSummon:false,
@@ -4109,6 +4620,9 @@ function load(){
   if(typeof S.embers==='undefined') S.embers=0;
   if(!S.musicState) S.musicState={currentTrackId:'infernum_welcome', paused:false};
   if(!S.realmsVisited) S.realmsVisited={};
+  // Realm stage progress is saved per realm and applied onto REALMS on every load.
+  if(!S.realmProgress) S.realmProgress={};
+  for(const r of REALMS) r.conquered=Math.min(r.stages,S.realmProgress[r.id]|0);
   if(!S.bannerExpiry){S.bannerExpiry=Date.now()+((2*24+14)*3600+33*60)*1000;save();}
 }
 
@@ -4678,8 +5192,7 @@ function enterRealm(id){
 
 // Render the per-realm stage view. The realm's bg image fills the screen; the realm
 // name + 13 stage nodes sit on top with vignette + heavy text-shadow for legibility.
-// Stage nodes are visual placeholders — they show progression state (conquered / next /
-// pending) but aren't clickable until the battle system is wired.
+// Conquered stages and the next stage are clickable and open the party select; later stages are locked.
 function renderRealm(){
   const r = REALMS.find(x => x.id === _currentRealmId);
   if(!r) return;
@@ -4700,9 +5213,11 @@ function renderRealm(){
     nodes.innerHTML = Array.from({length: r.stages}, (_, i) => {
       const conquered = i < r.conquered;
       const next = i === r.conquered;
-      return `<div class="stage-node ${conquered?'conquered':''} ${next?'next':''}"
-              style="--node-color:${r.color};--node-glow:${glow}">
-        <span>${i+1}</span>
+      const playable = i <= r.conquered, boss = i === r.stages-1;
+      return `<div class="stage-node ${conquered?'conquered':''} ${next?'next':''} ${playable?'playable':''} ${boss?'boss':''}"
+              style="--node-color:${r.color};--node-glow:${glow}"
+              ${playable?`onclick="openPartySelect('${r.id}',${i})"`:''} title="${boss?'Boss':'Stage '+(i+1)}">
+        <span>${boss?'☠':i+1}</span>
       </div>`;
     }).join('');
   }
@@ -4711,12 +5226,16 @@ function renderRealm(){
 // ═══════════════════════════════════════════
 // GARRISON
 // ═══════════════════════════════════════════
+// One garrisoned demon's hourly shard rate: tier rate x its Unchain garrison multiplier.
+function garrisonDemonRate(demon){
+  if(!demon||demon.tierIdx===undefined) return 0;
+  const c=window.INF&&demon.name?INF.calcStats(demon.name):null;
+  return Math.round((GARRISON_RATES[demon.tierIdx]||0)*(c?c._garrison:1));
+}
 function getGarrisonRate(){
   // Sum up hourly rate from all garrisoned demons
   let rate=0;
-  for(const[stage,demon] of Object.entries(S.garrison||{})){
-    if(demon&&demon.tierIdx!==undefined)rate+=GARRISON_RATES[demon.tierIdx]||0;
-  }
+  for(const[stage,demon] of Object.entries(S.garrison||{})) rate+=garrisonDemonRate(demon);
   return rate;
 }
 
@@ -4745,6 +5264,19 @@ function collectAll(){
   renderGarrison();
 }
 
+// Slots are the cleared stages, keyed "realmId:stageIdx" (0-based). S.garrison[key] = {name, tierIdx, color}.
+// One post per demon: stationing a demon that already holds a stage moves it (Rob, 2026-10-21).
+// Own escaper: renderGarrison runs at startup, before the battle script that defines escHtml loads.
+function garrisonEsc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function garrisonKey(realmId,stageIdx){return realmId+':'+stageIdx;}
+function garrisonStageLabel(key){
+  const [rid,i]=key.split(':'); const r=REALMS.find(x=>x.id===rid);
+  return `${r?r.name:rid} · ${(+i)===12?'Boss':'Stage '+((+i)+1)}`;
+}
+function garrisonPostOf(name){
+  for(const[k,g] of Object.entries(S.garrison||{})) if(g&&g.name===name) return k;
+  return null;
+}
 function renderGarrison(){
   const slots=document.getElementById('garrison-slots');
   const total=document.getElementById('garrison-total');
@@ -4752,27 +5284,82 @@ function renderGarrison(){
   if(!slots)return;
   const rate=getGarrisonRate();
   const accum=Math.floor(S.garrisonAccum||0);
+  const posted=Object.keys(S.garrison||{}).length;
   if(total)total.textContent=`◆ ${accum.toLocaleString()}`;
-  if(rateLabel)rateLabel.textContent=`${rate.toLocaleString()} ◆/hr from ${Object.keys(S.garrison||{}).length} garrisons`;
-  // Show conquered stages as garrison slots
-  const garrisoned=Object.entries(S.garrison||{});
-  if(garrisoned.length===0){
+  if(rateLabel)rateLabel.textContent=`${rate.toLocaleString()} ◆/hr from ${posted} garrison${posted===1?'':'s'}`;
+  const order=(typeof REALM_ORDER!=='undefined')?REALM_ORDER:REALMS.map(r=>r.id);
+  const realms=order.map(id=>REALMS.find(r=>r.id===id)).filter(r=>r&&r.conquered>0);
+  if(!realms.length){
     slots.innerHTML=`<div class="gslot"><div class="gslot-empty-msg">No garrisons active. Conquer stages in the Realms to unlock garrison slots and assign your demons.</div></div>`;
     return;
   }
-  slots.innerHTML=garrisoned.map(([stage,demon])=>`
-    <div class="gslot">
-      <div class="gslot-art"><div class="gslot-art-empty">👤</div></div>
+  slots.innerHTML=realms.map(r=>{
+    let rows='';
+    for(let i=0;i<r.conquered;i++){
+      const key=garrisonKey(r.id,i), g=(S.garrison||{})[key];
+      const stage=i===12?'Boss':'Stage '+(i+1);
+      rows+=g?`
+    <div class="gslot filled" data-key="${key}">
+      <div class="gslot-art" style="--c:${g.color||'#e2d9f3'}"><div class="gslot-art-empty gslot-initial">${garrisonEsc((g.name||'?')[0])}</div></div>
       <div class="gslot-info">
         <div class="gslot-stage">${stage}</div>
-        <div class="gslot-demon" style="color:${demon.color||'#e2d9f3'}">${demon.name}</div>
-        <div class="gslot-income">${GARRISON_RATES[demon.tierIdx]||0} ◆/hr</div>
+        <div class="gslot-demon" style="color:${g.color||'#e2d9f3'}">${garrisonEsc(INF.displayName(g.name))}</div>
+        <div class="gslot-income">${garrisonDemonRate(g).toLocaleString()} ◆/hr</div>
       </div>
-      <button class="gslot-collect" onclick="collectSlot('${stage}')">Collect</button>
-    </div>`).join('');
+      <button class="gslot-collect" onclick="openGarrisonPick('${key}')">Replace</button>
+      <button class="gslot-collect gslot-recall" onclick="recallGarrison('${key}')">Recall</button>
+    </div>`:`
+    <div class="gslot empty" data-key="${key}">
+      <div class="gslot-art"><div class="gslot-art-empty">+</div></div>
+      <div class="gslot-info">
+        <div class="gslot-stage">${stage}</div>
+        <div class="gslot-empty-msg">Unguarded</div>
+      </div>
+      <button class="gslot-collect" onclick="openGarrisonPick('${key}')">Station</button>
+    </div>`;
+    }
+    return `<div class="gsect-title" style="color:${r.color}">${garrisonEsc(r.name)}</div>${rows}`;
+  }).join('');
 }
 
-function collectSlot(stage){collectAll();}
+// ─── DEMON PICKER ───
+let _gpKey=null;
+function openGarrisonPick(key){
+  _gpKey=key; renderGarrisonPick();
+  document.getElementById('garrison-pick').classList.add('show');
+}
+function closeGarrisonPick(){document.getElementById('garrison-pick').classList.remove('show');_gpKey=null;}
+function renderGarrisonPick(){
+  document.getElementById('gp-title').textContent='Station a demon · '+garrisonStageLabel(_gpKey);
+  const owned=ALL_DEMONS.filter(d=>INF.getCount(d.name)>0)
+    .sort((a,b)=>garrisonDemonRate({name:b.name,tierIdx:b.tier.idx})-garrisonDemonRate({name:a.name,tierIdx:a.tier.idx}));
+  const list=document.getElementById('gp-list');
+  if(!owned.length){list.innerHTML=`<div class="bp-empty">No demons bound yet. Summon one to station it here.</div>`;return;}
+  const party=S.battleParty||[];
+  list.innerHTML=owned.map(d=>{
+    const post=garrisonPostOf(d.name), here=post===_gpKey;
+    const tags=[party.includes(d.name)?'In party':'', here?'Stationed here':post?'At '+garrisonStageLabel(post):''].filter(Boolean);
+    return `<button class="bp-row ${here?'on':''}" data-name="${garrisonEsc(d.name)}" style="--c:${d.tier.color}">
+        <span class="bp-name">${garrisonEsc(INF.displayName(d.name))}</span>
+        <span class="bp-tier">${d.tier.name}</span>
+        <span class="bp-stat">${garrisonDemonRate({name:d.name,tierIdx:d.tier.idx}).toLocaleString()} ◆/hr</span><span class="bp-stat gp-tags">${tags.map(garrisonEsc).join(' · ')}</span><span class="bp-stat"></span>
+      </button>`;
+  }).join('');
+  list.querySelectorAll('.bp-row').forEach(b=>b.addEventListener('click',()=>stationGarrison(_gpKey,b.getAttribute('data-name'))));
+}
+function stationGarrison(key,name){
+  const d=ALL_DEMONS.find(x=>x.name===name); if(!d||!INF.getCount(name)) return;
+  const [rid,i]=key.split(':'); const r=REALMS.find(x=>x.id===rid);
+  if(!r||(+i)>=r.conquered) return;
+  if(!S.garrison) S.garrison={};
+  const prev=garrisonPostOf(name); if(prev) delete S.garrison[prev];
+  S.garrison[key]={name,tierIdx:d.tier.idx,color:d.tier.color};
+  save(); closeGarrisonPick(); renderGarrison(); updateUI();
+}
+function recallGarrison(key){
+  if(!S.garrison||!S.garrison[key]) return;
+  delete S.garrison[key]; save(); renderGarrison(); updateUI();
+}
 
 // ═══════════════════════════════════════════
 // SCROLL UI
@@ -4808,6 +5395,7 @@ function renderScrollInfo(){
 // UI UPDATE
 // ═══════════════════════════════════════════
 function updateUI(){
+  if(window.INF&&INF.renderEchoes)INF.renderEchoes();
   const scroll=getActiveScroll();
   const cost1=getCost(1),cost10=getCost(10);
   document.getElementById('shard-count').textContent=S.shards.toLocaleString();
@@ -4851,29 +5439,26 @@ window.INF=(function(){
   'use strict';
 
   // ── CONSTANTS ──
-  const SEAL_COSTS={
-    2:{void:20,rift:0,soul:0},
-    3:{void:40,rift:0,soul:0},
-    4:{void:0,rift:30,soul:0},
-    5:{void:0,rift:60,soul:0},
-    6:{void:0,rift:100,soul:0},
-  };
+  // Echoes: one type per demon tier (Rob, 2026-10-24). A demon earns and spends only its own tier's
+  // Echoes. Costs are the Shade base x the tier factor: a Shade reaches Unwritten fast, a Void Primordial slowly.
+  const ECHO_TIERS=TIERS.map(t=>t.id);
+  const ECHO_FACTOR={shade:1,imp:2,fiend:4,greater_demon:8,archdemon:16,sin_lord:32,void_primordial:64};
+  const ECHO_RATE=10; // Echoes per hour per garrisoned demon, x its Unchain garrison multiplier
+  const SEAL_COSTS={2:5,3:10,4:15,5:20,6:30}; // Shade base, in the demon's own tier Echoes
   const SEAL_MULT=[1.0,1.0,1.15,1.30,1.50,1.75,2.0]; // index by seal count
 
-  const UNCHAIN_NEXT={none:'rebound',rebound:'deepbound',deepbound:'soulbound',soulbound:null};
-  const UNCHAIN_LABEL={none:'—',rebound:'Rebound',deepbound:'Deepbound',soulbound:'Soulbound'};
-  const UNCHAIN_COSTS={
-    rebound:{dup:1,soul:10},
-    deepbound:{dup:1,soul:25},
-    soulbound:{dup:1,soul:50},
+  const UNCHAIN_NEXT={none:'rebound',rebound:'deepbound',deepbound:'soulbound',soulbound:'unwritten',unwritten:null};
+  const UNCHAIN_LABEL={none:'—',rebound:'Rebound',deepbound:'Deepbound',soulbound:'Soulbound',unwritten:'Unwritten'};
+  const UNCHAIN_COSTS={ // Shade base Echoes, plus one duplicate
+    rebound:{dup:1,echo:20},
+    deepbound:{dup:1,echo:40},
+    soulbound:{dup:1,echo:60},
+    unwritten:{dup:1,echo:100},
   };
-  const UNCHAIN_MULT={none:1.0,rebound:1.3,deepbound:1.6,soulbound:2.0};
-  const UNCHAIN_GARRISON={none:1.0,rebound:2.0,deepbound:3.0,soulbound:5.0};
-  const UNCHAIN_COLOR={none:null,rebound:'var(--purple)',deepbound:'var(--crimson)',soulbound:'var(--gold)'};
-
-  // Tier IDs from existing TIERS array
-  const RIFT_TIERS=new Set(['fiend','greater_demon','archdemon','sin_lord','void_primordial']);
-  const SOUL_TIERS=new Set(['sin_lord','void_primordial']);
+  const UNCHAIN_MULT={none:1.0,rebound:1.3,deepbound:1.6,soulbound:2.0,unwritten:2.5};
+  const UNCHAIN_GARRISON={none:1.0,rebound:2.0,deepbound:3.0,soulbound:5.0,unwritten:10.0};
+  const UNCHAIN_COLOR={none:null,rebound:'var(--purple)',deepbound:'var(--crimson)',soulbound:'var(--gold)',unwritten:'#f5f3ff'};
+  const UNCHAIN_ORDER={none:0,rebound:1,deepbound:2,soulbound:3,unwritten:4};
 
   // Soulbound names — fill in as you write them. Empty = use base name.
   const SOULBOUND_NAMES={
@@ -4897,28 +5482,17 @@ window.INF=(function(){
   }
   function displayName(name){
     const e=getEntry(name);
-    if(e&&e.unchainTier==='soulbound'&&SOULBOUND_NAMES[name])return SOULBOUND_NAMES[name];
+    if(e&&UNCHAIN_ORDER[e.unchainTier]>=UNCHAIN_ORDER.soulbound&&SOULBOUND_NAMES[name])return SOULBOUND_NAMES[name];
     return name;
   }
+  function echoTier(name){const d=getDemonRecord(name);return d?d.tier.id:'shade';}
+  function echoCost(base,name){return base*(ECHO_FACTOR[echoTier(name)]||1);}
 
-  // Deterministic stat synthesis from tier idx + name hash.
-  // No real stat data exists yet; this gives us numbers to show that scale
-  // sensibly with seal/unchain multipliers. Replace with real stats when ready.
-  function hashName(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*16777619)>>>0;}return h;}
+  // Six combat stats (Power, Ward, Vigor, Tempo, Focus, Will), base values by tier from the
+  // battle engine. Seals and Unchain multiply them in calcStats; the Walker's stats apply in battle.
   function baseStats(name){
     const d=getDemonRecord(name);if(!d)return null;
-    const tIdx=d.tier.idx; // 0-6
-    const h=hashName(name);
-    // base value scales sharply with tier; per-stat variance from hash bytes
-    const base=10+tIdx*tIdx*3+tIdx*5; // 10, 18, 32, 52, 78, 110, 148
-    const v1=((h)&15)-7;        // -7..+8
-    const v2=((h>>5)&15)-7;
-    const v3=((h>>10)&15)-7;
-    return{
-      Power:    Math.max(1,base+v1),
-      Wrath:    Math.max(1,Math.round(base*0.85)+v2),
-      Cunning:  Math.max(1,Math.round(base*0.75)+v3),
-    };
+    return BattleEngine.demonBaseStats(name,d.tier.idx);
   }
 
   function calcStats(name){
@@ -4939,7 +5513,7 @@ window.INF=(function(){
     if(e.seals<6){
       const target=e.seals+1;
       return{
-        kind:'seal',targetSeal:target,cost:SEAL_COSTS[target],
+        kind:'seal',targetSeal:target,cost:{tier:echoTier(name),echo:echoCost(SEAL_COSTS[target],name)},
         label:`Forge the ${ordinal(target)} Seal`,
         previewMult:SEAL_MULT[target]*(UNCHAIN_MULT[e.unchainTier]||1.0)
       };
@@ -4947,8 +5521,8 @@ window.INF=(function(){
     const next=UNCHAIN_NEXT[e.unchainTier];
     if(!next)return null;
     return{
-      kind:'unchain',target:next,cost:UNCHAIN_COSTS[next],
-      label:({rebound:'Rebound the Demon',deepbound:'Deepbind the Demon',soulbound:'Soulbind the Demon'})[next],
+      kind:'unchain',target:next,cost:{dup:UNCHAIN_COSTS[next].dup,tier:echoTier(name),echo:echoCost(UNCHAIN_COSTS[next].echo,name)},
+      label:({rebound:'Rebound the Demon',deepbound:'Deepbind the Demon',soulbound:'Soulbind the Demon',unwritten:'Unwrite the Demon'})[next],
       previewMult:SEAL_MULT[1]*UNCHAIN_MULT[next], // seals reset to 1 on unchain
       ceilingMult:SEAL_MULT[6]*UNCHAIN_MULT[next]   // for "new ceiling" UI
     };
@@ -4957,13 +5531,11 @@ window.INF=(function(){
   function canAfford(upg,name){
     if(!upg)return false;
     const e=S.echoes,entry=getEntry(name);
-    if(upg.kind==='seal'){
-      const c=upg.cost;
-      return(e.void>=(c.void||0))&&(e.rift>=(c.rift||0))&&(e.soul>=(c.soul||0));
-    }
+    const have=(e&&e[upg.cost.tier])||0;
+    if(upg.kind==='seal')return have>=upg.cost.echo;
     if(upg.kind==='unchain'){
       const dupHave=Math.max(0,((entry&&entry.count)||0)-1);
-      return(dupHave>=(upg.cost.dup||0))&&(e.soul>=(upg.cost.soul||0));
+      return(dupHave>=(upg.cost.dup||0))&&(have>=upg.cost.echo);
     }
     return false;
   }
@@ -4979,20 +5551,17 @@ window.INF=(function(){
     // Shade Unchain = 250 XP, Imp = 500, Fiend = 1k, Greater = 2k, Archdemon = 4k, Sin Lord = 8k, Void = 16k.
     // Fully ascending one demon (4 Unchain advances) yields 4× the per-phase value above.
     const TIER_XP_MULT = { shade:1, imp:2, fiend:4, greater:8, archdemon:16, sinlord:32, void:64 };
-    const def = DEMONS.find(d => d.name === name);
-    const slug = def ? (TIER_SLUGS[def.tier] || 'shade') : 'shade';
+    const def = getDemonRecord(name);
+    const slug = def ? (['shade','imp','fiend','greater','archdemon','sinlord','void'][def.tier.idx] || 'shade') : 'shade';
     const tierMult = TIER_XP_MULT[slug] || 1;
     let xpGrant = 0;
     if(upg.kind==='seal'){
-      const c=upg.cost;
-      S.echoes.void-=(c.void||0);
-      S.echoes.rift-=(c.rift||0);
-      S.echoes.soul-=(c.soul||0);
+      S.echoes[upg.cost.tier]-=upg.cost.echo;
       e.seals=upg.targetSeal;
       // No Walker XP for Seal advances — those don't represent ascension.
     }else if(upg.kind==='unchain'){
       e.count-=(upg.cost.dup||0);
-      S.echoes.soul-=(upg.cost.soul||0);
+      S.echoes[upg.cost.tier]-=upg.cost.echo;
       e.unchainTier=upg.target;
       e.seals=1; // each unchain tier has its own 6 seals — reset on transition
       xpGrant = 250 * tierMult;
@@ -5005,14 +5574,11 @@ window.INF=(function(){
   // ── MIGRATION (idempotent) ──
   function migrate(){
     if(!S.collection)S.collection={};
-    if(!S.echoes)S.echoes={void:0,rift:0,soul:0};
-    if(S.echoes.void==null)S.echoes.void=0;
-    if(S.echoes.rift==null)S.echoes.rift=0;
-    if(S.echoes.soul==null)S.echoes.soul=0;
-    if(!S.echoesAccum)S.echoesAccum={void:0,rift:0,soul:0};
-    if(S.echoesAccum.void==null)S.echoesAccum.void=0;
-    if(S.echoesAccum.rift==null)S.echoesAccum.rift=0;
-    if(S.echoesAccum.soul==null)S.echoesAccum.soul=0;
+    // Echoes became one type per demon tier (2026-10-24). Older Void/Rift/Soul balances are cleared (pre-launch).
+    const freshEchoes=()=>Object.fromEntries(ECHO_TIERS.map(t=>[t,0]));
+    const tierShaped=o=>o&&ECHO_TIERS.every(t=>typeof o[t]==='number')&&Object.keys(o).length===ECHO_TIERS.length;
+    if(!tierShaped(S.echoes))S.echoes=freshEchoes();
+    if(!tierShaped(S.echoesAccum))S.echoesAccum=freshEchoes();
     // Walker gear migration — inventory + equipped slot cleanup + legacy shape upgrades.
     // Saves may carry any of three historical shapes: {primary, subs}, {major, minor, set},
     // or current {baseStat, majorRune, minorRune, set}. Normalize forward.
@@ -5078,36 +5644,44 @@ window.INF=(function(){
   }
 
   // ── ECHO TICK (called from garrison interval) ──
-  // 1 echo/hr/garrisoned demon for void; rift only if Fiend+; soul only if Sin Lord+.
-  // Garrison rate multiplier from unchain tier applies to all three.
+  // Each garrisoned demon earns its own tier's Echoes: ECHO_RATE/hr x its Unchain garrison multiplier.
   function tickEchoes(){
     const garrisoned=Object.values(S.garrison||{}).filter(g=>g&&g.name);
     if(garrisoned.length===0)return;
-    let v=0,r=0,sl=0;
+    const perHour={};
     for(const g of garrisoned){
       const d=getDemonRecord(g.name);if(!d)continue;
       const e=getEntry(g.name);
       const mult=e?(UNCHAIN_GARRISON[e.unchainTier]||1.0):1.0;
-      const tid=d.tier.id;
-      v+=mult;
-      if(RIFT_TIERS.has(tid))r+=mult;
-      if(SOUL_TIERS.has(tid))sl+=mult;
+      perHour[d.tier.id]=(perHour[d.tier.id]||0)+ECHO_RATE*mult;
     }
-    // per-second contribution from per-hour rate
-    S.echoesAccum.void+=v/3600;
-    S.echoesAccum.rift+=r/3600;
-    S.echoesAccum.soul+=sl/3600;
     let dirty=false;
-    if(S.echoesAccum.void>=1){const n=Math.floor(S.echoesAccum.void);S.echoes.void+=n;S.echoesAccum.void-=n;dirty=true;}
-    if(S.echoesAccum.rift>=1){const n=Math.floor(S.echoesAccum.rift);S.echoes.rift+=n;S.echoesAccum.rift-=n;dirty=true;}
-    if(S.echoesAccum.soul>=1){const n=Math.floor(S.echoesAccum.soul);S.echoes.soul+=n;S.echoesAccum.soul-=n;dirty=true;}
+    for(const t of Object.keys(perHour)){
+      S.echoesAccum[t]=(S.echoesAccum[t]||0)+perHour[t]/3600; // per-second contribution from per-hour rate
+      if(S.echoesAccum[t]>=1){const n=Math.floor(S.echoesAccum[t]);S.echoes[t]=(S.echoes[t]||0)+n;S.echoesAccum[t]-=n;dirty=true;}
+    }
     if(dirty){save();renderEchoes();if(openName)renderDetail();}
   }
 
+  // Top-bar strip: one pill per tier the player owns a demon of.
   function renderEchoes(){
-    const v=document.getElementById('echo-void');if(v)v.textContent=S.echoes.void;
-    const r=document.getElementById('echo-rift');if(r)r.textContent=S.echoes.rift;
-    const sl=document.getElementById('echo-soul');if(sl)sl.textContent=S.echoes.soul;
+    const bar=document.getElementById('echoes-bar');if(!bar)return;
+    const owned=new Set(ALL_DEMONS.filter(d=>getCount(d.name)>0).map(d=>d.tier.id));
+    bar.innerHTML=TIERS.filter(t=>owned.has(t.id)).map(t=>
+      `<div class="echoes-pill" data-tier="${t.id}" style="color:${t.color}" title="${t.name} Echoes"><span class="ed"></span><span class="label">${t.name.toUpperCase()}</span><b>${(S.echoes&&S.echoes[t.id])||0}</b></div>`).join('');
+    fitEchoes();
+  }
+  function fitEchoes(){
+    const bar=document.getElementById('echoes-bar');if(!bar)return;
+    bar.classList.remove('compact');
+    if(bar.scrollWidth>bar.clientWidth+1)bar.classList.add('compact');
+    fadeEchoes();
+  }
+  function fadeEchoes(){
+    const bar=document.getElementById('echoes-bar');if(!bar)return;
+    const max=bar.scrollWidth-bar.clientWidth;
+    bar.classList.toggle('fade-l',max>1&&bar.scrollLeft>1);
+    bar.classList.toggle('fade-r',max>1&&bar.scrollLeft<max-1);
   }
 
   // ── SIGIL SVG (hexagram-in-circle, ties to seal-of-six theme) ──
@@ -5173,7 +5747,7 @@ window.INF=(function(){
     // ── name + tier strip ──
     const nameEl=document.getElementById('detail-name');
     nameEl.textContent=displayName(name);
-    nameEl.classList.toggle('soulbound',e.unchainTier==='soulbound');
+    nameEl.classList.toggle('soulbound',UNCHAIN_ORDER[e.unchainTier]>=UNCHAIN_ORDER.soulbound);
     document.getElementById('detail-tier').innerHTML=
       `<span>${d.tier.name}</span>`+
       `<span class="sep">·</span>`+
@@ -5197,9 +5771,8 @@ window.INF=(function(){
       const color=lit?'var(--gold)':'rgba(232,212,255,.6)';
       return `<span class="${cls}" data-pip="${idx}" style="color:${color}">${sealSVG(28)}</span>`;
     }).join('');
-    const ucRow=['rebound','deepbound','soulbound'].map(t=>{
-      const order={none:0,rebound:1,deepbound:2,soulbound:3};
-      const lit=order[e.unchainTier]>=order[t];
+    const ucRow=['rebound','deepbound','soulbound','unwritten'].map(t=>{
+      const lit=UNCHAIN_ORDER[e.unchainTier]>=UNCHAIN_ORDER[t];
       return `<span class="uc-pip ${lit?'lit':''}" style="--c:${UNCHAIN_COLOR[t]}">${UNCHAIN_LABEL[t]}</span>`;
     }).join('');
 
@@ -5273,24 +5846,19 @@ window.INF=(function(){
 
   function renderCostPills(upg,entry){
     const out=[];
-    if(upg.kind==='seal'){
-      const c=upg.cost;
-      if(c.void)out.push(costPill('void',c.void,S.echoes.void));
-      if(c.rift)out.push(costPill('rift',c.rift,S.echoes.rift));
-      if(c.soul)out.push(costPill('soul',c.soul,S.echoes.soul));
-    }else if(upg.kind==='unchain'){
+    if(upg.kind==='unchain'){
       const dupHave=Math.max(0,((entry&&entry.count)||0)-1);
       out.push(dupPill(upg.cost.dup,dupHave));
-      if(upg.cost.soul)out.push(costPill('soul',upg.cost.soul,S.echoes.soul));
     }
+    out.push(costPill(upg.cost.tier,upg.cost.echo,S.echoes[upg.cost.tier]||0));
     return out.join('');
   }
-  function costPill(kind,need,have){
-    const labels={void:'Void',rift:'Rift',soul:'Soul'};
+  function costPill(tierId,need,have){
+    const t=TIERS.find(x=>x.id===tierId)||TIERS[0];
     const short=have<need;
-    return `<div class="cost-pill ${kind} ${short?'short':''}">
+    return `<div class="cost-pill echo ${short?'short':''}" style="color:${t.color}">
       <span class="dot"></span>
-      <span><b>${need}</b> ${labels[kind]}</span>
+      <span><b>${need}</b> ${t.name} Echoes</span>
       <span class="have">(${have})</span>
     </div>`;
   }
@@ -5329,6 +5897,8 @@ window.INF=(function(){
       if(e.target.id==='detail-overlay')closeDetail();
     });
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openName)closeDetail();});
+    window.addEventListener('resize',fitEchoes);
+    const bar=document.getElementById('echoes-bar');if(bar)bar.addEventListener('scroll',fadeEchoes,{passive:true});
   }
 
   // ── PUBLIC API ──
@@ -5338,7 +5908,7 @@ window.INF=(function(){
     openDetail,closeDetail,
     tickEchoes,renderEchoes,
     wire,
-    SOULBOUND_NAMES,RIFT_TIERS,SOUL_TIERS,
+    SOULBOUND_NAMES,ECHO_FACTOR,
   };
 })();
 
@@ -6907,7 +7477,9 @@ window.SummonScene = (function(){
 
     // ── Backdrop: summon_bg.jpg IS the destination scene shown through the rift.
     // The pentagram + platform are baked into this image — we don't render 3D copies on top.
+    const bgScene = scene;
     new THREE.TextureLoader().load('assets/ui/summon_bg.jpg', function(tex){
+      if (scene !== bgScene) { tex.dispose(); return; }  // the player left (or came back) before the image arrived
       tex.encoding = THREE.sRGBEncoding;
       // New bg image has FPV perspective baked in — show flat, no tilt
       // Plane oversized to fill ultrawide screens with no margins
@@ -7505,7 +8077,6 @@ window.SummonScene = (function(){
     }
     if (renderer) {
       renderer.dispose();
-      renderer.forceContextLoss();
     }
 
     scene = null; camera = null; renderer = null;
@@ -8062,7 +8633,6 @@ window.WalkerScene = (function(){
     }
     if (renderer){
       renderer.dispose();
-      renderer.forceContextLoss();
     }
 
     scene = null; camera = null; renderer = null;
@@ -8326,44 +8896,388 @@ window.CodexScene = (function(){
   return { init, destroy, pause, resume };
 })();
 </script>
-<!-- ════════ DEV-RESET (remove before launch) ════════ -->
 <script>
-(function(){
-  // Hidden dev tools. Toggle: Ctrl+Shift+`  (backtick) on desktop,
-  // or tap the very top-left corner 5× within 1.5s on mobile.
-  function ensurePanel(){
-    let p=document.getElementById('dev-reset-panel');
-    if(p) return p;
-    const style=document.createElement('style');
-    style.textContent="#dev-reset-panel{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:100000;display:none;background:rgba(10,4,22,0.97);border:1px solid rgba(251,191,36,0.5);border-radius:12px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,0.7);}#dev-reset-panel.show{display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:200px;}#dev-reset-panel .drp-title{font-family:Cinzel,Georgia,serif;font-size:.5rem;letter-spacing:.3em;color:rgba(251,191,36,0.85);text-transform:uppercase;text-align:center;margin-bottom:2px;}#dev-reset-panel button{font-family:Cinzel,Georgia,serif;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:#e2d9f3;background:rgba(124,58,237,0.14);border:0.5px solid rgba(124,58,237,0.45);border-radius:8px;padding:10px 16px;cursor:pointer;}#dev-reset-panel button:hover{background:rgba(124,58,237,0.28);}#dev-reset-panel .drp-close{color:rgba(214,204,236,0.6);background:none;border:0;font-size:.5rem;}";
-    document.head.appendChild(style);
-    p=document.createElement('div'); p.id='dev-reset-panel';
-    p.innerHTML='<div class="drp-title">Dev</div>'+
-      '<button data-act="wipe">Wipe save &amp; reload</button>'+
-      '<button data-act="tut">Replay tutorial</button>'+
-      '<button class="drp-close" data-act="close">Close</button>';
-    document.body.appendChild(p);
-    p.addEventListener('click',function(e){
-      const act=e.target&&e.target.getAttribute&&e.target.getAttribute('data-act'); if(!act) return;
-      if(act==='wipe'){ try{ localStorage.removeItem('inf_hub'); }catch(_){ } location.reload(); }
-      else if(act==='tut'){ try{ if(window.S){ S.tutorialSeen=false; if(S.walker) S.walker.created=false; if(typeof save==='function') save(); } }catch(_){ } location.reload(); }
-      else if(act==='close'){ p.classList.remove('show'); }
-    });
-    return p;
+// ═══════════════════════════════════════════
+// BATTLE — party select, battle screen, results. Drives BattleEngine and animates its events.
+// Realm difficulty order follows the Realms Hall reading order: Vale (tutorial) → seven sins → Void (final).
+// Auto unlocks on clearing the Vale; 2× auto speed after 3 sin realms; 3× after all 7 (Rob, 2026-10-21).
+// ═══════════════════════════════════════════
+const REALM_ORDER=['vale','wrath','greed','envy','lust','sloth','pride','glut','void'];
+const SIN_REALMS=['wrath','greed','envy','lust','sloth','pride','glut'];
+// Stage-13 bosses. The Vale's boss, The Gate, is Krazmoth the Undying (Rob, 2026-10-22).
+const REALM_BOSSES={
+  vale:['Krazmoth the Undying'],
+  wrath:["Vrath'ax"], greed:['Avara'], envy:['Envar'], lust:['Luxiel'],
+  sloth:["Gorm'than"], pride:['Vainglory'], glut:['Gorgethorn'],
+  void:['The Unnamed One','Null-That-Speaks'],
+};
+const PARTY_MAX=4;
+
+function demonSlug(name){return DEMON_IDS[name]||name.toLowerCase().replace(/['\s]/g,'_').replace(/[^a-z0-9_]/g,'');}
+function realmCleared(id){const r=REALMS.find(x=>x.id===id);return !!(r&&r.conquered>=r.stages);}
+function sinRealmsCleared(){return SIN_REALMS.filter(realmCleared).length;}
+function battleAutoUnlocked(){return realmCleared('vale');}
+function battleMaxSpeed(){const n=sinRealmsCleared();return n>=7?3:n>=3?2:1;}
+function battleSettings(){
+  if(!S.battleSettings) S.battleSettings={auto:false,speed:1};
+  if(!battleAutoUnlocked()) S.battleSettings.auto=false;
+  S.battleSettings.speed=Math.min(S.battleSettings.speed||1,battleMaxSpeed());
+  return S.battleSettings;
+}
+// Realm progress lives in the save (it used to sit on the REALMS constant and reset on reload).
+function syncRealmProgress(){
+  if(!S.realmProgress) S.realmProgress={};
+  for(const r of REALMS) r.conquered=Math.min(r.stages,S.realmProgress[r.id]|0);
+}
+
+// Party demon combat stats: base by tier → Seals → Unchain (INF.calcStats) → the Walker's stats.
+function partyDemonStats(name){
+  const c=INF.calcStats(name); if(!c) return null;
+  const w=id=>walkerStatValue(id);
+  const powPct=talentTotalEffect('walkerPowerPct'), wardPct=talentTotalEffect('walkerWardPct');
+  return{
+    Power:Math.round(c.Power*w('power')*(1+powPct/100)),
+    Ward: Math.round(c.Ward*w('ward')*(1+wardPct/100)),
+    Vigor:Math.round(c.Vigor*w('vigor')),
+    Tempo:Math.round(c.Tempo*w('tempo')),
+    Focus:Math.round(c.Focus*w('focus')),
+    Will: Math.round(c.Will*w('will')),
+  };
+}
+// Talent + vow effects that act inside a battle.
+function battleMods(){
+  const p=(S.walker&&S.walker.pacts)||{};
+  return{
+    critPct:talentTotalEffect('critPct'),
+    firstHitPct:talentTotalEffect('firstHitPct'),
+    critIE:talentTotalEffect('critIE'),
+    firstTurnTempo:talentTotalEffect('firstTurnTempo'),
+    firstCritTriple:!!talentEffect('call_4'),
+    hpPct:talentTotalEffect('hpPct'),
+    statusResPct:talentTotalEffect('statusResPct'),
+    regenPct:talentTotalEffect('regenPctTurn'),
+    cleanseEvery:talentTotalEffect('cleanseEveryTurns'),
+    blockFirstLethal:!!talentEffect('mark_3'),
+    sanctumCostPct:talentTotalEffect('sanctumCdPct'),
+    startIE:20*talentTotalEffect('sanctumTurnEarlier'),
+    dmgPct:p.blood?50:0,
+    startHpPct:p.blood?90:100,
+    walkerPower:walkerStatValue('power'),
+  };
+}
+function battleRoster(realmId){
+  const pool={};
+  for(const d of ALL_DEMONS){
+    if(d.tier.idx>4) continue;
+    (pool[d.tier.idx]=pool[d.tier.idx]||[]).push({name:d.name,slug:demonSlug(d.name),color:d.tier.color});
   }
-  function toggle(){ ensurePanel().classList.toggle('show'); }
-  document.addEventListener('keydown',function(e){
-    if(e.ctrlKey && e.shiftKey && (e.code==='Backquote' || e.key==='`' || e.key==='~')){ e.preventDefault(); toggle(); }
+  const bosses=(REALM_BOSSES[realmId]||[]).map(n=>{
+    const d=ALL_DEMONS.find(x=>x.name===n);
+    return{name:n,slug:demonSlug(n),tierIdx:d?d.tier.idx:5,color:d?d.tier.color:'#fbbf24'};
   });
-  let taps=[];
-  document.addEventListener('pointerdown',function(e){
-    if(e.clientX<48 && e.clientY<48){
-      const now=Date.now(); taps=taps.filter(function(t){return now-t<1500;}); taps.push(now);
-      if(taps.length>=5){ taps=[]; toggle(); }
+  return{pool,bosses};
+}
+function stageEncounter(realmId,stageIdx){
+  return BattleEngine.encounter(REALM_ORDER.indexOf(realmId),stageIdx,battleRoster(realmId));
+}
+function stageRewards(realmId,stageIdx,firstClear){
+  const o=REALM_ORDER.indexOf(realmId), boss=stageIdx===12;
+  let shards=Math.round(30*Math.pow(1.6,o)*(1+stageIdx*0.15)*(boss?3:1));
+  let xp=Math.round(25*(1+o*0.8)*(1+stageIdx*0.1)*(boss?3:1));
+  if(!firstClear){shards=Math.round(shards*0.25);xp=Math.round(xp*0.25);}
+  shards=Math.round(shards*(1+talentTotalEffect('battleShardPct')/100));
+  return{shards,xp};
+}
+function escHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+// ─── PARTY SELECT ───
+let _bpRealm=null,_bpStage=0,_bpPick=[];
+function openPartySelect(realmId,stageIdx){
+  const r=REALMS.find(x=>x.id===realmId); if(!r||stageIdx>r.conquered) return;
+  _bpRealm=realmId;_bpStage=stageIdx;
+  const owned=ALL_DEMONS.filter(d=>INF.getCount(d.name)>0).map(d=>d.name);
+  _bpPick=(S.battleParty||[]).filter(n=>owned.includes(n)).slice(0,PARTY_MAX);
+  if(!_bpPick.length) _bpPick=owned.slice().sort((a,b)=>(partyDemonStats(b).Power)-(partyDemonStats(a).Power)).slice(0,PARTY_MAX);
+  renderPartySelect();
+  document.getElementById('battle-party').classList.add('show');
+}
+function closePartySelect(){document.getElementById('battle-party').classList.remove('show');}
+function togglePartyPick(name){
+  const i=_bpPick.indexOf(name);
+  if(i>=0) _bpPick.splice(i,1); else if(_bpPick.length<PARTY_MAX) _bpPick.push(name);
+  renderPartySelect();
+}
+function renderPartySelect(){
+  const r=REALMS.find(x=>x.id===_bpRealm);
+  const foes=stageEncounter(_bpRealm,_bpStage);
+  const boss=_bpStage===12;
+  document.getElementById('bp-title').innerHTML=`<span style="color:${r.color}">${escHtml(r.name)}</span> · ${boss?'Boss':'Stage '+(_bpStage+1)}`;
+  document.getElementById('bp-foes').innerHTML='Facing: '+foes.map(f=>`<span style="color:${f.color}">${escHtml(f.name)}${f.boss?' (boss)':''}</span>`).join(', ');
+  const owned=ALL_DEMONS.filter(d=>INF.getCount(d.name)>0);
+  const list=document.getElementById('bp-list');
+  if(!owned.length){
+    list.innerHTML=`<div class="bp-empty">No demons bound yet. Summon one before you descend.</div>`;
+  }else{
+    list.innerHTML=owned.map(d=>{
+      const s=partyDemonStats(d.name), on=_bpPick.includes(d.name);
+      return `<button class="bp-row ${on?'on':''}" data-name="${escHtml(d.name)}" style="--c:${d.tier.color}">
+        <span class="bp-name">${escHtml(INF.displayName(d.name))}</span>
+        <span class="bp-tier">${d.tier.name}</span>
+        <span class="bp-stat">PWR ${s.Power}</span><span class="bp-stat">VIG ${s.Vigor}</span><span class="bp-stat">TMP ${s.Tempo}</span>
+      </button>`;
+    }).join('');
+    list.querySelectorAll('.bp-row').forEach(b=>b.addEventListener('click',()=>togglePartyPick(b.getAttribute('data-name'))));
+  }
+  document.getElementById('bp-count').textContent=`${_bpPick.length} / ${PARTY_MAX} chosen`;
+  document.getElementById('bp-go').disabled=_bpPick.length===0;
+}
+function confirmPartySelect(){
+  if(!_bpPick.length) return;
+  S.battleParty=_bpPick.slice(); save();
+  closePartySelect();
+  BattleUI.start(_bpRealm,_bpStage,_bpPick.slice());
+}
+
+// ─── BATTLE SCREEN ───
+const BattleUI=(function(){
+  const E=BattleEngine;
+  let st=null, ctx=null, cards={}, busy=false, mode='strike', gen=0;
+  const $=id=>document.getElementById(id);
+  const baseDelay=()=>{const s=battleSettings();return s.auto?560/s.speed:560;};
+  const later=(fn,ms)=>{const g=gen;setTimeout(()=>{if(g===gen)fn();},ms);};
+
+  function start(realmId,stageIdx,partyNames){
+    teardown();
+    gen++;
+    const r=REALMS.find(x=>x.id===realmId);
+    const party=partyNames.map(n=>{const d=ALL_DEMONS.find(x=>x.name===n);
+      return{name:INF.displayName(n),slug:demonSlug(n),tierIdx:d.tier.idx,color:d.tier.color,stats:partyDemonStats(n)};});
+    st=E.create({party,enemies:stageEncounter(realmId,stageIdx),mods:battleMods()});
+    ctx={realmId,stageIdx,realm:r,firstClear:stageIdx===r.conquered};
+    $('battle-bg').style.backgroundImage=`url('assets/ui/realm_bg_${r.id}.jpg')`;
+    $('bt-realm').textContent=r.name; $('bt-realm').style.color=r.color;
+    $('bt-stage').textContent=stageIdx===12?'Boss':'Stage '+(stageIdx+1);
+    $('bt-result').classList.remove('show');
+    switchScreen('battle');
+    buildSlots();
+    renderControls();
+    log(stageIdx===12?'The ruler of this realm rises.':'The rift opens.');
+    later(step,700);
+  }
+  function teardown(){
+    gen++;
+    for(const k of Object.keys(cards)){try{cards[k].destroy();}catch(e){}}
+    cards={}; busy=false; mode='strike';
+    ['bt-enemies','bt-party'].forEach(id=>{const el=$(id);if(el)el.innerHTML='';});
+  }
+  function cardWidth(){
+    const vw=Math.min(window.innerWidth,900), vh=window.innerHeight;
+    return Math.max(64,Math.floor(Math.min((vw-32-3*10)/4.3,(vh-300)/2/1.4,150)));
+  }
+  function buildSlots(){
+    const w=cardWidth();
+    for(const side of ['enemy','party']){
+      const row=$(side==='enemy'?'bt-enemies':'bt-party');
+      row.innerHTML='';
+      for(const u of st.units.filter(x=>x.side===side)){
+        const slot=document.createElement('div');
+        slot.className='bt-slot'+(u.boss?' boss':''); slot.id='bt-'+u.id; slot.style.width=w+'px';
+        const c=new DemonCard({id:u.slug,name:u.name,tier:u.tierIdx+1,tierName:TIERS[u.tierIdx].name,color:u.color},
+          {width:w,showName:true,showTier:false,showCount:false,animate:true});
+        cards[u.id]=c;
+        const art=document.createElement('div'); art.className='bt-art'; art.appendChild(c.el);
+        slot.appendChild(art);
+        slot.insertAdjacentHTML('beforeend',`<div class="bt-hp"><div class="bt-hp-fill" style="--c:${u.side==='party'?'#4ade80':'#f43f5e'}"></div></div>
+          <div class="bt-hp-num"></div><div class="bt-status"></div>`);
+        if(side==='enemy') slot.addEventListener('click',()=>onEnemyTap(u.id));
+        row.appendChild(slot);
+        paintUnit(u);
+      }
     }
-  }, true);
+  }
+  function paintUnit(u){
+    const slot=$('bt-'+u.id); if(!slot) return;
+    slot.querySelector('.bt-hp-fill').style.width=(100*u.hp/u.maxHp)+'%';
+    slot.querySelector('.bt-hp-num').textContent=`${u.hp} / ${u.maxHp}`;
+    slot.querySelector('.bt-status').innerHTML=u.statuses.map(s=>`<span class="bt-chip ${s.type}">${s.type==='burn'?'Burn '+s.turns:'Stun'}</span>`).join('')+
+      (u.cd>0?`<span class="bt-chip cd">${escHtml(u.kit.name)} ${u.cd}</span>`:'');
+    slot.classList.toggle('dead',!u.alive);
+  }
+  function paintAll(){for(const u of st.units) paintUnit(u); renderIE();}
+  function renderIE(){
+    $('bt-ie-fill').style.width=(100*st.ie/E.IE_MAX)+'%';
+    $('bt-ie-num').textContent=`${st.ie} / ${st.sanctumCost} IE`;
+    const ok=E.canSanctum(st)&&!busy&&!battleSettings().auto;
+    $('bt-mend').disabled=!ok; $('bt-lance').disabled=!ok;
+    $('bt-round').textContent=st.round?'Round '+st.round:'';
+  }
+  function setActive(id){
+    document.querySelectorAll('.bt-slot.active').forEach(x=>x.classList.remove('active'));
+    if(id){const s=$('bt-'+id); if(s) s.classList.add('active');}
+  }
+  function float(id,text,cls){
+    const slot=$('bt-'+id); if(!slot) return;
+    const f=document.createElement('div'); f.className='bt-float '+(cls||''); f.textContent=text;
+    slot.appendChild(f); setTimeout(()=>f.remove(),1100);
+  }
+  function log(t){$('bt-log').textContent=t;}
+  const nm=id=>id==='walker'?'The Walker':(E.unit(st,id)||{}).name||'';
+
+  function describe(e){
+    switch(e.t){
+      case 'round': return null;
+      case 'turn': return `${nm(e.actor)} acts.`;
+      case 'skill': return `${nm(e.src)} uses ${e.name}.`;
+      case 'sanctum': return `The Walker speaks: ${e.name}.`;
+      case 'stunned': return `${nm(e.tgt)} is stunned and loses the turn.`;
+      case 'resist': return `${nm(e.tgt)} resists the ${e.status}.`;
+      case 'block': return `The Mark holds. ${nm(e.tgt)} refuses to fall.`;
+      case 'death': return `${nm(e.tgt)} falls.`;
+      case 'cleanse': return `The Mark cleanses ${nm(e.tgt)}.`;
+      default: return null;
+    }
+  }
+  function apply(e){
+    const u=e.tgt?E.unit(st,e.tgt):null;
+    if(e.t==='dmg'){float(e.tgt,(e.crit?'CRIT ':'')+'-'+e.amt,e.burn?'burn':e.crit?'crit':'');const s=$('bt-'+e.tgt);if(s){s.classList.remove('hit');void s.offsetWidth;s.classList.add('hit');}}
+    if(e.t==='heal') float(e.tgt,'+'+e.amt,'heal');
+    if(e.t==='status') float(e.tgt,e.status==='burn'?'Burn':'Stun','status');
+    if(e.t==='resist') float(e.tgt,'Resist','status');
+    if(e.t==='block') float(e.tgt,'Blocked','heal');
+    if(e.t==='turn') setActive(e.actor);
+    if(e.t==='sanctum') document.getElementById('screen-battle').classList.add('bt-flash'),setTimeout(()=>document.getElementById('screen-battle').classList.remove('bt-flash'),500);
+    const d=describe(e); if(d) log(d);
+    if(u) paintUnit(u);
+    renderIE();
+  }
+  function play(ev,done){
+    busy=true; renderControls();
+    let i=0;
+    (function next(){
+      if(i>=ev.length){busy=false;renderControls();done&&done();return;}
+      const e=ev[i++]; apply(e);
+      const slow=['dmg','skill','sanctum','death','stunned','block'].includes(e.t);
+      later(next,slow?baseDelay():baseDelay()*0.35);
+    })();
+  }
+  function step(){
+    const ev=E.advance(st);
+    play(ev,()=>{
+      if(st.outcome) return finish();
+      const u=E.unit(st,st.awaiting);
+      if(u.side==='enemy') return later(()=>doAct(E.autoChoice(st)),baseDelay()*0.5);
+      if(battleSettings().auto) return later(autoTurn,baseDelay()*0.4);
+      mode='strike'; renderControls();
+    });
+  }
+  function autoTurn(){
+    if(!st||st.outcome||busy) return;
+    if(E.canSanctum(st)){
+      const hurtParty=E.living(st,'party').some(x=>x.hp<x.maxHp*0.4);
+      const ev=E.sanctum(st,hurtParty?'mend':'lance');
+      return play(ev,()=>{if(st.outcome)return finish();doAct(E.autoChoice(st));});
+    }
+    doAct(E.autoChoice(st));
+  }
+  function doAct(a){if(!a) return; const ev=E.act(st,a); play(ev,step);}
+  function myTurn(){return st&&!st.outcome&&!busy&&st.awaiting&&E.unit(st,st.awaiting).side==='party'&&!battleSettings().auto;}
+  function onEnemyTap(id){
+    if(!myTurn()) return;
+    const u=E.unit(st,id); if(!u||!u.alive) return;
+    doAct({kind:mode,target:id});
+  }
+  function chooseStrike(){if(!myTurn())return; mode='strike'; renderControls();}
+  function chooseSkill(){
+    if(!myTurn()) return;
+    const u=E.unit(st,st.awaiting); if(u.cd>0) return;
+    if(u.kit.aoe) return doAct({kind:'skill'});
+    mode='skill'; renderControls();
+  }
+  function useSanctum(kind){
+    if(!myTurn()||!E.canSanctum(st)) return;
+    const ev=E.sanctum(st,kind);
+    play(ev,()=>{if(st.outcome) finish();});
+  }
+  function toggleAuto(){
+    if(!battleAutoUnlocked()) return log('Auto unlocks when the Shattered Vale is conquered.');
+    const s=battleSettings(); s.auto=!s.auto; save(); renderControls();
+    if(s.auto&&st&&!busy&&!st.outcome&&st.awaiting&&E.unit(st,st.awaiting).side==='party') autoTurn();
+  }
+  function setSpeed(n){
+    if(n>battleMaxSpeed()) return log(n===2?'2× speed unlocks after three sin realms are conquered.':'3× speed unlocks after all seven sin realms are conquered.');
+    battleSettings().speed=n; save(); renderControls();
+  }
+  function renderControls(){
+    if(!st) return;
+    const s=battleSettings(), mine=myTurn(), u=st.awaiting?E.unit(st,st.awaiting):null;
+    $('bt-actions').classList.toggle('waiting',!mine);
+    $('bt-strike').classList.toggle('sel',mine&&mode==='strike');
+    const sk=$('bt-skill');
+    if(u&&u.side==='party'){
+      sk.innerHTML=`${escHtml(u.kit.name)}${u.cd>0?` <small>${u.cd}</small>`:''}`;
+      sk.title=u.kit.desc; sk.disabled=!mine||u.cd>0;
+    }else{sk.textContent='Skill';sk.disabled=true;}
+    sk.classList.toggle('sel',mine&&mode==='skill');
+    $('bt-strike').disabled=!mine;
+    document.querySelectorAll('#bt-enemies .bt-slot').forEach(x=>x.classList.toggle('targetable',mine));
+    const auto=$('bt-auto');
+    auto.classList.toggle('locked',!battleAutoUnlocked()); auto.classList.toggle('on',s.auto);
+    auto.textContent=battleAutoUnlocked()?(s.auto?'Auto: On':'Auto: Off'):'Auto 🔒';
+    document.querySelectorAll('.bt-speed').forEach(b=>{
+      const n=+b.getAttribute('data-speed');
+      b.classList.toggle('on',s.speed===n); b.classList.toggle('locked',n>battleMaxSpeed());
+      b.style.display=battleAutoUnlocked()?'':'none';
+    });
+    $('bt-hint').textContent=mine?(mode==='skill'?`Choose a target for ${u.kit.name}.`:'Tap an enemy to strike.'):'';
+    renderIE();
+  }
+  function finish(){
+    setActive(null);
+    const win=st.outcome==='victory', c=ctx;
+    const lines=[];
+    const prev={auto:battleAutoUnlocked(),speed:battleMaxSpeed()};
+    const memory=!!(S.walker.pacts&&S.walker.pacts.memory);
+    if(win){
+      const rw=stageRewards(c.realmId,c.stageIdx,c.firstClear);
+      const xp=memory?rw.xp*3:rw.xp;
+      S.shards+=rw.shards;
+      if(c.firstClear){
+        S.realmProgress[c.realmId]=c.stageIdx+1; syncRealmProgress();
+        lines.push(c.stageIdx===12?`${escHtml(c.realm.name)} is conquered.`:`Stage ${c.stageIdx+1} claimed.`);
+      }
+      lines.push(`+${rw.shards.toLocaleString()} ◆ Soul Shards`,`+${xp} Walker XP${memory?' (Pact of Memory ×3)':''}`);
+      save(); walkerGainXp(xp);
+      if(!prev.auto&&battleAutoUnlocked()) lines.push('Auto battle unlocked.');
+      if(battleMaxSpeed()>prev.speed) lines.push(`${battleMaxSpeed()}× auto speed unlocked.`);
+    }else{
+      if(memory){
+        const loss=Math.min(S.walker.xp,stageRewards(c.realmId,c.stageIdx,true).xp);
+        S.walker.xp-=loss; lines.push(`Pact of Memory: −${loss} Walker XP`);
+      }
+      lines.push('Your demons are driven back through the rift.');
+      save();
+    }
+    updateUI();
+    const r=c.realm, hasNext=win&&c.stageIdx<12;
+    $('bt-result-title').textContent=win?'Victory':'Defeat';
+    $('bt-result-title').style.color=win?r.color:'#f43f5e';
+    $('bt-result-lines').innerHTML=lines.map(l=>`<div>${l}</div>`).join('');
+    $('bt-next').style.display=hasNext?'':'none';
+    $('bt-retry').style.display=win?'none':'';
+    $('bt-result').classList.add('show');
+  }
+  function exit(){teardown(); st=null; switchScreen('realm');}
+  function next(){
+    const c=ctx; teardown(); st=null;
+    switchScreen('realm');
+    if(c&&c.stageIdx<12) openPartySelect(c.realmId,c.stageIdx+1);
+  }
+  function retry(){const c=ctx; start(c.realmId,c.stageIdx,(S.battleParty||[]).slice());}
+  function retreat(){if(!st) return; if(st.outcome) return exit(); exit();}
+  function _state(){return st;}
+  return{start,exit,next,retry,retreat,chooseStrike,chooseSkill,useSanctum,toggleAuto,setSpeed,_state};
 })();
 </script>
-<!-- ════════ /DEV-RESET ════════ -->
+
 </body>
 </html>
