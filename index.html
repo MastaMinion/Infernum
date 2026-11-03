@@ -8654,9 +8654,10 @@ window.WalkerScene = (function(){
 window.CodexScene = (function(){
   const isMobile = window.innerWidth < 680;
   const COUNT_DUST = isMobile ? 40 : 80;
+  const COUNT_EMBERS = isMobile ? 10 : 18;
 
   let scene, camera, renderer, canvas, container;
-  let tome, tomeMaterial, tomeGlow;
+  let tome, tomeBook, tomeCover, tomeCoverMat, tomeHit, tomeGlow, tomePageGlow, tomePageLight, emberSystem;
   let dustSystem;
   let ambient;
   let raycaster, ndc;
@@ -8664,9 +8665,11 @@ window.CodexScene = (function(){
   let initialized = false;
   let paused = false;
   let hoverTome = false;
-  // Tome float + hover lift state. Coordinates tuned for the baked-in tome position in codex_bg.jpg
-  // (lectern sits in lower-third of frame, tome's open pages center around screen-y ~-0.35 NDC).
-  let tomeBaseY = -0.42, tomeHoverY = -0.32, tomeCurrentY = -0.42;
+  // The tome floats just above the lectern painted into codex_bg.jpg (the lectern top sits at about NDC y -0.24).
+  // It bobs, sways, and on hover rises and opens; lift and open ease toward their targets each frame.
+  const TOME_W = 0.42, TOME_H = 0.56, TOME_T = 0.13;
+  const TOME_X = 0, TOME_Y = 0.02, TOME_Z = 1.6, TOME_LIFT = 0.07;
+  let tomeLift = 0, tomeOpen = 0;
 
   // Asset path — codex_bg.jpg is the chamber backdrop with the tome already baked onto the lectern.
   const BG_PATH = 'assets/ui/codex_bg.jpg';
@@ -8730,31 +8733,122 @@ window.CodexScene = (function(){
       },
     );
 
-    // ── Tome layer: the codex bg image has a beautiful open tome already baked onto the lectern.
-    // We don't add a visible tome image — instead, we position an INVISIBLE click hitbox over the
-    // baked-in tome's screen position and a soft additive-glow plane that pulses subtly and
-    // intensifies on hover. The bg image is the source of truth for what the tome looks like.
-    //
-    // Tuning: if you change the bg image and the baked-in tome moves, adjust tome.position to
-    // align the hitbox + glow with the new tome location.
-    const tomeGeo = new THREE.PlaneGeometry(1.0, 0.65); // hit-test area covering the tome on the lectern
-    tomeMaterial = new THREE.MeshBasicMaterial({
-      transparent: true, opacity: 0, depthWrite: false, // invisible — pure click target
-    });
-    tome = new THREE.Mesh(tomeGeo, tomeMaterial);
-    tome.position.set(0, tomeBaseY, 1.2);
+    // ── Tome: a 3D book floating just above the lectern painted into the bg image. Built in code: leather
+    // covers with a gold sigil drawn on a canvas, a page block, a spine and gold corner caps. The front cover
+    // hangs on a pivot at the spine so it can open on hover. A soft round glow (no edges) sits behind it.
+    tome = new THREE.Group();
+    tome.position.set(TOME_X, TOME_Y, TOME_Z);
     scene.add(tome);
+    tomeBook = new THREE.Group();
+    tomeBook.rotation.x = -0.16; // top leans back a little, like a book presented on a stand
+    // (the y turn is set every frame in animate: a three-quarter view so the spine and thickness show)
+    tome.add(tomeBook);
 
-    // Soft glow plane positioned over the baked-in tome. Additively blended warm light that
-    // breathes idle and brightens on hover, signalling interactivity without obscuring the art.
-    const glowGeo = new THREE.PlaneGeometry(2.2, 1.6);
-    const glowMat = new THREE.MeshBasicMaterial({
-      color: 0xfbbf24, transparent: true, opacity: 0.0,
-      blending: THREE.AdditiveBlending, depthWrite: false,
+    const coverTex = new THREE.CanvasTexture(drawTomeCover(false));
+    coverTex.encoding = THREE.sRGBEncoding;
+    const sigilTex = new THREE.CanvasTexture(drawTomeCover(true));
+    const leather = new THREE.MeshStandardMaterial({ color: 0x1a060b, roughness: 0.9, metalness: 0.05 });
+    tomeCoverMat = new THREE.MeshStandardMaterial({
+      map: coverTex, emissiveMap: sigilTex, emissive: 0xffb347, emissiveIntensity: 0.6,
+      roughness: 0.7, metalness: 0.15,
     });
-    tomeGlow = new THREE.Mesh(glowGeo, glowMat);
-    tomeGlow.position.set(0, tomeBaseY, 1.1);
-    scene.add(tomeGlow);
+    const gold = new THREE.MeshStandardMaterial({ color: 0x9c7a2e, roughness: 0.5, metalness: 0.8 });
+    // Page edges: aged parchment with fine lines, so the block reads as stacked leaves, not a white slab.
+    // Leaves stack along z, so their edges are vertical lines on the side faces and horizontal on top and bottom.
+    const paperOf = vertical => {
+      const tex = new THREE.CanvasTexture(drawPageEdges(vertical));
+      tex.encoding = THREE.sRGBEncoding;
+      return new THREE.MeshStandardMaterial({ map: tex, color: 0x9a8360, roughness: 0.95 });
+    };
+    const paperSide = paperOf(true), paperTop = paperOf(false);
+    // The top leaf, seen when the cover opens: parchment with a faint red sigil and lines of script.
+    const leafTex = new THREE.CanvasTexture(drawLeaf());
+    leafTex.encoding = THREE.sRGBEncoding;
+    const leaf = new THREE.MeshStandardMaterial({ map: leafTex, roughness: 0.95 });
+    const paper = [paperSide, paperSide, paperTop, paperTop, leaf, paperTop];
+    // Inside of the front cover: a dark endpaper.
+    const endpaper = new THREE.MeshStandardMaterial({ color: 0x2b0a12, roughness: 0.9 });
+    // r128 reads material colours as linear, which shows these dark hexes far lighter (pink leather);
+    // convert them from sRGB so they display as picked.
+    for (const m of [leather, gold, paperSide, paperTop, endpaper]) m.color.convertSRGBToLinear();
+    const BOARD = 0.018;
+
+    const back = new THREE.Mesh(new THREE.BoxGeometry(TOME_W, TOME_H, BOARD), leather);
+    back.position.z = -TOME_T/2 + BOARD/2;
+    tomeBook.add(back);
+    const pages = new THREE.Mesh(new THREE.BoxGeometry(TOME_W - 0.03, TOME_H - 0.03, TOME_T - 2*BOARD), paper);
+    pages.position.x = 0.012;
+    tomeBook.add(pages);
+    const spine = new THREE.Mesh(new THREE.BoxGeometry(0.03, TOME_H, TOME_T), leather);
+    spine.position.x = -TOME_W/2 + 0.015;
+    tomeBook.add(spine);
+    // Front cover on a pivot at the spine edge; rotating the pivot about y swings the cover toward the camera.
+    tomeCover = new THREE.Group();
+    tomeCover.position.set(-TOME_W/2, 0, TOME_T/2 - BOARD/2);
+    tomeBook.add(tomeCover);
+    // Box faces: +x, -x, +y, -y, +z (front, carries the sigil), -z.
+    const front = new THREE.Mesh(new THREE.BoxGeometry(TOME_W, TOME_H, BOARD),
+      [leather, leather, leather, leather, tomeCoverMat, endpaper]);
+    front.position.x = TOME_W/2;
+    tomeCover.add(front);
+    const capGeo = new THREE.BoxGeometry(0.05, 0.05, BOARD + 0.008);
+    for (const [cx, cy] of [[0.025, 1], [0.025, -1], [TOME_W - 0.025, 1], [TOME_W - 0.025, -1]]) {
+      const cap = new THREE.Mesh(capGeo, gold);
+      cap.position.set(cx, cy * (TOME_H/2 - 0.025), 0);
+      tomeCover.add(cap);
+    }
+
+    // Light on the book: a warm key from the front, a violet rim from behind, and a light in the pages that
+    // only comes up as the cover opens.
+    const key = new THREE.PointLight(0xffc070, 0.8, 6);
+    key.position.set(0.7, 0.6, TOME_Z + 1.4);
+    scene.add(key);
+    const rim = new THREE.PointLight(0x9b5cff, 1.6, 3);
+    rim.position.set(TOME_X, TOME_Y + 0.25, TOME_Z - 0.6);
+    scene.add(rim);
+    tomePageLight = new THREE.PointLight(0xffb040, 0, 1.2);
+    tomePageLight.position.set(0.05, 0, TOME_T/2 + 0.12);
+    tomeBook.add(tomePageLight);
+
+    // Glow behind the book: a sprite with a radial gradient that fades to nothing, so it has no edges.
+    tomeGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: new THREE.CanvasTexture(drawGlow('rgba(176,110,255,1)', 'rgba(124,58,237,0.35)')),
+      transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    tomeGlow.scale.set(0.9, 0.9, 1);
+    tomeGlow.position.set(0, 0, -0.18);
+    tome.add(tomeGlow);
+    // Warm light spilling from the pages when the tome opens (invisible while closed).
+    tomePageGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: new THREE.CanvasTexture(drawGlow('rgba(255,214,140,1)', 'rgba(251,146,36,0.4)')),
+      transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    tomePageGlow.scale.set(0.5, 0.5, 1);
+    tomePageGlow.position.set(0.04, 0, TOME_T/2 + 0.06);
+    tome.add(tomePageGlow);
+
+    // Embers circling the book.
+    const emberGeo = new THREE.BufferGeometry();
+    const emberPos = new Float32Array(COUNT_EMBERS * 3);
+    const emberSeed = new Float32Array(COUNT_EMBERS * 3); // angle, radius, height phase
+    for (let i = 0; i < COUNT_EMBERS; i++) {
+      emberSeed[i*3]   = Math.random() * Math.PI * 2;
+      emberSeed[i*3+1] = 0.28 + Math.random() * 0.16;
+      emberSeed[i*3+2] = Math.random();
+    }
+    emberGeo.setAttribute('position', new THREE.BufferAttribute(emberPos, 3));
+    emberSystem = new THREE.Points(emberGeo, new THREE.PointsMaterial({
+      color: 0xffa040, size: 0.03, transparent: true, opacity: 0.85,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    emberSystem.userData.seed = emberSeed;
+    tome.add(emberSystem);
+
+    // Click and hover target: an invisible plane a little larger than the book, so it is easy to touch.
+    tomeHit = new THREE.Mesh(new THREE.PlaneGeometry(TOME_W * 1.5, TOME_H * 1.35),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
+    tomeHit.position.z = 0.1;
+    tome.add(tomeHit);
 
     // ── Dust motes drifting in front of the bg image for atmosphere ──
     const dustGeo = new THREE.BufferGeometry();
@@ -8799,23 +8893,23 @@ window.CodexScene = (function(){
   }
 
   function onCanvasClick(e){
-    if (!canvas || !raycaster || !camera || !tome) return;
+    if (!canvas || !raycaster || !camera || !tomeHit) return;
     const rect = canvas.getBoundingClientRect();
     ndc.x = ((e.clientX - rect.left)/rect.width)*2 - 1;
     ndc.y = -((e.clientY - rect.top)/rect.height)*2 + 1;
     raycaster.setFromCamera(ndc, camera);
-    const hits = raycaster.intersectObject(tome, false);
+    const hits = raycaster.intersectObject(tomeHit, false);
     if (hits.length){
       if (typeof openCodexGrid === 'function') openCodexGrid();
     }
   }
   function onCanvasMouseMove(e){
-    if (!canvas || !raycaster || !camera || !tome) return;
+    if (!canvas || !raycaster || !camera || !tomeHit) return;
     const rect = canvas.getBoundingClientRect();
     ndc.x = ((e.clientX - rect.left)/rect.width)*2 - 1;
     ndc.y = -((e.clientY - rect.top)/rect.height)*2 + 1;
     raycaster.setFromCamera(ndc, camera);
-    const hits = raycaster.intersectObject(tome, false);
+    const hits = raycaster.intersectObject(tomeHit, false);
     hoverTome = hits.length > 0;
     canvas.style.cursor = hoverTome ? 'pointer' : '';
   }
@@ -8829,18 +8923,31 @@ window.CodexScene = (function(){
     animationId = requestAnimationFrame(animate);
     if (paused) return;
     const t = clock.getElapsedTime();
-    // Tome hitbox follows the baked-in tome position — no idle bob since it's invisible
-    // (a bobbing invisible click target would have the hover hitbox sliding off the visible tome).
-    // The hover lift effect is communicated entirely via the glow plane below.
-    const targetY = hoverTome ? tomeHoverY : tomeBaseY;
-    tomeCurrentY += (targetY - tomeCurrentY) * 0.08;
-    if (tome) tome.position.y = tomeCurrentY;
-    if (tomeGlow) {
-      tomeGlow.position.y = tomeCurrentY;
-      // Idle: faint warm breath. Hover: noticeably brighter pulse.
-      const idle = 0.08 + Math.sin(t*1.4)*0.04;
-      const hover = 0.32 + Math.sin(t*3.5)*0.06;
-      tomeGlow.material.opacity = hoverTome ? hover : idle;
+    // Tome: bob and sway while idle; on hover rise and open the front cover, with light from the pages.
+    tomeLift += ((hoverTome ? TOME_LIFT : 0) - tomeLift) * 0.08;
+    tomeOpen += ((hoverTome ? 1 : 0) - tomeOpen) * 0.07;
+    if (tome) {
+      tome.position.y = TOME_Y + Math.sin(t * 1.1) * 0.035 + tomeLift;
+      tomeBook.rotation.y = 0.42 + Math.sin(t * 0.5) * 0.16 - tomeOpen * 0.3;
+      tomeBook.rotation.z = Math.sin(t * 0.8) * 0.03;
+      tomeCover.rotation.y = -tomeOpen * 1.9; // about 110 degrees: the cover swings open toward the viewer's left
+      tomeCoverMat.emissiveIntensity = 0.45 + Math.sin(t * 1.6) * 0.2 + tomeOpen * 0.5;
+      tomePageLight.intensity = tomeOpen * 0.5;
+      tomePageGlow.material.opacity = tomeOpen * 0.3;
+      tomeGlow.material.opacity = 0.32 + Math.sin(t * 1.3) * 0.08 + tomeOpen * 0.3;
+    }
+    if (emberSystem) {
+      const pos = emberSystem.geometry.attributes.position.array;
+      const seed = emberSystem.userData.seed;
+      for (let i = 0; i < COUNT_EMBERS; i++) {
+        const a = seed[i*3] + t * (0.35 + (i % 3) * 0.12), r = seed[i*3+1];
+        const h = (seed[i*3+2] + t * 0.07) % 1;  // each ember rises through the band and starts again
+        pos[i*3] = Math.cos(a) * r;
+        pos[i*3+1] = -0.3 + h * 0.6;
+        pos[i*3+2] = Math.sin(a) * r * 0.45;
+      }
+      emberSystem.geometry.attributes.position.needsUpdate = true;
+      emberSystem.material.opacity = 0.85 * Math.min(1, 0.4 + tomeOpen);
     }
     // Drift dust upward and recycle
     if (dustSystem){
@@ -8868,6 +8975,122 @@ window.CodexScene = (function(){
   function pause(){ paused = true; }
   function resume(){ paused = false; }
 
+  // Where the tome is on screen, as fractions of the viewport (0,0 = top left).
+  function tomeScreen(){
+    if (!tome || !camera) return null;
+    const v = new THREE.Vector3();
+    tome.getWorldPosition(v);
+    v.project(camera);
+    return { x: (v.x + 1) / 2, y: (1 - v.y) / 2 };
+  }
+
+  // Front cover art, 512x683. sigilOnly=false: the full cover (oxblood leather, gold border, sigil).
+  // sigilOnly=true: the gold lines alone on black, used as the glow map so only the gold lights up.
+  function drawTomeCover(sigilOnly){
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 683;
+    const g = c.getContext('2d');
+    if (sigilOnly) { g.fillStyle = '#000'; g.fillRect(0, 0, 512, 683); }
+    else {
+      const bg = g.createRadialGradient(256, 300, 40, 256, 342, 420);
+      bg.addColorStop(0, '#4a1622'); bg.addColorStop(1, '#1c060c');
+      g.fillStyle = bg; g.fillRect(0, 0, 512, 683);
+      // Grain: fixed pseudo-random speckle so the leather is not flat.
+      let r = 7;
+      for (let i = 0; i < 2600; i++) {
+        r = (r * 16807) % 2147483647;
+        const x = r % 512, y = (r >> 9) % 683, k = (r >> 3) % 2;
+        g.fillStyle = k ? 'rgba(0,0,0,0.18)' : 'rgba(255,200,180,0.05)';
+        g.fillRect(x, y, 2, 2);
+      }
+    }
+    g.strokeStyle = sigilOnly ? '#ffffff' : '#c9a24a';
+    g.lineJoin = 'round';
+    g.lineWidth = 6; g.strokeRect(26, 26, 460, 631);
+    g.lineWidth = 2; g.strokeRect(42, 42, 428, 599);
+    // Sigil: a circle with an inverted pentagram, and a smaller ring.
+    const cx = 256, cy = 330, R = 150;
+    g.lineWidth = 5;
+    g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke();
+    g.lineWidth = 2;
+    g.beginPath(); g.arc(cx, cy, R - 16, 0, Math.PI * 2); g.stroke();
+    g.lineWidth = 5;
+    g.beginPath();
+    for (let i = 0; i <= 5; i++) {
+      const a = Math.PI / 2 + i * (Math.PI * 4 / 5); // star order, point down
+      const x = cx + Math.cos(a) * (R - 16), y = cy + Math.sin(a) * (R - 16);
+      if (i) g.lineTo(x, y); else g.moveTo(x, y);
+    }
+    g.stroke();
+    g.beginPath(); g.arc(cx, cy, 18, 0, Math.PI * 2); g.stroke();
+    // Bands above and below the sigil.
+    g.lineWidth = 3;
+    for (const y of [120, 540]) { g.beginPath(); g.moveTo(130, y); g.lineTo(382, y); g.stroke(); }
+    return c;
+  }
+
+  // Page-block edges, 256x256: parchment with darker lines running along the leaves (vertical or horizontal).
+  function drawPageEdges(vertical){
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 256;
+    const g = c.getContext('2d');
+    g.fillStyle = '#e6d3a8'; g.fillRect(0, 0, 256, 256);
+    let r = 11;
+    for (let y = 0; y < 256; y += 3) {
+      r = (r * 16807) % 2147483647;
+      g.fillStyle = 'rgba(90,60,25,' + (0.12 + (r % 100) / 400) + ')';
+      if (vertical) g.fillRect(y, 0, 1, 256); else g.fillRect(0, y, 256, 1);
+    }
+    const v = vertical ? g.createLinearGradient(0, 0, 256, 0) : g.createLinearGradient(0, 0, 0, 256);
+    v.addColorStop(0, 'rgba(60,35,10,0.35)'); v.addColorStop(0.15, 'rgba(0,0,0,0)');
+    v.addColorStop(0.85, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(60,35,10,0.35)');
+    g.fillStyle = v; g.fillRect(0, 0, 256, 256);
+    return c;
+  }
+
+  // Top leaf, 512x683: parchment, a faint red sigil and rows of script-like strokes.
+  function drawLeaf(){
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 683;
+    const g = c.getContext('2d');
+    const bg = g.createRadialGradient(256, 340, 60, 256, 340, 420);
+    bg.addColorStop(0, '#efe0bb'); bg.addColorStop(1, '#b9996a');
+    g.fillStyle = bg; g.fillRect(0, 0, 512, 683);
+    g.strokeStyle = 'rgba(140,20,20,0.55)'; g.lineWidth = 3;
+    g.beginPath(); g.arc(256, 250, 90, 0, Math.PI * 2); g.stroke();
+    g.beginPath();
+    for (let i = 0; i <= 5; i++) {
+      const a = Math.PI / 2 + i * (Math.PI * 4 / 5);
+      const x = 256 + Math.cos(a) * 90, y = 250 + Math.sin(a) * 90;
+      if (i) g.lineTo(x, y); else g.moveTo(x, y);
+    }
+    g.stroke();
+    let r = 3;
+    g.fillStyle = 'rgba(60,30,15,0.55)';
+    for (let row = 0; row < 9; row++) {
+      let x = 70;
+      const y = 390 + row * 26;
+      while (x < 440) {
+        r = (r * 16807) % 2147483647;
+        const w = 10 + r % 34;
+        g.fillRect(x, y, Math.min(w, 442 - x), 3);
+        x += w + 8;
+      }
+    }
+    return c;
+  }
+
+  // Round glow: a radial gradient from an opaque core to fully transparent, so the sprite has no edges.
+  function drawGlow(core, mid){
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 256;
+    const g = c.getContext('2d');
+    const gr = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+    gr.addColorStop(0, core); gr.addColorStop(0.35, mid); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+    return c;
+  }
+
   function destroy(){
     if (!initialized) return;
     cancelAnimationFrame(animationId);
@@ -8878,22 +9101,26 @@ window.CodexScene = (function(){
     scene.traverse(obj => {
       if (obj.geometry) obj.geometry.dispose();
       if (obj.material) {
-        if (obj.material.map) obj.material.map.dispose();
-        if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
-        else obj.material.dispose();
+        (Array.isArray(obj.material) ? obj.material : [obj.material]).forEach(m => {
+          if (m.map) m.map.dispose();
+          if (m.emissiveMap) m.emissiveMap.dispose();
+          m.dispose();
+        });
       }
     });
     if (scene.background && scene.background.dispose) scene.background.dispose();
     renderer.dispose();
     scene = null; camera = null; renderer = null;
-    tome = null; tomeMaterial = null; tomeGlow = null;
+    tome = null; tomeBook = null; tomeCover = null; tomeCoverMat = null; tomeHit = null;
+    tomeGlow = null; tomePageGlow = null; tomePageLight = null; emberSystem = null;
+    tomeLift = 0; tomeOpen = 0;
     dustSystem = null; ambient = null;
     raycaster = null; ndc = null; clock = null;
     initialized = false; paused = false; hoverTome = false;
     if (canvas) canvas.style.cursor = '';
   }
 
-  return { init, destroy, pause, resume };
+  return { init, destroy, pause, resume, tomeScreen };
 })();
 </script>
 <script>
