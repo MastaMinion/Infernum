@@ -8657,7 +8657,7 @@ window.CodexScene = (function(){
   const COUNT_EMBERS = isMobile ? 10 : 18;
 
   let scene, camera, renderer, canvas, container;
-  let tome, tomeBook, tomeCover, tomeCoverMat, tomeHit, tomeGlow, tomePageGlow, tomePageLight, emberSystem;
+  let tome, tomeBook, tomeCover, tomeCoverMat, tomeMedallionMat, tomeHit, tomeGlow, tomePageGlow, tomePageLight, emberSystem;
   let dustSystem;
   let ambient;
   let raycaster, ndc;
@@ -8665,10 +8665,11 @@ window.CodexScene = (function(){
   let initialized = false;
   let paused = false;
   let hoverTome = false;
-  // The tome floats just above the lectern painted into codex_bg.jpg (the lectern top sits at about NDC y -0.24).
+  // The tome floats just over the lectern painted into codex_bg.jpg (the lectern top sits at about NDC y -0.24),
+  // set back in the room and drawn at 0.8 scale so it reads as part of the altar (Rob, 2026-11-03).
   // It bobs, sways, and on hover rises and opens; lift and open ease toward their targets each frame.
-  const TOME_W = 0.42, TOME_H = 0.56, TOME_T = 0.13;
-  const TOME_X = 0, TOME_Y = 0.02, TOME_Z = 1.6, TOME_LIFT = 0.07;
+  const TOME_W = 0.42, TOME_H = 0.56, TOME_T = 0.13, TOME_SCALE = 0.8;
+  const TOME_X = 0, TOME_Y = -0.08, TOME_Z = 0.9, TOME_LIFT = 0.05;
   let tomeLift = 0, tomeOpen = 0;
 
   // Asset path — codex_bg.jpg is the chamber backdrop with the tome already baked onto the lectern.
@@ -8733,11 +8734,14 @@ window.CodexScene = (function(){
       },
     );
 
-    // ── Tome: a 3D book floating just above the lectern painted into the bg image. Built in code: leather
-    // covers with a gold sigil drawn on a canvas, a page block, a spine and gold corner caps. The front cover
-    // hangs on a pivot at the spine so it can open on hover. A soft round glow (no edges) sits behind it.
+    // ── Tome: a 3D book floating just over the lectern painted into the bg image. Built in code: blackened,
+    // cracked leather drawn on a canvas (cracks smoulder through the glow map), tarnished bronze frame, the
+    // game's Unmade sigil (sigil_unmade.png) set in as a raised medallion, spiked iron corners, an iron clasp
+    // across the fore-edge, raised spine bands and a yellowed page block. The front cover hangs on a pivot at
+    // the spine so it can open on hover. A soft round glow (no edges) sits behind it.
     tome = new THREE.Group();
     tome.position.set(TOME_X, TOME_Y, TOME_Z);
+    tome.scale.setScalar(TOME_SCALE);
     scene.add(tome);
     tomeBook = new THREE.Group();
     tomeBook.rotation.x = -0.16; // top leans back a little, like a book presented on a stand
@@ -8746,19 +8750,20 @@ window.CodexScene = (function(){
 
     const coverTex = new THREE.CanvasTexture(drawTomeCover(false));
     coverTex.encoding = THREE.sRGBEncoding;
-    const sigilTex = new THREE.CanvasTexture(drawTomeCover(true));
-    const leather = new THREE.MeshStandardMaterial({ color: 0x1a060b, roughness: 0.9, metalness: 0.05 });
+    const crackTex = new THREE.CanvasTexture(drawTomeCover(true));
+    const leather = new THREE.MeshStandardMaterial({ color: 0x140a09, roughness: 0.92, metalness: 0.05 });
     tomeCoverMat = new THREE.MeshStandardMaterial({
-      map: coverTex, emissiveMap: sigilTex, emissive: 0xffb347, emissiveIntensity: 0.6,
-      roughness: 0.7, metalness: 0.15,
+      map: coverTex, emissiveMap: crackTex, emissive: 0xff3a10, emissiveIntensity: 0.4,
+      roughness: 0.85, metalness: 0.1,
     });
-    const gold = new THREE.MeshStandardMaterial({ color: 0x9c7a2e, roughness: 0.5, metalness: 0.8 });
+    const iron = new THREE.MeshStandardMaterial({ color: 0x3a3632, roughness: 0.55, metalness: 0.9 });
+    const bronze = new THREE.MeshStandardMaterial({ color: 0x6e5428, roughness: 0.6, metalness: 0.85 });
     // Page edges: aged parchment with fine lines, so the block reads as stacked leaves, not a white slab.
     // Leaves stack along z, so their edges are vertical lines on the side faces and horizontal on top and bottom.
     const paperOf = vertical => {
       const tex = new THREE.CanvasTexture(drawPageEdges(vertical));
       tex.encoding = THREE.sRGBEncoding;
-      return new THREE.MeshStandardMaterial({ map: tex, color: 0x9a8360, roughness: 0.95 });
+      return new THREE.MeshStandardMaterial({ map: tex, color: 0x857050, roughness: 0.95 });
     };
     const paperSide = paperOf(true), paperTop = paperOf(false);
     // The top leaf, seen when the cover opens: parchment with a faint red sigil and lines of script.
@@ -8767,10 +8772,10 @@ window.CodexScene = (function(){
     const leaf = new THREE.MeshStandardMaterial({ map: leafTex, roughness: 0.95 });
     const paper = [paperSide, paperSide, paperTop, paperTop, leaf, paperTop];
     // Inside of the front cover: a dark endpaper.
-    const endpaper = new THREE.MeshStandardMaterial({ color: 0x2b0a12, roughness: 0.9 });
+    const endpaper = new THREE.MeshStandardMaterial({ color: 0x241009, roughness: 0.9 });
     // r128 reads material colours as linear, which shows these dark hexes far lighter (pink leather);
     // convert them from sRGB so they display as picked.
-    for (const m of [leather, gold, paperSide, paperTop, endpaper]) m.color.convertSRGBToLinear();
+    for (const m of [leather, iron, bronze, paperSide, paperTop, endpaper]) m.color.convertSRGBToLinear();
     const BOARD = 0.018;
 
     const back = new THREE.Mesh(new THREE.BoxGeometry(TOME_W, TOME_H, BOARD), leather);
@@ -8791,12 +8796,64 @@ window.CodexScene = (function(){
       [leather, leather, leather, leather, tomeCoverMat, endpaper]);
     front.position.x = TOME_W/2;
     tomeCover.add(front);
-    const capGeo = new THREE.BoxGeometry(0.05, 0.05, BOARD + 0.008);
-    for (const [cx, cy] of [[0.025, 1], [0.025, -1], [TOME_W - 0.025, 1], [TOME_W - 0.025, -1]]) {
-      const cap = new THREE.Mesh(capGeo, gold);
-      cap.position.set(cx, cy * (TOME_H/2 - 0.025), 0);
-      tomeCover.add(cap);
+    // Spiked iron corners: a plate, a spike pointing out along the diagonal, and two rivets.
+    const plateGeo = new THREE.BoxGeometry(0.075, 0.075, BOARD + 0.01);
+    const spikeGeo = new THREE.ConeGeometry(0.013, 0.06, 6);
+    const rivetGeo = new THREE.SphereGeometry(0.007, 8, 6);
+    for (const [sx, sy] of [[-1, 1], [-1, -1], [1, 1], [1, -1]]) {
+      const cx = TOME_W/2 + sx * (TOME_W/2 - 0.03), cy = sy * (TOME_H/2 - 0.03);
+      const plate = new THREE.Mesh(plateGeo, iron);
+      plate.position.set(cx, cy, 0);
+      tomeCover.add(plate);
+      const spike = new THREE.Mesh(spikeGeo, iron);
+      spike.position.set(cx + sx * 0.04, cy + sy * 0.04, 0.004);
+      spike.rotation.z = Math.atan2(sy, sx) - Math.PI / 2; // cone points along +y; turn it to the diagonal
+      tomeCover.add(spike);
+      for (const [rx, ry] of [[-sx * 0.022, 0], [0, -sy * 0.022]]) {
+        const rivet = new THREE.Mesh(rivetGeo, iron);
+        rivet.position.set(cx + rx, cy + ry, BOARD/2 + 0.005);
+        tomeCover.add(rivet);
+      }
     }
+    // Iron clasp: a strap on the cover near the fore-edge, running over the edge of the pages, with a buckle.
+    // It hangs on the cover, so it swings free when the cover opens.
+    const strap = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.05, 0.006), iron);
+    strap.position.set(TOME_W - 0.04, 0, BOARD/2 + 0.004);
+    tomeCover.add(strap);
+    const strapEdge = new THREE.Mesh(new THREE.BoxGeometry(0.006, 0.05, TOME_T), iron);
+    strapEdge.position.set(TOME_W + 0.006, 0, -TOME_T/2 + BOARD/2);
+    tomeCover.add(strapEdge);
+    const buckle = new THREE.Mesh(new THREE.TorusGeometry(0.022, 0.005, 6, 16), bronze);
+    buckle.position.set(TOME_W - 0.085, 0, BOARD/2 + 0.009);
+    tomeCover.add(buckle);
+    // Raised bands across the spine.
+    const bandGeo = new THREE.BoxGeometry(0.036, 0.018, TOME_T + 0.006);
+    for (const by of [-0.17, -0.06, 0.06, 0.17]) {
+      const band = new THREE.Mesh(bandGeo, leather);
+      band.position.set(-TOME_W/2 + 0.012, by, 0);
+      tomeBook.add(band);
+    }
+    // The Unmade sigil, set into the cover as a raised stone medallion with a bronze rim. Its light (the bright
+    // gold and violet lines, extracted from the image into a glow map) pulses. The image arrives after the
+    // scene is built; if the player has already left, the late image is dropped.
+    const medallionMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8, emissive: 0xc58cff, emissiveIntensity: 0 });
+    const medallion = new THREE.Mesh(new THREE.CylinderGeometry(0.105, 0.105, 0.012, 48), [bronze, medallionMat, medallionMat]);
+    medallion.rotation.x = Math.PI / 2; // cylinder caps face +y; turn the top cap to face out of the cover
+    medallion.position.set(TOME_W/2, 0.02, BOARD/2 + 0.006);
+    tomeCover.add(medallion);
+    tomeMedallionMat = medallionMat;
+    const sigilScene = scene;
+    const sigilImg = new Image();
+    sigilImg.onload = () => {
+      if (scene !== sigilScene) return;
+      const map = new THREE.Texture(sigilImg);
+      map.encoding = THREE.sRGBEncoding; map.needsUpdate = true;
+      const glow = new THREE.CanvasTexture(sigilGlowMap(sigilImg));
+      medallionMat.map = map; medallionMat.emissiveMap = glow;
+      medallionMat.color.set(0xffffff); medallionMat.emissiveIntensity = 0.3;
+      medallionMat.needsUpdate = true;
+    };
+    sigilImg.src = 'assets/ui/sigil_unmade.png';
 
     // Light on the book: a warm key from the front, a violet rim from behind, and a light in the pages that
     // only comes up as the cover opens.
@@ -8927,13 +8984,14 @@ window.CodexScene = (function(){
     tomeLift += ((hoverTome ? TOME_LIFT : 0) - tomeLift) * 0.08;
     tomeOpen += ((hoverTome ? 1 : 0) - tomeOpen) * 0.07;
     if (tome) {
-      tome.position.y = TOME_Y + Math.sin(t * 1.1) * 0.035 + tomeLift;
+      tome.position.y = TOME_Y + Math.sin(t * 1.1) * 0.025 + tomeLift;
       tomeBook.rotation.y = 0.42 + Math.sin(t * 0.5) * 0.16 - tomeOpen * 0.3;
       tomeBook.rotation.z = Math.sin(t * 0.8) * 0.03;
       tomeCover.rotation.y = -tomeOpen * 1.9; // about 110 degrees: the cover swings open toward the viewer's left
-      tomeCoverMat.emissiveIntensity = 0.45 + Math.sin(t * 1.6) * 0.2 + tomeOpen * 0.5;
-      tomePageLight.intensity = tomeOpen * 0.5;
-      tomePageGlow.material.opacity = tomeOpen * 0.3;
+      tomeCoverMat.emissiveIntensity = 0.22 + Math.sin(t * 1.6) * 0.1 + tomeOpen * 0.2; // cracks smoulder
+      if (tomeMedallionMat.map) tomeMedallionMat.emissiveIntensity = 0.3 + Math.sin(t * 1.3 + 1) * 0.15 + tomeOpen * 0.3;
+      tomePageLight.intensity = tomeOpen * 0.25;
+      tomePageGlow.material.opacity = tomeOpen * 0.12;
       tomeGlow.material.opacity = 0.32 + Math.sin(t * 1.3) * 0.08 + tomeOpen * 0.3;
     }
     if (emberSystem) {
@@ -8984,48 +9042,115 @@ window.CodexScene = (function(){
     return { x: (v.x + 1) / 2, y: (1 - v.y) / 2 };
   }
 
-  // Front cover art, 512x683. sigilOnly=false: the full cover (oxblood leather, gold border, sigil).
-  // sigilOnly=true: the gold lines alone on black, used as the glow map so only the gold lights up.
-  function drawTomeCover(sigilOnly){
+  // Front cover art, 512x683. glowOnly=false: blackened, cracked, scuffed leather with old blood stains, a
+  // tarnished bronze frame with the gilding flaked away, and a ring of runes where the medallion sits.
+  // glowOnly=true: the cracks alone, white on black, used as the glow map so only the cracks smoulder.
+  // Every random value comes from a fixed seed, so both calls draw the same cracks.
+  function drawTomeCover(glowOnly){
     const c = document.createElement('canvas');
     c.width = 512; c.height = 683;
     const g = c.getContext('2d');
-    if (sigilOnly) { g.fillStyle = '#000'; g.fillRect(0, 0, 512, 683); }
+    let r = 20251103;
+    const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
+    if (glowOnly) { g.fillStyle = '#000'; g.fillRect(0, 0, 512, 683); }
     else {
-      const bg = g.createRadialGradient(256, 300, 40, 256, 342, 420);
-      bg.addColorStop(0, '#4a1622'); bg.addColorStop(1, '#1c060c');
-      g.fillStyle = bg; g.fillRect(0, 0, 512, 683);
-      // Grain: fixed pseudo-random speckle so the leather is not flat.
-      let r = 7;
-      for (let i = 0; i < 2600; i++) {
-        r = (r * 16807) % 2147483647;
-        const x = r % 512, y = (r >> 9) % 683, k = (r >> 3) % 2;
-        g.fillStyle = k ? 'rgba(0,0,0,0.18)' : 'rgba(255,200,180,0.05)';
-        g.fillRect(x, y, 2, 2);
+      g.fillStyle = '#1a0f0c'; g.fillRect(0, 0, 512, 683);
+      // Mottled tone: soft dark and light blotches.
+      for (let i = 0; i < 70; i++) {
+        const x = rnd() * 512, y = rnd() * 683, rad = 20 + rnd() * 90, light = rnd() < 0.4;
+        const gr = g.createRadialGradient(x, y, 0, x, y, rad);
+        gr.addColorStop(0, light ? 'rgba(70,45,35,0.25)' : 'rgba(0,0,0,0.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+      }
+      // Grain.
+      for (let i = 0; i < 5000; i++) {
+        g.fillStyle = rnd() < 0.5 ? 'rgba(0,0,0,0.3)' : 'rgba(120,90,70,0.08)';
+        g.fillRect(rnd() * 512, rnd() * 683, 2, 2);
+      }
+      // Old blood: dark red stains with darker rims.
+      for (let i = 0; i < 6; i++) {
+        const x = 60 + rnd() * 392, y = 60 + rnd() * 563, rad = 12 + rnd() * 40;
+        const gr = g.createRadialGradient(x, y, 0, x, y, rad);
+        gr.addColorStop(0, 'rgba(70,4,4,0.55)'); gr.addColorStop(0.8, 'rgba(45,2,2,0.5)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = gr; g.beginPath(); g.ellipse(x, y, rad, rad * (0.5 + rnd() * 0.6), rnd() * 3, 0, Math.PI * 2); g.fill();
+      }
+      // Edge wear: the rims are rubbed lighter.
+      for (const [x0, y0, x1, y1] of [[0, 0, 40, 0], [0, 683, 0, 643], [0, 0, 0, 40], [512, 0, 472, 0]]) {
+        const gr = g.createLinearGradient(x0, y0, x1 || x0, y1 || y0);
+        gr.addColorStop(0, 'rgba(110,80,60,0.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = gr;
+        if (x0 === x1 || x1 === 0) g.fillRect(0, Math.min(y0, y1), 512, 40);
+        else g.fillRect(Math.min(x0, x1), 0, 40, 683);
       }
     }
-    g.strokeStyle = sigilOnly ? '#ffffff' : '#c9a24a';
-    g.lineJoin = 'round';
-    g.lineWidth = 6; g.strokeRect(26, 26, 460, 631);
-    g.lineWidth = 2; g.strokeRect(42, 42, 428, 599);
-    // Sigil: a circle with an inverted pentagram, and a smaller ring.
-    const cx = 256, cy = 330, R = 150;
-    g.lineWidth = 5;
-    g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke();
-    g.lineWidth = 2;
-    g.beginPath(); g.arc(cx, cy, R - 16, 0, Math.PI * 2); g.stroke();
-    g.lineWidth = 5;
-    g.beginPath();
-    for (let i = 0; i <= 5; i++) {
-      const a = Math.PI / 2 + i * (Math.PI * 4 / 5); // star order, point down
-      const x = cx + Math.cos(a) * (R - 16), y = cy + Math.sin(a) * (R - 16);
-      if (i) g.lineTo(x, y); else g.moveTo(x, y);
+    // Cracks: jagged random walks with short branches.
+    const crack = (x, y, len, ang, w) => {
+      g.beginPath(); g.moveTo(x, y);
+      for (let k = 0; k < len; k++) {
+        ang += (rnd() - 0.5) * 0.9;
+        x += Math.cos(ang) * 9; y += Math.sin(ang) * 9;
+        g.lineTo(x, y);
+        if (rnd() < 0.12 && w > 1) { g.stroke(); crack(x, y, 4 + rnd() * 6, ang + (rnd() - 0.5) * 2, w - 1); g.beginPath(); g.moveTo(x, y); }
+      }
+      g.stroke();
+    };
+    g.lineCap = 'round';
+    g.strokeStyle = glowOnly ? '#ffffff' : 'rgba(0,0,0,0.85)';
+    for (let i = 0; i < 14; i++) { g.lineWidth = 1.5 + rnd() * 2; crack(rnd() * 512, rnd() * 683, 8 + rnd() * 14, rnd() * 6.3, 3); }
+    if (glowOnly) return c;
+    // Tarnished bronze frame, flaked: drawn as short segments with gaps.
+    const flaky = (pts, width) => {
+      g.lineWidth = width;
+      for (let k = 0; k < pts.length - 1; k++) {
+        const [ax, ay] = pts[k], [bx, by] = pts[k + 1];
+        const n = Math.ceil(Math.hypot(bx - ax, by - ay) / 14);
+        for (let m = 0; m < n; m++) {
+          if (rnd() < 0.18) continue; // gilding gone here
+          g.strokeStyle = 'rgba(' + (120 + rnd() * 40 | 0) + ',' + (88 + rnd() * 30 | 0) + ',40,0.9)';
+          g.beginPath();
+          g.moveTo(ax + (bx - ax) * m / n, ay + (by - ay) * m / n);
+          g.lineTo(ax + (bx - ax) * (m + 1) / n, ay + (by - ay) * (m + 1) / n);
+          g.stroke();
+        }
+      }
+    };
+    flaky([[30, 30], [482, 30], [482, 653], [30, 653], [30, 30]], 6);
+    flaky([[48, 48], [464, 48], [464, 635], [48, 635], [48, 48]], 2);
+    // Ring of runes around where the medallion sits (the medallion covers the centre).
+    const cx = 256, cy = 316, R = 168;
+    flaky(Array.from({ length: 49 }, (_, k) => [cx + Math.cos(k / 48 * Math.PI * 2) * R, cy + Math.sin(k / 48 * Math.PI * 2) * R]), 3);
+    g.lineWidth = 2.5;
+    for (let k = 0; k < 24; k++) {
+      const a = k / 24 * Math.PI * 2, x = cx + Math.cos(a) * (R - 18), y = cy + Math.sin(a) * (R - 18);
+      g.save(); g.translate(x, y); g.rotate(a + Math.PI / 2);
+      g.strokeStyle = 'rgba(140,100,45,0.85)';
+      g.beginPath();
+      // Each rune: two or three strokes from a small set of angles.
+      const strokes = 2 + (rnd() * 2 | 0);
+      for (let q = 0; q < strokes; q++) {
+        const sx = (rnd() - 0.5) * 10, sy = (rnd() - 0.5) * 14;
+        g.moveTo(sx, sy); g.lineTo(sx + (rnd() - 0.5) * 12, sy + (rnd() < 0.5 ? -9 : 9));
+      }
+      g.stroke(); g.restore();
     }
-    g.stroke();
-    g.beginPath(); g.arc(cx, cy, 18, 0, Math.PI * 2); g.stroke();
-    // Bands above and below the sigil.
-    g.lineWidth = 3;
-    for (const y of [120, 540]) { g.beginPath(); g.moveTo(130, y); g.lineTo(382, y); g.stroke(); }
+    return c;
+  }
+
+  // Glow map for the sigil medallion: keeps only the bright, coloured lines (gold and violet) of the image,
+  // so the stone stays dark and the lines light up.
+  function sigilGlowMap(img){
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 256;
+    const g = c.getContext('2d');
+    g.drawImage(img, 0, 0, 256, 256);
+    const d = g.getImageData(0, 0, 256, 256), px = d.data;
+    for (let i = 0; i < px.length; i += 4) {
+      const mx = Math.max(px[i], px[i+1], px[i+2]), mn = Math.min(px[i], px[i+1], px[i+2]);
+      const keep = mx > 150 && mx - mn > 60;
+      if (!keep) { px[i] = px[i+1] = px[i+2] = 0; }
+      px[i+3] = 255;
+    }
+    g.putImageData(d, 0, 0);
     return c;
   }
 
@@ -9034,7 +9159,7 @@ window.CodexScene = (function(){
     const c = document.createElement('canvas');
     c.width = 256; c.height = 256;
     const g = c.getContext('2d');
-    g.fillStyle = '#e6d3a8'; g.fillRect(0, 0, 256, 256);
+    g.fillStyle = '#c9b07a'; g.fillRect(0, 0, 256, 256);
     let r = 11;
     for (let y = 0; y < 256; y += 3) {
       r = (r * 16807) % 2147483647;
@@ -9054,7 +9179,7 @@ window.CodexScene = (function(){
     c.width = 512; c.height = 683;
     const g = c.getContext('2d');
     const bg = g.createRadialGradient(256, 340, 60, 256, 340, 420);
-    bg.addColorStop(0, '#efe0bb'); bg.addColorStop(1, '#b9996a');
+    bg.addColorStop(0, '#e2cc9a'); bg.addColorStop(0.7, '#b8955f'); bg.addColorStop(1, '#7a5a30');
     g.fillStyle = bg; g.fillRect(0, 0, 512, 683);
     g.strokeStyle = 'rgba(140,20,20,0.55)'; g.lineWidth = 3;
     g.beginPath(); g.arc(256, 250, 90, 0, Math.PI * 2); g.stroke();
@@ -9111,7 +9236,7 @@ window.CodexScene = (function(){
     if (scene.background && scene.background.dispose) scene.background.dispose();
     renderer.dispose();
     scene = null; camera = null; renderer = null;
-    tome = null; tomeBook = null; tomeCover = null; tomeCoverMat = null; tomeHit = null;
+    tome = null; tomeBook = null; tomeCover = null; tomeCoverMat = null; tomeMedallionMat = null; tomeHit = null;
     tomeGlow = null; tomePageGlow = null; tomePageLight = null; emberSystem = null;
     tomeLift = 0; tomeOpen = 0;
     dustSystem = null; ambient = null;
